@@ -1,0 +1,26 @@
+<nav>
+  <a href="/" class="logo">NIGHT<span>PASS</span></a>
+  <div class="nav-right">
+    <a href="/#details">Details</a>
+    <a href="/#gallery">Gallery</a>
+    <% if (locals.user) { %>
+      <a href="/booking/my-bookings" class="nav-link-text">My Tickets</a>
+      <a href="/auth/logout" class="btn-nav-outline">Logout</a>
+    <% } else { %>
+      <a href="/booking" class="btn-nav-book">Get Tickets</a>
+    <% } %>
+  </div>
+  <div class="hamburger" onclick="toggleMenu()">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+<div class="mobile-drawer" id="mobileDrawer">
+  <a href="/#details" onclick="toggleMenu()">Event Details</a>
+  <a href="/#gallery" onclick="toggleMenu()">Gallery</a>
+  <% if (locals.user) { %>
+    <a href="/booking/my-bookings" onclick="toggleMenu()">My Tickets</a>
+    <a href="/auth/logout" style="color:var(--error);">Logout</a>
+  <% } else { %>
+    <a href="/booking" onclick="toggleMenu()" style="color:var(--accent);font-weight:700;">Get Tickets →</a>
+  <% } %>
+</div>

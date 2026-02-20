@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Your Ticket — NightPass</title>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Outfit:wght@400;500;600;700&family=Space+Mono&display=swap" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    :root{--bg:#08080e;--surface:#0f0f18;--card:#13131e;--border:rgba(255,255,255,0.08);--accent:#c8ff00;--accent-dim:rgba(200,255,0,0.09);--text:#e8e8f0;--muted:#5a5a72;--success:#4cdf80;--error:#ff5c5c;}
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-height:100vh;}
+    body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(255,255,255,0.012) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.012) 1px,transparent 1px);background-size:50px 50px;pointer-events:none;}
+    .orb{position:fixed;top:-150px;left:50%;transform:translateX(-50%);width:600px;height:400px;border-radius:50%;background:radial-gradient(ellipse,rgba(76,223,128,0.07) 0%,transparent 65%);pointer-events:none;}
+    nav{padding:1.1rem 2rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);background:rgba(8,8,14,0.9);backdrop-filter:blur(20px);position:sticky;top:0;z-index:100;}
+    .logo{font-family:'Anton',sans-serif;font-size:1.5rem;letter-spacing:4px;color:#fff;text-decoration:none;}
+    .logo span{color:var(--accent);}
+    .nav-link{display:flex;align-items:center;gap:0.5rem;color:var(--muted);text-decoration:none;font-size:0.82rem;letter-spacing:1px;text-transform:uppercase;transition:color 0.2s;}
+    .nav-link:hover{color:#fff;}
+
+    /* SUCCESS HEADER */
+    .success-header{text-align:center;padding:3rem 1rem 0;position:relative;z-index:1;}
+    .success-badge{display:inline-flex;align-items:center;gap:0.6rem;background:rgba(76,223,128,0.1);border:1px solid rgba(76,223,128,0.3);border-radius:20px;padding:0.5rem 1.2rem;font-family:'Space Mono',monospace;font-size:0.68rem;letter-spacing:2px;color:var(--success);margin-bottom:1.5rem;}
+    .success-ring{width:90px;height:90px;border-radius:50%;background:rgba(76,223,128,0.1);border:2px solid rgba(76,223,128,0.4);display:flex;align-items:center;justify-content:center;font-size:2.2rem;margin:0 auto 1.5rem;box-shadow:0 0 40px rgba(76,223,128,0.2);animation:popIn 0.5s ease both;}
+    @keyframes popIn{0%{transform:scale(0.5);opacity:0}70%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
+    .success-title{font-family:'Anton',sans-serif;font-size:clamp(2.5rem,7vw,5rem);letter-spacing:3px;color:#fff;line-height:1;margin-bottom:0.8rem;}
+    .success-title .green{color:var(--success);}
+    .success-sub{font-size:1rem;color:var(--muted);max-width:480px;margin:0 auto 1rem;line-height:1.7;}
+    .ref-chip{display:inline-flex;align-items:center;gap:0.5rem;background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:0.4rem 1rem;font-family:'Space Mono',monospace;font-size:0.7rem;letter-spacing:2px;color:var(--muted);}
+
+    /* TICKET AREA */
+    .tickets-area{max-width:900px;margin:3rem auto 2rem;padding:0 1.5rem;position:relative;z-index:1;}
+    .area-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;}
+    .area-label{font-family:'Space Mono',monospace;font-size:0.68rem;letter-spacing:3px;color:var(--accent);}
+    .action-btns{display:flex;gap:0.8rem;flex-wrap:wrap;}
+    .btn-action{display:flex;align-items:center;gap:0.5rem;padding:0.7rem 1.4rem;border-radius:6px;font-family:'Outfit',sans-serif;font-weight:600;font-size:0.85rem;cursor:pointer;border:1px solid var(--border);transition:all 0.2s;text-decoration:none;}
+    .btn-dl-all{background:var(--accent);color:#000;border-color:var(--accent);box-shadow:0 0 20px rgba(200,255,0,0.2);}
+    .btn-dl-all:hover{transform:translateY(-2px);box-shadow:0 0 40px rgba(200,255,0,0.4);}
+    .btn-share{background:transparent;color:var(--text);}
+    .btn-share:hover{border-color:rgba(255,255,255,0.25);color:#fff;}
+
+    /* TICKET CARD — displayed on screen */
+    .tickets-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:1.5rem;margin-bottom:2rem;}
+    .ticket-card{background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.5),0 0 40px rgba(200,255,0,0.05);color:#111;}
+    .ticket-header{background:linear-gradient(135deg,#0a0a0f,#1c2200,#3a4a00);padding:1.5rem;position:relative;overflow:hidden;}
+    .ticket-header::after{content:'';position:absolute;bottom:-20px;left:0;right:0;height:60px;background:radial-gradient(ellipse 60% 100% at 50% 100%,rgba(200,255,0,0.25) 0%,transparent 70%);}
+    .t-brand{font-family:'Space Mono',monospace;font-size:0.7rem;letter-spacing:4px;color:rgba(255,255,255,0.45);margin-bottom:0.4rem;position:relative;z-index:1;}
+    .t-name{font-family:'Anton',sans-serif;font-size:1.8rem;letter-spacing:3px;color:#fff;line-height:1;position:relative;z-index:1;}
+    .t-type-badge{position:absolute;top:1rem;right:1rem;background:rgba(200,255,0,0.15);border:1px solid rgba(200,255,0,0.4);color:#c8ff00;font-family:'Space Mono',monospace;font-size:0.58rem;letter-spacing:2px;padding:0.22rem 0.6rem;border-radius:2px;}
+    .tear-line{position:relative;height:1px;background:#e8e8e8;margin:0 12px;}
+    .tear-line::before,.tear-line::after{content:'';position:absolute;width:24px;height:24px;border-radius:50%;background:var(--bg);top:50%;transform:translateY(-50%);}
+    .tear-line::before{left:-24px;}.tear-line::after{right:-24px;}
+    .tear-dots{border:none;border-top:2px dashed #ddd;width:100%;position:absolute;top:50%;transform:translateY(-50%);}
+    .ticket-body{padding:1.2rem 1.5rem;background:#fff;}
+    .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;margin-bottom:1.2rem;}
+    .info-field label{font-family:'Space Mono',monospace;font-size:0.52rem;letter-spacing:2px;color:#999;text-transform:uppercase;display:block;margin-bottom:0.2rem;}
+    .info-field span{font-size:0.85rem;font-weight:600;color:#111;display:block;}
+    .qr-section{display:flex;align-items:center;gap:1.2rem;border-top:1px solid #eee;padding-top:1.2rem;}
+    .qr-img-box{width:110px;height:110px;flex-shrink:0;background:#fff;padding:5px;border:1px solid #eee;border-radius:4px;}
+    .qr-img-box img{width:100%;height:100%;display:block;}
+    .qr-details .qr-id{font-family:'Space Mono',monospace;font-size:0.58rem;letter-spacing:1px;color:#888;margin-bottom:0.4rem;word-break:break-all;}
+    .qr-details .qr-name{font-size:0.95rem;font-weight:700;color:#111;margin-bottom:0.2rem;}
+    .qr-details .qr-sub{font-size:0.75rem;color:#888;}
+    .qr-valid{display:inline-flex;align-items:center;gap:0.3rem;background:rgba(76,200,128,0.1);border:1px solid rgba(76,200,128,0.4);color:#2a9d5c;font-family:'Space Mono',monospace;font-size:0.56rem;letter-spacing:1px;padding:0.2rem 0.6rem;border-radius:2px;margin-top:0.5rem;}
+    .ticket-footer{background:#f5f5f5;padding:0.8rem 1.5rem;display:flex;align-items:center;justify-content:space-between;}
+    .t-footer-note{font-family:'Space Mono',monospace;font-size:0.58rem;letter-spacing:1px;color:#aaa;}
+    .t-footer-price{font-family:'Anton',sans-serif;font-size:1.2rem;color:#111;letter-spacing:1px;}
+    .btn-dl-single{display:flex;align-items:center;justify-content:center;gap:0.5rem;width:100%;padding:0.75rem;background:#111;color:#fff;border:none;cursor:pointer;font-family:'Outfit',sans-serif;font-weight:600;font-size:0.82rem;transition:background 0.2s;}
+    .btn-dl-single:hover{background:#1e2600;color:#c8ff00;}
+    .btn-dl-single:disabled{opacity:0.5;cursor:not-allowed;}
+
+    /* WHAT'S NEXT */
+    .whats-next{max-width:900px;margin:0 auto 3rem;padding:0 1.5rem;position:relative;z-index:1;}
+    .next-title{font-family:'Anton',sans-serif;font-size:1.5rem;letter-spacing:2px;color:#fff;margin-bottom:1.2rem;}
+    .next-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;}
+    .next-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:1.3rem;}
+    .next-num{font-family:'Anton',sans-serif;font-size:2.5rem;color:rgba(255,255,255,0.04);line-height:1;margin-bottom:-0.3rem;}
+    .next-icon{font-size:1.5rem;margin-bottom:0.6rem;}
+    .next-card-title{font-weight:700;font-size:0.9rem;color:#fff;margin-bottom:0.3rem;}
+    .next-card-desc{font-size:0.8rem;color:var(--muted);line-height:1.6;}
+
+    /* NOTICE */
+    .notice{max-width:900px;margin:0 auto 4rem;padding:0 1.5rem;position:relative;z-index:1;}
+    .notice-inner{background:rgba(200,255,0,0.04);border:1px solid rgba(200,255,0,0.15);border-radius:8px;padding:1.2rem 1.5rem;display:flex;gap:1rem;align-items:flex-start;}
+    .notice-inner i{color:var(--accent);font-size:1.1rem;flex-shrink:0;margin-top:2px;}
+    .notice-text{font-size:0.82rem;color:var(--muted);line-height:1.7;}
+    .notice-text strong{color:var(--text);}
+
+    /* SHARE MODAL */
+    .share-modal{display:none;position:fixed;inset:0;z-index:200;background:rgba(8,8,14,0.9);backdrop-filter:blur(10px);align-items:center;justify-content:center;padding:1rem;}
+    .share-modal.open{display:flex;}
+    .share-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:2rem;max-width:360px;width:100%;}
+    .share-title{font-family:'Anton',sans-serif;font-size:1.5rem;letter-spacing:2px;color:#fff;margin-bottom:1.2rem;}
+    .share-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;}
+    .share-opt{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:1rem;text-align:center;cursor:pointer;text-decoration:none;color:var(--text);transition:border-color 0.2s;}
+    .share-opt:hover{border-color:rgba(255,255,255,0.2);color:#fff;}
+    .share-opt i{font-size:1.5rem;display:block;margin-bottom:0.4rem;}
+    .share-opt span{font-size:0.75rem;font-family:'Space Mono',monospace;letter-spacing:1px;}
+    .btn-cancel{width:100%;margin-top:1rem;padding:0.7rem;background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:6px;cursor:pointer;font-family:'Outfit',sans-serif;font-size:0.85rem;transition:border-color 0.2s;}
+    .btn-cancel:hover{border-color:rgba(255,255,255,0.2);color:#fff;}
+
+    @media(max-width:768px){.next-grid{grid-template-columns:1fr;}.tickets-grid{grid-template-columns:1fr;}.action-btns{width:100%;}.btn-action{flex:1;justify-content:center;}}
+  </style>
+</head>
+<body>
+  <div class="orb"></div>
+
+  <nav>
+    <a href="/" class="logo">NIGHT<span>PASS</span></a>
+    <a href="/booking/my-bookings" class="nav-link"><i class="bi bi-collection"></i> My Bookings</a>
+  </nav>
+
+  <!-- SUCCESS HEADER -->
+  <div class="success-header">
+    <div class="success-badge"><i class="bi bi-check-circle-fill"></i> PAYMENT SUCCESSFUL</div>
+    <div class="success-ring">🎉</div>
+    <h1 class="success-title">YOU'RE<br/><span class="green">IN!</span></h1>
+    <p class="success-sub">Your entry passes are ready. Download your QR tickets and show them at the door on the night of the event.</p>
+    <div class="ref-chip"><i class="bi bi-receipt"></i> Booking Ref: <strong><%= booking.bookingRef %></strong></div>
+  </div>
+
+  <!-- TICKETS -->
+  <div class="tickets-area">
+    <div class="area-header">
+      <div class="area-label">// your tickets (<%= booking.tickets.length %> pass<%= booking.tickets.length > 1 ? 'es' : '' %>)</div>
+      <div class="action-btns">
+        <button class="btn-action btn-share" onclick="openShare()"><i class="bi bi-share-fill"></i> Share</button>
+        <button class="btn-action btn-dl-all" id="dlAllBtn" onclick="downloadAll()"><i class="bi bi-download"></i> Download All PDF</button>
+      </div>
+    </div>
+
+    <div class="tickets-grid">
+      <% booking.tickets.forEach(function(ticket, idx) { %>
+      <div class="ticket-card" id="tc-<%= idx %>">
+        <div class="ticket-header">
+          <div class="t-type-badge"><%= booking.ticketType.toUpperCase() %></div>
+          <div class="t-brand">NIGHTPASS · KOCHI</div>
+          <div class="t-name"><%= event.name.toUpperCase() %></div>
+        </div>
+        <div class="tear-line"><hr class="tear-dots"/></div>
+        <div class="ticket-body">
+          <div class="info-grid">
+            <div class="info-field"><label>Date</label><span><%= new Date(event.date).toDateString().toUpperCase() %></span></div>
+            <div class="info-field"><label>Time</label><span><%= event.doorsOpen %> – <%= event.endTime %></span></div>
+            <div class="info-field"><label>Venue</label><span><%= event.venue %></span></div>
+            <div class="info-field"><label>Dress Code</label><span><%= event.dressCode %></span></div>
+          </div>
+          <div class="qr-section">
+            <div class="qr-img-box">
+              <% if (ticket.qrCode) { %>
+                <img src="<%= ticket.qrCode %>" alt="QR Code" crossorigin="anonymous"/>
+              <% } else { %>
+                <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#f0f0f0;font-size:0.6rem;color:#999;text-align:center;padding:5px;">QR<br/>CODE</div>
+              <% } %>
+            </div>
+            <div class="qr-details">
+              <div class="qr-id"><%= ticket.ticketId %></div>
+              <div class="qr-name"><%= ticket.attendee.name %></div>
+              <div class="qr-sub">Ticket <%= idx+1 %> of <%= booking.tickets.length %> · <%= booking.ticketType %></div>
+              <div class="qr-valid"><i class="bi bi-check-circle-fill"></i> VALID · ONE TIME ENTRY</div>
+            </div>
+          </div>
+        </div>
+        <div class="ticket-footer">
+          <div class="t-footer-note">SCAN AT ENTRY · 18+ · VALID ID REQUIRED</div>
+          <div class="t-footer-price">₹<%= booking.pricePerTicket.toLocaleString('en-IN') %></div>
+        </div>
+        <button class="btn-dl-single" id="dl-<%= idx %>"
+          onclick="downloadSingle(<%= idx %>, '<%= ticket.ticketId %>', '<%= ticket.attendee.name.replace(/'/g, '') %>', '<%= ticket.qrCode ? ticket.qrCode.substring(0,30) : '' %>')">
+          <i class="bi bi-file-earmark-pdf-fill"></i> Download Ticket <%= idx+1 %> as PDF
+        </button>
+      </div>
+      <% }); %>
+    </div>
+  </div>
+
+  <!-- WHAT'S NEXT -->
+  <div class="whats-next">
+    <div class="next-title">WHAT'S NEXT?</div>
+    <div class="next-grid">
+      <div class="next-card"><div class="next-num">01</div><div class="next-icon">📥</div><div class="next-card-title">Download Your Tickets</div><div class="next-card-desc">Save each QR pass as PDF. Keep it on your phone or print it out.</div></div>
+      <div class="next-card"><div class="next-num">02</div><div class="next-icon">🕘</div><div class="next-card-title">Arrive on Time</div><div class="next-card-desc">Doors open at <%= event.doorsOpen %>. Dress code is <%= event.dressCode %> — strictly enforced at entry.</div></div>
+      <div class="next-card"><div class="next-num">03</div><div class="next-icon">📲</div><div class="next-card-title">Show QR at Entry</div><div class="next-card-desc">Our staff will scan your QR code. Each code is valid for one person, one entry only.</div></div>
+    </div>
+  </div>
+
+  <!-- NOTICE -->
+  <div class="notice">
+    <div class="notice-inner">
+      <i class="bi bi-exclamation-triangle-fill"></i>
+      <div class="notice-text">
+        <strong>Important:</strong> Each QR code is unique and valid for single entry only. Do not share your QR code publicly. Carry a valid government photo ID. Dress code is <strong><%= event.dressCode %></strong>, strictly enforced.
+      </div>
+    </div>
+  </div>
+
+  <!-- SHARE MODAL -->
+  <div class="share-modal" id="shareModal">
+    <div class="share-card">
+      <div class="share-title">SHARE</div>
+      <div class="share-grid">
+        <a class="share-opt" href="#" onclick="shareVia('whatsapp');return false;">
+          <i class="bi bi-whatsapp" style="color:#25d366;"></i><span>WHATSAPP</span>
+        </a>
+        <a class="share-opt" href="#" onclick="shareVia('copy');return false;">
+          <i class="bi bi-link-45deg" style="color:#c8ff00;"></i><span>COPY LINK</span>
+        </a>
+      </div>
+      <button class="btn-cancel" onclick="closeShare()">Cancel</button>
+    </div>
+  </div>
+
+  <script>
+    // ── Ticket data passed from server ──
+    const TICKETS = <%- JSON.stringify(booking.tickets.map(function(t) {
+      return {
+        ticketId: t.ticketId,
+        attendeeName: t.attendee.name,
+        attendeeAge: t.attendee.age,
+        qrCode: t.qrCode || ''
+      };
+    })) %>;
+
+    const BOOKING = {
+      ref: '<%= booking.bookingRef %>',
+      type: '<%= booking.ticketType %>',
+      qty: <%= booking.tickets.length %>,
+      price: '<%= booking.pricePerTicket.toLocaleString("en-IN") %>',
+      paymentId: '<%= booking.paymentId || "" %>'
+    };
+
+    const EVENT = {
+      name: '<%= event.name.toUpperCase() %>',
+      date: '<%= new Date(event.date).toDateString().toUpperCase() %>',
+      doorsOpen: '<%= event.doorsOpen %>',
+      endTime: '<%= event.endTime %>',
+      venue: '<%= event.venue %>',
+      dressCode: '<%= event.dressCode %>'
+    };
+
+    // ── Draw ticket as PDF using jsPDF directly (no html2canvas) ──
+    // This gives proper colors, small file size (~150KB), and crisp text
+    async function buildTicketPDF(ticketIndex) {
+      const { jsPDF } = window.jspdf;
+      const t = TICKETS[ticketIndex];
+
+      // A5 landscape for a nice ticket shape
+      const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a5' });
+      const W = doc.internal.pageSize.getWidth();   // 210mm
+      const H = doc.internal.pageSize.getHeight();  // 148mm
+
+      // ── BACKGROUND ──
+      doc.setFillColor(8, 8, 14);
+      doc.rect(0, 0, W, H, 'F');
+
+      // ── HEADER BAND (dark green gradient effect) ──
+      doc.setFillColor(15, 22, 0);
+      doc.rect(0, 0, W * 0.55, H, 'F');
+
+      // Accent top bar
+      doc.setFillColor(200, 255, 0);
+      doc.rect(0, 0, W * 0.55, 2, 'F');
+
+      // ── LEFT SIDE — Event info ──
+
+      // Brand
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(7);
+      doc.setTextColor(120, 140, 80);
+      doc.text('NIGHTPASS · KOCHI', 12, 14);
+
+      // Event name
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(22);
+      doc.setTextColor(255, 255, 255);
+      const nameLines = doc.splitTextToSize(EVENT.name, 90);
+      doc.text(nameLines, 12, 26);
+
+      // Divider line
+      doc.setDrawColor(200, 255, 0);
+      doc.setLineWidth(0.5);
+      doc.line(12, 50, W * 0.55 - 10, 50);
+
+      // Info fields
+      const fields = [
+        { label: 'DATE', value: EVENT.date },
+        { label: 'DOORS OPEN', value: EVENT.doorsOpen },
+        { label: 'UNTIL', value: EVENT.endTime },
+        { label: 'VENUE', value: EVENT.venue },
+        { label: 'DRESS CODE', value: EVENT.dressCode },
+        { label: 'TICKET TYPE', value: BOOKING.type.toUpperCase() },
+      ];
+
+      let y = 60;
+      fields.forEach((f, i) => {
+        const col = i < 3 ? 12 : 60;
+        const row = i < 3 ? y + (i * 22) : y + ((i - 3) * 22);
+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(6);
+        doc.setTextColor(120, 140, 80);
+        doc.text(f.label, col, row);
+
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(9);
+        doc.setTextColor(230, 230, 230);
+        doc.text(f.value, col, row + 5);
+      });
+
+      // Price bottom left
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(18);
+      doc.setTextColor(200, 255, 0);
+      doc.text('₹' + BOOKING.price, 12, H - 10);
+
+      // ── PERFORATED DIVIDER ──
+      doc.setDrawColor(50, 50, 50);
+      doc.setLineWidth(0.3);
+      for (let dotY = 5; dotY < H - 5; dotY += 4) {
+        doc.line(W * 0.55, dotY, W * 0.55, dotY + 2);
+      }
+      // Semicircle cutouts
+      doc.setFillColor(8, 8, 14);
+      doc.circle(W * 0.55, 0, 5, 'F');
+      doc.circle(W * 0.55, H, 5, 'F');
+
+      // ── RIGHT SIDE — QR + Attendee ──
+      const rx = W * 0.55 + 8;
+
+      // Attendee name
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(14);
+      doc.setTextColor(255, 255, 255);
+      doc.text(t.attendeeName, rx, 18);
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8);
+      doc.setTextColor(120, 130, 100);
+      doc.text('Ticket ' + (ticketIndex + 1) + ' of ' + BOOKING.qty + ' · ' + BOOKING.type, rx, 25);
+
+      // QR Code image
+      if (t.qrCode && t.qrCode.startsWith('data:image')) {
+        try {
+          doc.addImage(t.qrCode, 'PNG', rx, 32, 55, 55);
+        } catch(e) {
+          // QR box placeholder
+          doc.setFillColor(240, 240, 240);
+          doc.rect(rx, 32, 55, 55, 'F');
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(7);
+          doc.setTextColor(100, 100, 100);
+          doc.text('QR CODE', rx + 18, 60);
+        }
+      } else {
+        doc.setFillColor(30, 30, 30);
+        doc.rect(rx, 32, 55, 55, 'F');
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(7);
+        doc.setTextColor(100, 100, 100);
+        doc.text('QR CODE', rx + 16, 60);
+      }
+
+      // VALID badge (green)
+      doc.setFillColor(20, 60, 30);
+      doc.roundedRect(rx, 91, 55, 8, 2, 2, 'F');
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(7);
+      doc.setTextColor(76, 220, 128);
+      doc.text('✓ VALID · ONE TIME ENTRY', rx + 4, 96.5);
+
+      // Ticket ID (monospace style)
+      doc.setFont('courier', 'bold');
+      doc.setFontSize(7);
+      doc.setTextColor(120, 130, 100);
+      doc.text(t.ticketId, rx, 107);
+
+      // Booking ref
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(6);
+      doc.setTextColor(80, 90, 70);
+      doc.text('REF: ' + BOOKING.ref, rx, 113);
+
+      // Bottom note
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(6);
+      doc.setTextColor(60, 70, 50);
+      doc.text('SCAN AT ENTRY · 18+ · VALID PHOTO ID REQUIRED', rx, H - 6);
+
+      return doc;
+    }
+
+    async function downloadSingle(idx, ticketId, name, qrPreview) {
+      const btn = document.getElementById('dl-' + idx);
+      btn.disabled = true;
+      btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Generating PDF...';
+
+      try {
+        const doc = await buildTicketPDF(idx);
+        doc.save('NightPass_Ticket_' + (idx + 1) + '_' + name.replace(/\s+/g, '_') + '.pdf');
+      } catch(e) {
+        console.error('PDF error:', e);
+        alert('PDF generation failed. Please try again.');
+      }
+
+      btn.disabled = false;
+      btn.innerHTML = '<i class="bi bi-file-earmark-pdf-fill"></i> Download Ticket ' + (idx + 1) + ' as PDF';
+    }
+
+    async function downloadAll() {
+      const btn = document.getElementById('dlAllBtn');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Generating...';
+
+      try {
+        const { jsPDF } = window.jspdf;
+
+        for (let i = 0; i < TICKETS.length; i++) {
+          const doc = await buildTicketPDF(i);
+          doc.save('NightPass_Ticket_' + (i + 1) + '_' + TICKETS[i].attendeeName.replace(/\s+/g,'_') + '.pdf');
+          // Small delay between downloads
+          if (i < TICKETS.length - 1) await new Promise(r => setTimeout(r, 500));
+        }
+      } catch(e) {
+        console.error('PDF error:', e);
+        alert('PDF generation failed. Please try again.');
+      }
+
+      btn.disabled = false;
+      btn.innerHTML = '<i class="bi bi-download"></i> Download All PDF';
+    }
+
+    function openShare()  { document.getElementById('shareModal').classList.add('open'); }
+    function closeShare() { document.getElementById('shareModal').classList.remove('open'); }
+    document.getElementById('shareModal').addEventListener('click', function(e) {
+      if (e.target === this) closeShare();
+    });
+
+    function shareVia(method) {
+      const msg = "🎉 I'm going to Eclipse Dark Night on 15 March 2026 at Club Axis, Kochi!";
+      if (method === 'whatsapp') window.open('https://api.whatsapp.com/send?text=' + encodeURIComponent(msg), '_blank');
+      else if (method === 'copy') navigator.clipboard.writeText(window.location.href).then(() => alert('Link copied!'));
+      closeShare();
+    }
+  </script>
+</body>
+</html>

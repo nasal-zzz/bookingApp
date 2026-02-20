@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../partials/head') %>
+</head>
+<body>
+  <div class="orb-tl"></div><div class="orb-br"></div>
+
+  <!-- NAV -->
+  <nav style="padding:1.1rem 2rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);background:rgba(8,8,14,0.85);backdrop-filter:blur(20px);position:sticky;top:0;z-index:100;">
+    <a href="/" class="logo">NIGHT<span>PASS</span></a>
+    <div style="display:flex;align-items:center;gap:0.4rem;font-family:var(--font-mono);font-size:0.62rem;letter-spacing:1px;">
+      <span style="color:var(--success);display:flex;align-items:center;gap:0.3rem;"><span style="width:6px;height:6px;border-radius:50%;background:currentColor;display:inline-block;"></span> Verified</span>
+      <span style="width:20px;height:1px;background:var(--border);display:inline-block;"></span>
+      <span style="color:var(--accent);background:var(--accent-dim);border:1px solid rgba(200,255,0,0.2);padding:0.3rem 0.7rem;border-radius:20px;display:flex;align-items:center;gap:0.3rem;"><span style="width:6px;height:6px;border-radius:50%;background:currentColor;display:inline-block;"></span> Book Tickets</span>
+      <span style="width:20px;height:1px;background:var(--border);display:inline-block;"></span>
+      <span style="color:var(--muted);">Payment</span>
+      <span style="width:20px;height:1px;background:var(--border);display:inline-block;"></span>
+      <span style="color:var(--muted);">QR Pass</span>
+    </div>
+    <a href="/" style="color:var(--muted);text-decoration:none;font-size:0.8rem;letter-spacing:1px;text-transform:uppercase;">← Back</a>
+  </nav>
+
+  <div style="max-width:1100px;margin:0 auto;padding:2.5rem 1.5rem 5rem;position:relative;z-index:1;">
+
+    <p style="font-family:var(--font-mono);font-size:0.65rem;letter-spacing:3px;color:var(--accent);margin-bottom:0.5rem;">// step 3 of 4</p>
+    <h1 style="font-family:var(--font-display);font-size:clamp(2.2rem,5vw,3.5rem);letter-spacing:2px;color:#fff;line-height:1;margin-bottom:2.5rem;">BOOK YOUR <span style="color:var(--muted);">TICKETS</span></h1>
+
+    <div class="booking-grid">
+
+      <!-- LEFT COLUMN -->
+      <div>
+
+        <!-- Event Info -->
+        <div class="section-card">
+          <div class="section-card-header">
+            <div class="section-num">1</div>
+            <div class="section-title-text">EVENT</div>
+          </div>
+          <div class="section-card-body">
+            <div style="display:flex;gap:1.2rem;align-items:center;">
+              <div style="width:80px;height:80px;border-radius:8px;background:linear-gradient(135deg,#0a0a0a,#1a1f00,#3d4a00);display:flex;align-items:center;justify-content:center;font-size:1.8rem;border:1px solid var(--border);flex-shrink:0;">🎶</div>
+              <div>
+                <div style="font-family:var(--font-display);font-size:1.5rem;letter-spacing:2px;color:#fff;margin-bottom:0.3rem;"><%= event.name.toUpperCase() %></div>
+                <div style="display:flex;flex-wrap:wrap;gap:0.8rem;">
+                  <span style="display:flex;align-items:center;gap:0.4rem;font-size:0.78rem;color:var(--muted);"><i class="bi bi-calendar3" style="color:var(--accent);"></i> <%= new Date(event.date).toDateString() %></span>
+                  <span style="display:flex;align-items:center;gap:0.4rem;font-size:0.78rem;color:var(--muted);"><i class="bi bi-clock" style="color:var(--accent);"></i> <%= event.doorsOpen %> – <%= event.endTime %></span>
+                  <span style="display:flex;align-items:center;gap:0.4rem;font-size:0.78rem;color:var(--muted);"><i class="bi bi-geo-alt" style="color:var(--accent);"></i> <%= event.venue %></span>
+                  <span style="display:flex;align-items:center;gap:0.4rem;font-size:0.78rem;color:var(--muted);"><i class="bi bi-suit-spade-fill" style="color:var(--accent);"></i> Dress Code: <%= event.dressCode %></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Ticket Type & Qty -->
+        <div class="section-card">
+          <div class="section-card-header">
+            <div class="section-num">2</div>
+            <div class="section-title-text">SELECT TICKETS</div>
+          </div>
+          <div class="section-card-body">
+            <p class="qty-label" style="margin-bottom:0.8rem;">Ticket Type</p>
+            <div class="ticket-type-row">
+              <% event.ticketTypes.forEach(function(ttype, ti) { %>
+              <label class="ticket-type-option <%= ti===0 ? 'selected' : '' %>" id="typeOpt<%= ti %>">
+                <input type="radio" name="ticketType" value="<%= ttype.name %>" <%= ti===0 ? 'checked' : '' %>/>
+                <div class="ticket-type-check"><i class="bi bi-check"></i></div>
+                <div class="ticket-type-name"><%= ttype.name.toUpperCase() %></div>
+                <div class="ticket-type-price">₹<%= ttype.price.toLocaleString('en-IN') %> / person</div>
+                <div class="ticket-type-desc"><%= (ttype.includes || []).slice(0,2).join(' + ') %></div>
+                <% if (ttype.bookedSeats >= ttype.totalSeats) { %>
+                  <div style="position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(8,8,14,0.75);border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:0.65rem;letter-spacing:2px;color:var(--error);">SOLD OUT</div>
+                <% } %>
+              </label>
+              <% }); %>
+            </div>
+
+            <div style="height:1px;background:var(--border);margin:1.2rem 0;"></div>
+
+            <p class="qty-label">Number of Tickets</p>
+            <div style="display:flex;align-items:center;gap:1.2rem;">
+              <button class="qty-btn" id="qtyMinus" onclick="changeQty(-1)" disabled>−</button>
+              <div class="qty-display" id="qtyDisplay">1</div>
+              <button class="qty-btn" id="qtyPlus" onclick="changeQty(1)">+</button>
+              <div style="flex:1;">
+                <div style="font-size:0.75rem;color:var(--muted);margin-bottom:0.2rem;">Total Amount</div>
+                <div style="font-family:var(--font-display);font-size:1.6rem;color:var(--accent);letter-spacing:1px;" id="qtyTotalPrice">₹999</div>
+                <div style="font-size:0.72rem;color:var(--muted);margin-top:0.3rem;font-family:var(--font-mono);">Max 5 tickets per booking</div>
+              </div>
+            </div>
+
+            <div style="display:flex;gap:0.5rem;margin-top:1.5rem;flex-wrap:wrap;" id="ticketChips">
+              <div class="ticket-chip"><i class="bi bi-ticket-perforated-fill"></i> TICKET #1</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Attendee Details -->
+        <div class="section-card">
+          <div class="section-card-header">
+            <div class="section-num">3</div>
+            <div class="section-title-text">ATTENDEE DETAILS</div>
+          </div>
+          <div class="section-card-body">
+            <div style="display:flex;align-items:center;gap:0.6rem;background:rgba(200,255,0,0.06);border:1px solid rgba(200,255,0,0.15);border-radius:6px;padding:0.8rem 1rem;font-size:0.8rem;color:var(--muted);margin-bottom:1.5rem;">
+              <i class="bi bi-info-circle-fill" style="color:var(--accent);flex-shrink:0;"></i>
+              Each ticket requires the attendee's name — printed on their QR pass and checked at entry.
+            </div>
+            <div id="attendeeForms"></div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT COLUMN — Order Summary -->
+      <div>
+        <div style="position:sticky;top:80px;">
+          <div class="sum-card">
+            <div class="sum-top"></div>
+            <div style="padding:1.5rem;">
+              <div style="font-family:var(--font-display);font-size:1.2rem;letter-spacing:2px;color:#fff;margin-bottom:1.2rem;">ORDER SUMMARY</div>
+
+              <div style="display:flex;align-items:center;gap:0.8rem;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:0.9rem;margin-bottom:1.2rem;">
+                <div style="width:44px;height:44px;border-radius:6px;background:linear-gradient(135deg,#1a1f00,#3d4a00);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;">🎶</div>
+                <div>
+                  <div style="font-family:var(--font-display);font-size:1rem;letter-spacing:1px;color:#fff;"><%= event.name.toUpperCase() %></div>
+                  <div style="font-size:0.7rem;color:var(--muted);">15 Mar 2026 · <%= event.venue %></div>
+                </div>
+              </div>
+
+              <div class="sum-line"><span class="lbl">Ticket Type</span><span class="val" id="sumType">General</span></div>
+              <div class="sum-line"><span class="lbl">Price Each</span><span class="val" id="sumPriceEach" style="color:var(--accent);font-family:var(--font-mono);">₹999</span></div>
+              <div class="sum-line"><span class="lbl">Quantity</span><span class="val" id="sumQty">× 1</span></div>
+              <div class="sum-line"><span class="lbl">Subtotal</span><span class="val" id="sumSubtotal">₹999</span></div>
+              <div class="sum-line" id="discountRow" style="display:none;"><span class="lbl" style="color:var(--success);">Discount</span><span class="val" id="sumDiscount" style="color:var(--success);">-₹0</span></div>
+              <div class="sum-line"><span class="lbl">Convenience Fee</span><span class="val" id="sumFee">₹<%= event.convenienceFee %></span></div>
+              <div style="height:1px;background:var(--border);margin:0.8rem 0;"></div>
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:0.8rem 0;">
+                <div style="font-family:var(--font-display);font-size:1rem;letter-spacing:1px;color:#fff;">TOTAL</div>
+                <div style="font-family:var(--font-display);font-size:2rem;color:var(--accent);letter-spacing:2px;text-shadow:0 0 20px rgba(200,255,0,0.3);" id="sumTotal">₹1,019</div>
+              </div>
+
+              <!-- Coupon -->
+              <div style="display:flex;gap:0.5rem;margin:0.5rem 0 1rem;">
+                <input class="coupon-input" type="text" id="couponInput" placeholder="Coupon code"/>
+                <button class="coupon-btn" onclick="applyCoupon()">APPLY</button>
+              </div>
+              <div class="coupon-success" id="couponSuccess"><i class="bi bi-check-circle-fill"></i><span id="couponMsg"></span></div>
+
+              <!-- Seats warning -->
+              <div style="display:flex;align-items:center;gap:0.6rem;background:rgba(255,92,92,0.07);border:1px solid rgba(255,92,92,0.2);border-radius:6px;padding:0.8rem 1rem;margin-bottom:1.2rem;font-size:0.78rem;color:var(--muted);">
+                <i class="bi bi-exclamation-triangle-fill" style="color:var(--error);flex-shrink:0;"></i>
+                Only <strong style="color:var(--error);"><%= event.ticketTypes[0] ? event.ticketTypes[0].totalSeats - event.ticketTypes[0].bookedSeats : '??' %> seats</strong> left!
+              </div>
+
+              <button class="btn-pay" id="payBtn" onclick="proceedToPayment()">
+                <span id="payBtnText"><i class="bi bi-lock-fill"></i> Proceed to Payment</span>
+                <div class="spinner" id="paySpinner"></div>
+              </button>
+
+              <div style="display:flex;justify-content:center;gap:1.2rem;margin-top:1rem;flex-wrap:wrap;">
+                <span style="display:flex;align-items:center;gap:0.4rem;font-size:0.7rem;color:var(--muted);font-family:var(--font-mono);"><i class="bi bi-shield-check-fill" style="color:var(--success);"></i> Secure</span>
+                <span style="display:flex;align-items:center;gap:0.4rem;font-size:0.7rem;color:var(--muted);font-family:var(--font-mono);"><i class="bi bi-arrow-counterclockwise" style="color:var(--success);"></i> Refundable</span>
+                <span style="display:flex;align-items:center;gap:0.4rem;font-size:0.7rem;color:var(--muted);font-family:var(--font-mono);"><i class="bi bi-qr-code" style="color:var(--success);"></i> Instant QR</span>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:center;gap:0.5rem;margin-top:0.8rem;font-size:0.72rem;color:var(--muted);">
+                Powered by <span style="font-family:var(--font-mono);font-size:0.68rem;background:#072654;color:#5a9dff;border:1px solid rgba(90,157,255,0.3);padding:0.15rem 0.5rem;border-radius:3px;">razorpay</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MOBILE BOTTOM BAR -->
+  <div style="display:none;" id="mobilePayBar" class="mobile-pay-bar">
+    <div>
+      <div style="font-size:0.7rem;color:var(--muted);font-family:var(--font-mono);letter-spacing:1px;">TOTAL PAYABLE</div>
+      <div style="font-family:var(--font-display);font-size:1.8rem;color:var(--accent);letter-spacing:1px;" id="mobileTotalAmt">₹1,019</div>
+    </div>
+    <button class="btn-pay-mobile" onclick="proceedToPayment()"><i class="bi bi-lock-fill"></i> Pay Now</button>
+  </div>
+
+  <%- include('../partials/scripts') %>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <script>
+    // ── EVENT DATA from server ──
+    const EVENT_DATA = <%- JSON.stringify(event) %>;
+    const CONV_FEE = <%= event.convenienceFee %>;
+    const USER = <%- JSON.stringify({ name: user.firstName + ' ' + user.lastName, phone: user.phone, email: user.email }) %>;
+
+    let qty = 1;
+    let pricePerTicket = EVENT_DATA.ticketTypes[0]?.price || 999;
+    let selectedTypeName = EVENT_DATA.ticketTypes[0]?.name || 'General';
+    let discountAmount = 0;
+    let couponApplied = false;
+    let couponCode = null;
+    const MAX_QTY = 5;
+
+    // ── Ticket type selection ──
+    document.querySelectorAll('.ticket-type-option').forEach(opt => {
+      opt.addEventListener('click', function() {
+        if (this.querySelector('[style*="SOLD OUT"]')) return;
+        document.querySelectorAll('.ticket-type-option').forEach(o => { o.classList.remove('selected'); o.querySelector('input').checked = false; });
+        this.classList.add('selected');
+        this.querySelector('input').checked = true;
+        const val = this.querySelector('input').value;
+        const tt = EVENT_DATA.ticketTypes.find(t => t.name === val);
+        if (tt) { pricePerTicket = tt.price; selectedTypeName = tt.name; }
+        document.getElementById('sumType').textContent = selectedTypeName;
+        document.getElementById('sumPriceEach').textContent = '₹' + pricePerTicket.toLocaleString('en-IN');
+        updateSummary();
+      });
+    });
+
+    // ── Quantity ──
+    function changeQty(d) {
+      const n = qty + d;
+      if (n < 1 || n > MAX_QTY) return;
+      qty = n;
+      document.getElementById('qtyDisplay').textContent = qty;
+      document.getElementById('qtyMinus').disabled = qty <= 1;
+      document.getElementById('qtyPlus').disabled = qty >= MAX_QTY;
+      updateChips(); updateAttendeeForms(); updateSummary();
+    }
+
+    function updateChips() {
+      const c = document.getElementById('ticketChips');
+      c.innerHTML = '';
+      for (let i = 1; i <= qty; i++) {
+        c.innerHTML += `<div class="ticket-chip"><i class="bi bi-ticket-perforated-fill"></i> TICKET #${i}</div>`;
+      }
+    }
+
+    // ── Attendee forms ──
+    function updateAttendeeForms() {
+      const container = document.getElementById('attendeeForms');
+      while (container.children.length > qty) container.removeChild(container.lastChild);
+      for (let i = container.children.length + 1; i <= qty; i++) container.appendChild(createAttendeeCard(i));
+    }
+
+    function createAttendeeCard(num) {
+      const isFirst = num === 1;
+      const d = document.createElement('div');
+      d.className = 'attendee-card'; d.id = 'attendee-' + num;
+      d.innerHTML = `
+        <div class="attendee-card-header">
+          <div class="attendee-num-badge"><div class="a-num">${num}</div><div class="a-label">Attendee ${num}</div></div>
+          ${isFirst ? '<span class="you-badge">YOU</span>' : ''}
+        </div>
+        <div class="attendee-fields">
+          <div>
+            <label class="form-label-custom">Full Name *</label>
+            <input type="text" class="form-input" id="name-${num}" placeholder="Full name" value="${isFirst ? USER.name.trim() : ''}" autocomplete="${isFirst ? 'name' : 'off'}"/>
+            <div class="field-error" id="nameErr-${num}"><i class="bi bi-exclamation-circle"></i> Name required</div>
+          </div>
+          <div>
+            <label class="form-label-custom">Age *</label>
+            <input type="number" class="form-input" id="age-${num}" placeholder="25" min="18" max="65" inputmode="numeric"/>
+            <div class="field-error" id="ageErr-${num}"><i class="bi bi-exclamation-circle"></i> Must be 18+</div>
+          </div>
+          ${isFirst ? `
+          <div>
+            <label class="form-label-custom">Phone</label>
+            <input type="tel" class="form-input" value="${USER.phone}" readonly style="opacity:0.6;cursor:not-allowed;"/>
+          </div>
+          <div>
+            <label class="form-label-custom">Email</label>
+            <input type="email" class="form-input" id="email-1" placeholder="your@email.com" value="${USER.email || ''}"/>
+          </div>` : ''}
+        </div>
+        <div style="display:flex;align-items:center;gap:0.5rem;font-size:0.8rem;color:var(--muted);cursor:pointer;margin-top:0.8rem;" onclick="document.getElementById('special-${num}').classList.toggle('show')">
+          <i class="bi bi-chat-left-text" style="color:var(--accent);"></i> Add special requirement
+        </div>
+        <textarea class="special-req-input" id="special-${num}" rows="2" placeholder="E.g. wheelchair access..."></textarea>`;
+      return d;
+    }
+
+    // ── Summary ──
+    function updateSummary() {
+      const sub = qty * pricePerTicket;
+      const disc = couponApplied ? discountAmount : 0;
+      const total = sub - disc + CONV_FEE;
+      document.getElementById('sumQty').textContent = '× ' + qty;
+      document.getElementById('sumSubtotal').textContent = '₹' + sub.toLocaleString('en-IN');
+      document.getElementById('sumTotal').textContent = '₹' + total.toLocaleString('en-IN');
+      document.getElementById('qtyTotalPrice').textContent = '₹' + sub.toLocaleString('en-IN');
+      if (document.getElementById('mobileTotalAmt')) document.getElementById('mobileTotalAmt').textContent = '₹' + total.toLocaleString('en-IN');
+      if (couponApplied) { document.getElementById('discountRow').style.display='flex'; document.getElementById('sumDiscount').textContent='-₹'+disc.toLocaleString('en-IN'); }
+      else document.getElementById('discountRow').style.display='none';
+      return total;
+    }
+
+    // ── Coupon ──
+    const COUPONS = { 'PARTY10': 100, 'NIGHT20': 200, 'FIRST50': 50 };
+    function applyCoupon() {
+      const code = document.getElementById('couponInput').value.trim().toUpperCase();
+      const el = document.getElementById('couponSuccess');
+      if (COUPONS[code]) {
+        couponApplied = true; discountAmount = COUPONS[code]; couponCode = code;
+        document.getElementById('couponMsg').textContent = code + ' applied — ₹' + COUPONS[code] + ' off!';
+        el.classList.add('show'); el.style.color = '';
+        document.getElementById('couponInput').style.borderColor = 'var(--success)';
+      } else {
+        couponApplied = false; discountAmount = 0; couponCode = null;
+        document.getElementById('couponMsg').textContent = 'Invalid coupon code';
+        el.classList.add('show'); el.style.color = 'var(--error)';
+        document.getElementById('couponInput').style.borderColor = 'var(--error)';
+        setTimeout(() => { el.classList.remove('show'); document.getElementById('couponInput').style.borderColor=''; el.style.color=''; }, 3000);
+      }
+      updateSummary();
+    }
+    document.getElementById('couponInput').addEventListener('keydown', e => { if(e.key==='Enter') applyCoupon(); });
+
+    // ── Validate ──
+    function validate() {
+      let ok = true;
+      for (let i = 1; i <= qty; i++) {
+        const n = document.getElementById('name-' + i); const a = document.getElementById('age-' + i);
+        document.getElementById('nameErr-' + i).classList.remove('show'); n.classList.remove('error');
+        document.getElementById('ageErr-' + i).classList.remove('show'); a.classList.remove('error');
+        if (!n.value.trim() || n.value.trim().length < 2) { n.classList.add('error'); document.getElementById('nameErr-' + i).classList.add('show'); n.scrollIntoView({behavior:'smooth',block:'center'}); ok = false; }
+        const age = parseInt(a.value);
+        if (!a.value || isNaN(age) || age < 18) { a.classList.add('error'); document.getElementById('ageErr-' + i).classList.add('show'); ok = false; }
+      }
+      return ok;
+    }
+
+    // ── Proceed to Payment ──
+    async function proceedToPayment() {
+      if (!validate()) return;
+      const attendees = [];
+      for (let i = 1; i <= qty; i++) {
+        attendees.push({ name: document.getElementById('name-'+i).value.trim(), age: document.getElementById('age-'+i).value, special: document.getElementById('special-'+i)?.value || '' });
+      }
+      setPayLoading(true);
+      try {
+        const res = await fetch('/booking/create-order', {
+          method: 'POST', headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({ ticketType: selectedTypeName, quantity: qty, couponCode, attendees }),
+        });
+        const data = await res.json();
+        if (!data.success) { alert(data.message); setPayLoading(false); return; }
+
+        // Launch Razorpay
+        const rzp = new Razorpay({
+          key: data.key, amount: data.amount, currency: data.currency,
+          name: 'NightPass', description: selectedTypeName + ' × ' + qty,
+          order_id: data.orderId,
+          prefill: data.prefill,
+          theme: { color: '#c8ff00', backdrop_color: '#08080e' },
+          modal: { ondismiss: () => setPayLoading(false) },
+          handler: async function(response) {
+            const vres = await fetch('/booking/verify-payment', {
+              method: 'POST', headers: {'Content-Type':'application/json'},
+              body: JSON.stringify({ razorpay_payment_id: response.razorpay_payment_id, razorpay_order_id: response.razorpay_order_id, razorpay_signature: response.razorpay_signature }),
+            });
+            const vdata = await vres.json();
+            if (vdata.success) window.location.href = '/booking/ticket/' + vdata.bookingId;
+            else { alert('Payment verified but booking failed. Contact support. Payment ID: ' + response.razorpay_payment_id); setPayLoading(false); }
+          }
+        });
+        rzp.on('payment.failed', () => { alert('Payment failed. Please try again.'); setPayLoading(false); });
+        rzp.open();
+      } catch(e) { alert('Network error. Please try again.'); setPayLoading(false); }
+    }
+
+    function setPayLoading(on) {
+      document.getElementById('payBtn').disabled = on;
+      document.getElementById('payBtnText').style.display = on ? 'none' : 'flex';
+      document.getElementById('paySpinner').style.display = on ? 'block' : 'none';
+    }
+
+    // ── Mobile bar ──
+    if (window.innerWidth <= 900) document.getElementById('mobilePayBar').style.display = 'flex';
+
+    // ── Init ──
+    updateAttendeeForms(); updateSummary();
+
+    // ── Booking page CSS ──
+    const style = document.createElement('style');
+    style.textContent = `
+      .booking-grid { display:grid; grid-template-columns:1fr 380px; gap:1.5rem; align-items:start; }
+      .section-card { background:var(--card); border:1px solid var(--border); border-radius:10px; overflow:hidden; margin-bottom:1.2rem; }
+      .section-card-header { padding:1.2rem 1.5rem; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:0.8rem; }
+      .section-num { width:28px; height:28px; border-radius:50%; background:var(--accent); color:#000; font-family:var(--font-display); font-size:0.9rem; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+      .section-title-text { font-family:var(--font-display); font-size:1.2rem; letter-spacing:2px; color:#fff; }
+      .section-card-body { padding:1.5rem; }
+      .qty-label { font-family:var(--font-mono); font-size:0.62rem; letter-spacing:2px; color:var(--muted); text-transform:uppercase; margin-bottom:1rem; display:block; }
+      .qty-btn { width:44px; height:44px; border-radius:8px; background:var(--surface); border:1px solid var(--border); color:var(--text); font-size:1.3rem; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:0.2s; flex-shrink:0; user-select:none; }
+      .qty-btn:hover { border-color:var(--accent); color:var(--accent); }
+      .qty-btn:disabled { opacity:0.3; cursor:not-allowed; }
+      .qty-display { font-family:var(--font-display); font-size:3rem; color:#fff; letter-spacing:2px; min-width:60px; text-align:center; line-height:1; }
+      .ticket-type-row { display:grid; grid-template-columns:1fr 1fr; gap:0.8rem; margin-bottom:1.5rem; }
+      .ticket-type-option { border:2px solid var(--border); border-radius:8px; padding:1rem; cursor:pointer; transition:0.2s; position:relative; }
+      .ticket-type-option:hover { border-color:rgba(200,255,0,0.3); }
+      .ticket-type-option.selected { border-color:var(--accent); background:var(--accent-dim); }
+      .ticket-type-option input[type="radio"] { position:absolute; opacity:0; pointer-events:none; }
+      .ticket-type-check { position:absolute; top:10px; right:10px; width:18px; height:18px; border-radius:50%; border:2px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:0.6rem; color:transparent; transition:0.2s; }
+      .ticket-type-option.selected .ticket-type-check { background:var(--accent); border-color:var(--accent); color:#000; }
+      .ticket-type-name { font-family:var(--font-display); font-size:1rem; letter-spacing:1px; color:#fff; margin-bottom:0.2rem; }
+      .ticket-type-price { font-family:var(--font-mono); font-size:0.85rem; color:var(--accent); }
+      .ticket-type-desc { font-size:0.72rem; color:var(--muted); margin-top:0.3rem; }
+      .ticket-chip { background:var(--surface); border:1px solid var(--border); border-radius:4px; padding:0.35rem 0.7rem; font-family:var(--font-mono); font-size:0.65rem; color:var(--muted); letter-spacing:1px; display:flex; align-items:center; gap:0.4rem; }
+      .ticket-chip i { color:var(--accent); }
+      .attendee-card { background:var(--card2); border:1px solid var(--border); border-radius:8px; padding:1.2rem; margin-bottom:0.8rem; }
+      .attendee-card:focus-within { border-color:rgba(200,255,0,0.2); }
+      .attendee-card-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem; }
+      .attendee-num-badge { display:flex; align-items:center; gap:0.6rem; }
+      .a-num { width:26px; height:26px; border-radius:50%; background:var(--accent-dim); border:1px solid rgba(200,255,0,0.3); display:flex; align-items:center; justify-content:center; font-family:var(--font-mono); font-size:0.65rem; color:var(--accent); }
+      .a-label { font-size:0.82rem; font-weight:600; color:var(--text); }
+      .you-badge { font-family:var(--font-mono); font-size:0.6rem; letter-spacing:1px; background:rgba(200,255,0,0.1); border:1px solid rgba(200,255,0,0.25); color:var(--accent); padding:0.2rem 0.6rem; border-radius:10px; }
+      .attendee-fields { display:grid; grid-template-columns:1fr 1fr; gap:0.8rem; }
+      .special-req-input { width:100%; background:var(--surface); border:1px solid var(--border); border-radius:6px; color:var(--text); font-size:0.88rem; padding:0.7rem 0.9rem; font-family:var(--font-body); outline:none; resize:none; margin-top:0.8rem; transition:border-color 0.2s; display:none; }
+      .special-req-input.show { display:block; }
+      .special-req-input:focus { border-color:rgba(200,255,0,0.3); }
+      .sum-card { background:var(--card); border:1px solid var(--border); border-radius:10px; overflow:hidden; }
+      .sum-top { height:3px; background:linear-gradient(90deg,transparent,var(--accent),transparent); }
+      .sum-line { display:flex; justify-content:space-between; align-items:center; padding:0.55rem 0; border-bottom:1px solid var(--border); font-size:0.85rem; }
+      .sum-line:last-of-type { border-bottom:none; }
+      .sum-line .lbl { color:var(--muted); } .sum-line .val { color:var(--text); font-weight:500; }
+      .coupon-input { flex:1; background:var(--surface); border:1px solid var(--border); border-radius:6px; color:var(--text); font-size:0.85rem; padding:0.65rem 0.9rem; font-family:var(--font-mono); letter-spacing:1px; outline:none; text-transform:uppercase; transition:border-color 0.2s; min-width:0; }
+      .coupon-input::placeholder { color:var(--muted); font-size:0.78rem; letter-spacing:0; text-transform:none; }
+      .coupon-input:focus { border-color:rgba(200,255,0,0.3); }
+      .coupon-btn { background:var(--surface); border:1px solid var(--border); color:var(--accent); font-size:0.78rem; font-weight:600; padding:0 1rem; border-radius:6px; cursor:pointer; font-family:var(--font-body); letter-spacing:1px; transition:0.2s; white-space:nowrap; }
+      .coupon-btn:hover { border-color:var(--accent); background:var(--accent-dim); }
+      .coupon-success { display:none; align-items:center; gap:0.5rem; font-size:0.78rem; color:var(--success); margin-bottom:0.4rem; }
+      .coupon-success.show { display:flex; }
+      .btn-pay { width:100%; padding:1.1rem; background:var(--accent); color:#000; font-family:var(--font-body); font-weight:700; font-size:1rem; letter-spacing:1px; border:none; border-radius:8px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:0.6rem; transition:0.2s; box-shadow:0 0 30px rgba(200,255,0,0.2); position:relative; overflow:hidden; }
+      .btn-pay:hover { transform:translateY(-2px); box-shadow:0 0 50px rgba(200,255,0,0.4); }
+      .btn-pay:disabled { opacity:0.4; cursor:not-allowed; transform:none; box-shadow:none; }
+      .mobile-pay-bar { position:fixed; bottom:0; left:0; right:0; background:rgba(13,13,20,0.97); backdrop-filter:blur(20px); border-top:1px solid var(--border); padding:1rem 1.5rem; z-index:50; align-items:center; justify-content:space-between; gap:1rem; }
+      .btn-pay-mobile { background:var(--accent); color:#000; font-family:var(--font-body); font-weight:700; font-size:0.9rem; padding:0.85rem 1.8rem; border:none; border-radius:6px; cursor:pointer; }
+      @media(max-width:900px) { .booking-grid { grid-template-columns:1fr; } .ticket-type-row { grid-template-columns:1fr; } }
+      @media(max-width:600px) { .attendee-fields { grid-template-columns:1fr; } }
+    `;
+    document.head.appendChild(style);
+  </script>
+</body>
+</html>
