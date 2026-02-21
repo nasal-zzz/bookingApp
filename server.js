@@ -65,6 +65,7 @@ app.use('/',        require('./routes/indexRoutes'));
 app.use('/auth',    require('./routes/authRoutes'));
 app.use('/booking', require('./routes/bookingRoutes'));
 app.use('/user',    require('./routes/userRoutes'));
+app.use('/admin',   require('./routes/adminRoutes'));
 
 // ── 404 ──
 app.use((req, res) => {
@@ -85,16 +86,8 @@ app.use((err, req, res, next) => {
   });
 });
 
-// const PORT = process.env.PORT || 3000;
-// app.listen(PORT, () => {
-//   console.log(`\n🚀 NightPass running at http://localhost:${PORT}`);
-//   console.log(`📦 Environment: ${process.env.NODE_ENV || 'development'}\n`);
-// });
-
-// module.exports = app;
 const PORT = process.env.PORT || 3000;
-
-app.listen(PORT, "0.0.0.0", () => {
+app.listen(PORT, () => {
   console.log(`\n🚀 NightPass running at http://localhost:${PORT}`);
   console.log(`📦 Environment: ${process.env.NODE_ENV || 'development'}\n`);
 });

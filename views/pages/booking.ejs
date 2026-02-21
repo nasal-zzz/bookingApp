@@ -49,16 +49,47 @@
           </div>
           <div class="section-card-body">
             <p class="qty-label" style="margin-bottom:0.8rem;">Ticket Type</p>
-            <div class="ticket-type-row">
-              <% event.ticketTypes.forEach(function(ttype, ti) { %>
-              <label class="ticket-type-option <%= ti===0 ? 'selected' : '' %>" id="typeOpt<%= ti %>">
-                <input type="radio" name="ticketType" value="<%= ttype.name %>" <%= ti===0 ? 'checked' : '' %>/>
-                <div class="ticket-type-check"><i class="bi bi-check"></i></div>
-                <div class="ticket-type-name"><%= ttype.name.toUpperCase() %></div>
-                <div class="ticket-type-price">₹<%= ttype.price.toLocaleString('en-IN') %> / person</div>
-                <div class="ticket-type-desc"><%= (ttype.includes || []).slice(0,2).join(' + ') %></div>
-                <% if (ttype.bookedSeats >= ttype.totalSeats) { %>
-                  <div style="position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(8,8,14,0.75);border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:0.65rem;letter-spacing:2px;color:var(--error);">SOLD OUT</div>
+            <%
+              const tierOrder = ['standard','general','silver','gold','platinum','vip'];
+              const tierColors = {standard:'#a0a0a0',silver:'#c0c8d8',gold:'#f5c842',platinum:'#c8ff00',vip:'#bf80ff',general:'#a0a0a0'};
+              const sortedTypes = [...event.ticketTypes].sort((a,b)=>tierOrder.indexOf(a.category)-tierOrder.indexOf(b.category));
+              const firstAvail = sortedTypes.findIndex(t=>t.bookedSeats<t.totalSeats);
+            %>
+            <div class="ticket-tier-grid">
+              <% sortedTypes.forEach(function(ttype, ti) { %>
+              <%
+                const isSoldOut = ttype.bookedSeats >= ttype.totalSeats;
+                const isFirst = ti === firstAvail;
+                const tColor = tierColors[ttype.category] || '#c8ff00';
+                const avail = ttype.totalSeats - ttype.bookedSeats;
+              %>
+              <label class="ticket-tier-card <%= isFirst ? 'selected' : '' %> <%= isSoldOut ? 'sold-out' : '' %>"
+                     id="typeOpt<%= ti %>"
+                     style="--tier-color:<%= tColor %>;">
+                <input type="radio" name="ticketType" value="<%= ttype.name %>"
+                       <%= isFirst ? 'checked' : '' %>
+                       <%= isSoldOut ? 'disabled' : '' %>/>
+                <!-- Tier badge -->
+                <div class="tier-badge" style="color:<%= tColor %>;background:<%= tColor %>18;border-color:<%= tColor %>44;">
+                  <%= ttype.category.toUpperCase() %>
+                </div>
+                <div class="tier-check"><i class="bi bi-check-lg"></i></div>
+                <div class="tier-name"><%= ttype.name.toUpperCase() %></div>
+                <div class="tier-price">₹<%= ttype.price.toLocaleString('en-IN') %><span>/person</span></div>
+                <div class="tier-includes">
+                  <% (ttype.includes || []).forEach(function(inc){ %>
+                    <div class="tier-inc-item"><i class="bi bi-check2"></i> <%= inc %></div>
+                  <% }); %>
+                </div>
+                <div class="tier-seats">
+                  <% if (isSoldOut) { %>
+                    <span style="color:var(--error);font-family:var(--font-mono);font-size:0.62rem;letter-spacing:1px;">SOLD OUT</span>
+                  <% } else { %>
+                    <span style="color:var(--muted);font-size:0.72rem;"><%= avail %> seats left</span>
+                  <% } %>
+                </div>
+                <% if (isSoldOut) { %>
+                  <div style="position:absolute;inset:0;background:rgba(8,8,14,0.65);border-radius:10px;pointer-events:none;"></div>
                 <% } %>
               </label>
               <% }); %>
@@ -73,7 +104,7 @@
               <button class="qty-btn" id="qtyPlus" onclick="changeQty(1)">+</button>
               <div style="flex:1;">
                 <div style="font-size:0.75rem;color:var(--muted);margin-bottom:0.2rem;">Total Amount</div>
-                <div style="font-family:var(--font-display);font-size:1.6rem;color:var(--accent);letter-spacing:1px;" id="qtyTotalPrice">₹999</div>
+                <div style="font-family:var(--font-display);font-size:1.6rem;color:var(--accent);letter-spacing:1px;" id="qtyTotalPrice">—</div>
                 <div style="font-size:0.72rem;color:var(--muted);margin-top:0.3rem;font-family:var(--font-mono);">Max 5 tickets per booking</div>
               </div>
             </div>
@@ -117,8 +148,8 @@
                 </div>
               </div>
 
-              <div class="sum-line"><span class="lbl">Ticket Type</span><span class="val" id="sumType">General</span></div>
-              <div class="sum-line"><span class="lbl">Price Each</span><span class="val" id="sumPriceEach" style="color:var(--accent);font-family:var(--font-mono);">₹999</span></div>
+              <div class="sum-line"><span class="lbl">Ticket Type</span><span class="val" id="sumType">—</span></div>
+              <div class="sum-line"><span class="lbl">Price Each</span><span class="val" id="sumPriceEach" style="color:var(--accent);font-family:var(--font-mono);">—</span></div>
               <div class="sum-line"><span class="lbl">Quantity</span><span class="val" id="sumQty">× 1</span></div>
               <div class="sum-line"><span class="lbl">Subtotal</span><span class="val" id="sumSubtotal">₹999</span></div>
               <div class="sum-line" id="discountRow" style="display:none;"><span class="lbl" style="color:var(--success);">Discount</span><span class="val" id="sumDiscount" style="color:var(--success);">-₹0</span></div>
@@ -126,7 +157,7 @@
               <div style="height:1px;background:var(--border);margin:0.8rem 0;"></div>
               <div style="display:flex;align-items:center;justify-content:space-between;padding:0.8rem 0;">
                 <div style="font-family:var(--font-display);font-size:1rem;letter-spacing:1px;color:#fff;">TOTAL</div>
-                <div style="font-family:var(--font-display);font-size:2rem;color:var(--accent);letter-spacing:2px;text-shadow:0 0 20px rgba(200,255,0,0.3);" id="sumTotal">₹1,019</div>
+                <div style="font-family:var(--font-display);font-size:2rem;color:var(--accent);letter-spacing:2px;text-shadow:0 0 20px rgba(200,255,0,0.3);" id="sumTotal">—</div>
               </div>
 
               <!-- Coupon -->
@@ -166,7 +197,7 @@
   <div style="display:none;" id="mobilePayBar" class="mobile-pay-bar">
     <div>
       <div style="font-size:0.7rem;color:var(--muted);font-family:var(--font-mono);letter-spacing:1px;">TOTAL PAYABLE</div>
-      <div style="font-family:var(--font-display);font-size:1.8rem;color:var(--accent);letter-spacing:1px;" id="mobileTotalAmt">₹1,019</div>
+      <div style="font-family:var(--font-display);font-size:1.8rem;color:var(--accent);letter-spacing:1px;" id="mobileTotalAmt">—</div>
     </div>
     <button class="btn-pay-mobile" onclick="proceedToPayment()"><i class="bi bi-lock-fill"></i> Pay Now</button>
   </div>
@@ -180,27 +211,72 @@
     const USER = <%- JSON.stringify({ name: user.firstName + ' ' + user.lastName, phone: user.phone, email: user.email }) %>;
 
     let qty = 1;
-    let pricePerTicket = EVENT_DATA.ticketTypes[0]?.price || 999;
-    let selectedTypeName = EVENT_DATA.ticketTypes[0]?.name || 'General';
+    let pricePerTicket = 0;
+    let selectedTypeName = '';
+
+    // Init runs after DOM is ready — find the selected tier card
+    function initSelectedTier() {
+      // Find whichever card has 'selected' class, fallback to first non-sold-out
+      const selectedCard = document.querySelector('.ticket-tier-card.selected')
+                        || document.querySelector('.ticket-tier-card:not(.sold-out)');
+
+      if (!selectedCard) {
+        // No available tiers
+        pricePerTicket = 0;
+        selectedTypeName = '';
+        console.warn('⚠️ No available tiers found');
+        return;
+      }
+
+      // Make sure this card has selected class and its radio is checked
+      document.querySelectorAll('.ticket-tier-card').forEach(o => {
+        o.classList.remove('selected');
+        const inp = o.querySelector('input[type=radio]');
+        if (inp) inp.checked = false;
+      });
+      selectedCard.classList.add('selected');
+      const radio = selectedCard.querySelector('input[type=radio]');
+      if (radio) radio.checked = true;
+
+      const name = radio ? radio.value : '';
+      const tier = EVENT_DATA.ticketTypes.find(t => t.name === name) || EVENT_DATA.ticketTypes[0];
+      pricePerTicket = tier?.price || 0;
+      selectedTypeName = tier?.name || '';
+
+      // Update summary display immediately
+      const sumTypeEl = document.getElementById('sumType');
+      const sumPriceEl = document.getElementById('sumPriceEach');
+      if (sumTypeEl) sumTypeEl.textContent = selectedTypeName;
+      if (sumPriceEl) sumPriceEl.textContent = '₹' + pricePerTicket.toLocaleString('en-IN');
+
+      console.log('✅ Init tier:', selectedTypeName, '| price: ₹' + pricePerTicket);
+    }
     let discountAmount = 0;
     let couponApplied = false;
     let couponCode = null;
     const MAX_QTY = 5;
 
     // ── Ticket type selection ──
-    document.querySelectorAll('.ticket-type-option').forEach(opt => {
-      opt.addEventListener('click', function() {
-        if (this.querySelector('[style*="SOLD OUT"]')) return;
-        document.querySelectorAll('.ticket-type-option').forEach(o => { o.classList.remove('selected'); o.querySelector('input').checked = false; });
-        this.classList.add('selected');
-        this.querySelector('input').checked = true;
-        const val = this.querySelector('input').value;
-        const tt = EVENT_DATA.ticketTypes.find(t => t.name === val);
-        if (tt) { pricePerTicket = tt.price; selectedTypeName = tt.name; }
-        document.getElementById('sumType').textContent = selectedTypeName;
-        document.getElementById('sumPriceEach').textContent = '₹' + pricePerTicket.toLocaleString('en-IN');
-        updateSummary();
+    function selectTier(card) {
+      if (card.classList.contains('sold-out')) return;
+      document.querySelectorAll('.ticket-tier-card').forEach(o => {
+        o.classList.remove('selected');
+        const inp = o.querySelector('input[type=radio]');
+        if (inp) inp.checked = false;
       });
+      card.classList.add('selected');
+      const inp = card.querySelector('input[type=radio]');
+      if (inp) inp.checked = true;
+      const val = inp ? inp.value : '';
+      const tt = EVENT_DATA.ticketTypes.find(t => t.name === val);
+      if (tt) { pricePerTicket = tt.price; selectedTypeName = tt.name; }
+      document.getElementById('sumType').textContent = selectedTypeName;
+      document.getElementById('sumPriceEach').textContent = '₹' + pricePerTicket.toLocaleString('en-IN');
+      updateSummary();
+    }
+
+    document.querySelectorAll('.ticket-tier-card').forEach(card => {
+      card.addEventListener('click', function() { selectTier(this); });
     });
 
     // ── Quantity ──
@@ -326,8 +402,10 @@
       setPayLoading(true);
       try {
         const res = await fetch('/booking/create-order', {
-          method: 'POST', headers: {'Content-Type':'application/json'},
-          body: JSON.stringify({ ticketType: selectedTypeName, quantity: qty, couponCode, attendees }),
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          credentials: 'include',
+          body: JSON.stringify({ eventId: EVENT_DATA._id, ticketType: selectedTypeName, quantity: qty, couponCode, attendees }),
         });
         const data = await res.json();
         if (!data.success) { alert(data.message); setPayLoading(false); return; }
@@ -342,7 +420,9 @@
           modal: { ondismiss: () => setPayLoading(false) },
           handler: async function(response) {
             const vres = await fetch('/booking/verify-payment', {
-              method: 'POST', headers: {'Content-Type':'application/json'},
+              method: 'POST',
+              headers: {'Content-Type':'application/json'},
+              credentials: 'include',
               body: JSON.stringify({ razorpay_payment_id: response.razorpay_payment_id, razorpay_order_id: response.razorpay_order_id, razorpay_signature: response.razorpay_signature }),
             });
             const vdata = await vres.json();
@@ -365,7 +445,7 @@
     if (window.innerWidth <= 900) document.getElementById('mobilePayBar').style.display = 'flex';
 
     // ── Init ──
-    updateAttendeeForms(); updateSummary();
+    initSelectedTier(); updateAttendeeForms(); updateSummary();
 
     // ── Booking page CSS ──
     const style = document.createElement('style');
@@ -381,16 +461,22 @@
       .qty-btn:hover { border-color:var(--accent); color:var(--accent); }
       .qty-btn:disabled { opacity:0.3; cursor:not-allowed; }
       .qty-display { font-family:var(--font-display); font-size:3rem; color:#fff; letter-spacing:2px; min-width:60px; text-align:center; line-height:1; }
-      .ticket-type-row { display:grid; grid-template-columns:1fr 1fr; gap:0.8rem; margin-bottom:1.5rem; }
-      .ticket-type-option { border:2px solid var(--border); border-radius:8px; padding:1rem; cursor:pointer; transition:0.2s; position:relative; }
-      .ticket-type-option:hover { border-color:rgba(200,255,0,0.3); }
-      .ticket-type-option.selected { border-color:var(--accent); background:var(--accent-dim); }
-      .ticket-type-option input[type="radio"] { position:absolute; opacity:0; pointer-events:none; }
-      .ticket-type-check { position:absolute; top:10px; right:10px; width:18px; height:18px; border-radius:50%; border:2px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:0.6rem; color:transparent; transition:0.2s; }
-      .ticket-type-option.selected .ticket-type-check { background:var(--accent); border-color:var(--accent); color:#000; }
-      .ticket-type-name { font-family:var(--font-display); font-size:1rem; letter-spacing:1px; color:#fff; margin-bottom:0.2rem; }
-      .ticket-type-price { font-family:var(--font-mono); font-size:0.85rem; color:var(--accent); }
-      .ticket-type-desc { font-size:0.72rem; color:var(--muted); margin-top:0.3rem; }
+      .ticket-tier-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:0.8rem; margin-bottom:1.5rem; }
+      .ticket-tier-card { border:2px solid var(--border); border-radius:10px; padding:1rem; cursor:pointer; transition:all 0.2s; position:relative; display:flex; flex-direction:column; gap:0.4rem; }
+      .ticket-tier-card:not(.sold-out):hover { border-color:var(--tier-color,var(--accent)); transform:translateY(-2px); }
+      .ticket-tier-card.selected { border-color:var(--tier-color,var(--accent)); background:rgba(200,255,0,0.05); }
+      .ticket-tier-card.sold-out { opacity:0.6; cursor:not-allowed; }
+      .ticket-tier-card input[type="radio"] { position:absolute; opacity:0; pointer-events:none; }
+      .tier-badge { font-family:var(--font-mono); font-size:0.52rem; letter-spacing:2px; padding:0.18rem 0.5rem; border-radius:10px; border:1px solid; display:inline-block; align-self:flex-start; }
+      .tier-check { position:absolute; top:8px; right:8px; width:18px; height:18px; border-radius:50%; border:2px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:0.65rem; color:transparent; transition:0.2s; }
+      .ticket-tier-card.selected .tier-check { background:var(--tier-color,var(--accent)); border-color:var(--tier-color,var(--accent)); color:#000; }
+      .tier-name { font-family:var(--font-display); font-size:1rem; letter-spacing:1px; color:#fff; margin-top:0.2rem; }
+      .tier-price { font-family:var(--font-display); font-size:1.4rem; color:var(--tier-color,var(--accent)); letter-spacing:1px; }
+      .tier-price span { font-family:var(--font-body); font-size:0.72rem; color:var(--muted); font-weight:400; }
+      .tier-includes { display:flex; flex-direction:column; gap:0.25rem; margin-top:0.3rem; }
+      .tier-inc-item { font-size:0.72rem; color:var(--muted); display:flex; align-items:flex-start; gap:0.3rem; line-height:1.4; }
+      .tier-inc-item i { color:var(--tier-color,var(--accent)); flex-shrink:0; margin-top:1px; }
+      .tier-seats { font-size:0.72rem; margin-top:0.3rem; }
       .ticket-chip { background:var(--surface); border:1px solid var(--border); border-radius:4px; padding:0.35rem 0.7rem; font-family:var(--font-mono); font-size:0.65rem; color:var(--muted); letter-spacing:1px; display:flex; align-items:center; gap:0.4rem; }
       .ticket-chip i { color:var(--accent); }
       .attendee-card { background:var(--card2); border:1px solid var(--border); border-radius:8px; padding:1.2rem; margin-bottom:0.8rem; }

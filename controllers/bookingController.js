@@ -8,14 +8,19 @@ const Booking = require('../models/Booking');
 const User = require('../models/User');
 const { generateTicketId, generateQRCode, buildQRPayload } = require('../utils/qrHelper');
 
-// ── GET /booking ──
+// ── GET /booking/:eventId ──
 exports.getBookingPage = async (req, res) => {
   try {
-    const event = await Event.findOne({ isActive: true }).sort({ date: 1 });
+    // Support /booking?event=ID or /booking/EVENT_ID
+    const eventId = req.params.eventId || req.query.event;
+    const event = eventId
+      ? await Event.findOne({ _id: eventId, isActive: true })
+      : await Event.findOne({ isActive: true }).sort({ date: 1 });
+
     if (!event) {
       return res.render('pages/error', {
-        title: 'No Events',
-        message: 'No events are currently available. Check back soon!',
+        title: 'Event Not Found',
+        message: 'This event is no longer available. Check other events!',
         code: 404,
       });
     }
@@ -37,14 +42,26 @@ exports.createOrder = async (req, res) => {
     const { ticketType, quantity, couponCode, attendees } = req.body;
     const qty = parseInt(quantity) || 1;
 
-    const event = await Event.findOne({ isActive: true });
+    const eventId = req.body.eventId || req.session.pendingEventId;
+    const event = eventId
+      ? await Event.findOne({ _id: eventId, isActive: true })
+      : await Event.findOne({ isActive: true }).sort({ date: 1 });
     if (!event) return res.json({ success: false, message: 'Event not found.' });
 
-    // Find ticket type (case-insensitive)
+    // DEBUG — log what we received vs what's in DB
+    console.log('🎟 ticketType received:', JSON.stringify(ticketType));
+    console.log('🎟 eventId received:', eventId);
+    console.log('🎟 event found:', event ? event.name : 'NOT FOUND');
+    console.log('🎟 DB ticketTypes:', event ? event.ticketTypes.map(t => t.name) : []);
+
+    // Find ticket type (case-insensitive, trim whitespace)
     const ttype = event.ticketTypes.find(
-      t => t.name.toLowerCase() === (ticketType || '').toLowerCase()
+      t => t.name.trim().toLowerCase() === (ticketType || '').trim().toLowerCase()
     );
-    if (!ttype) return res.json({ success: false, message: 'Invalid ticket type selected.' });
+    if (!ttype) {
+      console.error('❌ No match! received:', ticketType, '| available:', event.ticketTypes.map(t=>t.name));
+      return res.json({ success: false, message: 'Invalid ticket type selected.' });
+    }
 
     const available = ttype.totalSeats - ttype.bookedSeats;
     if (available <= 0) return res.json({ success: false, message: 'This ticket type is sold out.' });
@@ -303,12 +320,25 @@ exports.getMyBookings = async (req, res) => {
   }
 };
 
-// ── GET /api/event ──
+// ── GET /api/event ── (single, for booking page)
 exports.getEventData = async (req, res) => {
   try {
-    const event = await Event.findOne({ isActive: true }).sort({ date: 1 });
+    const eventId = req.query.id;
+    const event = eventId
+      ? await Event.findOne({ _id: eventId, isActive: true })
+      : await Event.findOne({ isActive: true }).sort({ date: 1 });
     if (!event) return res.json({ success: false, message: 'No active event.' });
     res.json({ success: true, event });
+  } catch (err) {
+    res.json({ success: false, message: err.message });
+  }
+};
+
+// ── GET /api/events ── (all active events for homepage)
+exports.getAllEvents = async (req, res) => {
+  try {
+    const events = await Event.find({ isActive: true }).sort({ isFeatured: -1, date: 1 });
+    res.json({ success: true, events });
   } catch (err) {
     res.json({ success: false, message: err.message });
   }

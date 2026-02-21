@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title><%= title %></title>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Outfit:wght@400;500;600;700&family=Space+Mono&display=swap" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet"/>
+  <style>
+    :root{--bg:#08080e;--surface:#0f0f18;--card:#13131e;--border:rgba(255,255,255,0.08);--accent:#c8ff00;--text:#e8e8f0;--muted:#5a5a72;--success:#4cdf80;--error:#ff5c5c;}
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-height:100vh;}
+    body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(255,255,255,0.012) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.012) 1px,transparent 1px);background-size:50px 50px;pointer-events:none;}
+    .admin-layout{display:grid;grid-template-columns:220px 1fr;min-height:100vh;}
+    /* Sidebar */
+    .sidebar{background:var(--surface);border-right:1px solid var(--border);padding:1.5rem 1rem;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:0.3rem;z-index:10;}
+    .s-logo{font-family:'Anton',sans-serif;font-size:1.3rem;letter-spacing:3px;color:#fff;text-decoration:none;display:block;padding:0 0.5rem 1.2rem;border-bottom:1px solid var(--border);margin-bottom:0.8rem;}
+    .s-logo span{color:var(--accent);}
+    .s-section{font-family:'Space Mono',monospace;font-size:0.52rem;letter-spacing:2px;color:var(--muted);text-transform:uppercase;padding:0.5rem;margin-top:0.5rem;}
+    .s-link{display:flex;align-items:center;gap:0.7rem;padding:0.7rem 0.8rem;color:var(--muted);text-decoration:none;border-radius:6px;font-size:0.85rem;transition:all 0.15s;border:1px solid transparent;}
+    .s-link:hover,.s-link.active{background:rgba(200,255,0,0.07);border-color:rgba(200,255,0,0.15);color:#fff;}
+    .s-link i{color:var(--accent);width:18px;}
+    .s-logout{margin-top:auto;display:flex;align-items:center;gap:0.7rem;padding:0.7rem 0.8rem;color:var(--error);text-decoration:none;border-radius:6px;font-size:0.85rem;border:1px solid transparent;transition:all 0.15s;}
+    .s-logout:hover{background:rgba(255,92,92,0.08);border-color:rgba(255,92,92,0.2);}
+    /* Main */
+    .main{padding:2rem;position:relative;z-index:1;overflow-x:hidden;}
+    .page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem;flex-wrap:wrap;gap:1rem;}
+    .page-title{font-family:'Anton',sans-serif;font-size:2rem;letter-spacing:2px;color:#fff;}
+    .btn-primary{display:inline-flex;align-items:center;gap:0.5rem;background:var(--accent);color:#000;padding:0.7rem 1.4rem;border-radius:6px;text-decoration:none;font-weight:700;font-size:0.85rem;letter-spacing:1px;transition:all 0.2s;border:none;cursor:pointer;}
+    .btn-primary:hover{box-shadow:0 0 20px rgba(200,255,0,0.3);color:#000;}
+    /* Stats */
+    .stats-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:1rem;margin-bottom:2rem;}
+    .stat-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:1.2rem;}
+    .stat-val{font-family:'Anton',sans-serif;font-size:2rem;color:var(--accent);margin-bottom:0.2rem;}
+    .stat-lbl{font-size:0.78rem;color:var(--muted);}
+    /* Flash */
+    .flash{background:rgba(76,223,128,0.08);border:1px solid rgba(76,223,128,0.25);border-radius:6px;padding:0.8rem 1.2rem;color:var(--success);font-size:0.85rem;margin-bottom:1.5rem;display:flex;align-items:center;gap:0.5rem;}
+    /* Events table */
+    .table-card{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+    .table-header{padding:1.2rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+    .table-title{font-family:'Anton',sans-serif;font-size:1.2rem;letter-spacing:1px;color:#fff;}
+    table{width:100%;border-collapse:collapse;}
+    th{font-family:'Space Mono',monospace;font-size:0.58rem;letter-spacing:2px;color:var(--muted);text-transform:uppercase;padding:0.8rem 1.2rem;text-align:left;border-bottom:1px solid var(--border);}
+    td{padding:1rem 1.2rem;border-bottom:1px solid rgba(255,255,255,0.04);font-size:0.85rem;vertical-align:middle;}
+    tr:last-child td{border-bottom:none;}
+    tr:hover td{background:rgba(255,255,255,0.02);}
+    .badge{display:inline-flex;align-items:center;gap:0.3rem;font-family:'Space Mono',monospace;font-size:0.58rem;letter-spacing:1px;padding:0.2rem 0.6rem;border-radius:10px;}
+    .badge-on{background:rgba(76,223,128,0.1);border:1px solid rgba(76,223,128,0.3);color:var(--success);}
+    .badge-off{background:rgba(255,92,92,0.1);border:1px solid rgba(255,92,92,0.3);color:var(--error);}
+    .action-btns{display:flex;gap:0.5rem;flex-wrap:wrap;}
+    .btn-sm{display:inline-flex;align-items:center;gap:0.3rem;padding:0.35rem 0.75rem;border-radius:4px;font-size:0.78rem;font-family:'Outfit',sans-serif;font-weight:600;cursor:pointer;text-decoration:none;border:1px solid var(--border);background:transparent;color:var(--text);transition:all 0.15s;}
+    .btn-sm:hover{border-color:var(--accent);color:var(--accent);}
+    .btn-sm.danger{border-color:rgba(255,92,92,0.3);color:var(--error);}
+    .btn-sm.danger:hover{background:rgba(255,92,92,0.08);}
+    .tier-pill{display:inline-block;font-family:'Space Mono',monospace;font-size:0.55rem;letter-spacing:1px;padding:0.15rem 0.5rem;border-radius:10px;margin-right:2px;margin-bottom:2px;}
+    .event-name{font-weight:600;color:#fff;margin-bottom:0.2rem;}
+    .event-date{font-size:0.75rem;color:var(--muted);}
+    @media(max-width:900px){.admin-layout{grid-template-columns:1fr;}.sidebar{display:none;}.stats-grid{grid-template-columns:repeat(2,1fr);}}
+  </style>
+</head>
+<body>
+<div class="admin-layout">
+  <aside class="sidebar">
+    <a href="/admin" class="s-logo">NIGHT<span>PASS</span></a>
+    <div class="s-section">Main</div>
+    <a href="/admin" class="s-link active"><i class="bi bi-speedometer2"></i> Dashboard</a>
+    <a href="/admin/bookings" class="s-link"><i class="bi bi-ticket-perforated-fill"></i> Bookings</a>
+    <div class="s-section">Events</div>
+    <a href="/admin/events/new" class="s-link"><i class="bi bi-plus-circle-fill"></i> New Event</a>
+    <a href="/" class="s-link" target="_blank"><i class="bi bi-box-arrow-up-right"></i> View Site</a>
+    <a href="/admin/logout" class="s-logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
+  </aside>
+
+  <main class="main">
+    <div class="page-header">
+      <div class="page-title">DASHBOARD</div>
+      <a href="/admin/events/new" class="btn-primary"><i class="bi bi-plus-lg"></i> New Event</a>
+    </div>
+
+    <% if (locals.query && query && query.success) { %>
+      <div class="flash"><i class="bi bi-check-circle-fill"></i> <%= query.success %></div>
+    <% } %>
+
+    <!-- Stats -->
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-val"><%= stats.totalEvents %></div><div class="stat-lbl">Total Events</div></div>
+      <div class="stat-card"><div class="stat-val"><%= stats.activeEvents %></div><div class="stat-lbl">Active Events</div></div>
+      <div class="stat-card"><div class="stat-val"><%= stats.totalBookings %></div><div class="stat-lbl">Bookings</div></div>
+      <div class="stat-card"><div class="stat-val"><%= stats.totalUsers %></div><div class="stat-lbl">Users</div></div>
+      <div class="stat-card"><div class="stat-val">₹<%= (stats.revenue/1000).toFixed(1) %>k</div><div class="stat-lbl">Revenue</div></div>
+    </div>
+
+    <!-- Events Table -->
+    <div class="table-card">
+      <div class="table-header">
+        <div class="table-title">ALL EVENTS</div>
+        <a href="/admin/events/new" class="btn-primary"><i class="bi bi-plus-lg"></i> Add Event</a>
+      </div>
+      <% if (events.length === 0) { %>
+        <div style="padding:3rem;text-align:center;color:var(--muted);">
+          No events yet. <a href="/admin/events/new" style="color:var(--accent);">Create your first event →</a>
+        </div>
+      <% } else { %>
+      <table>
+        <thead>
+          <tr>
+            <th>Event</th>
+            <th>Date</th>
+            <th>Ticket Tiers</th>
+            <th>Bookings</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% events.forEach(function(ev) { %>
+          <tr>
+            <td>
+              <div class="event-name"><%= ev.poster %> <%= ev.name %></div>
+              <div class="event-date"><%= ev.venue %></div>
+            </td>
+            <td><%= new Date(ev.date).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) %></td>
+            <td>
+              <% const tierColors = {standard:'#a0a0a0',silver:'#c0c8d8',gold:'#f5c842',platinum:'#c8ff00',vip:'#bf80ff',general:'#a0a0a0'}; %>
+              <% ev.ticketTypes.forEach(function(t) { %>
+                <span class="tier-pill" style="background:rgba(200,255,0,0.07);border:1px solid rgba(200,255,0,0.15);color:<%= tierColors[t.category]||'#c8ff00' %>;">
+                  <%= t.name %> ₹<%= t.price %>
+                </span>
+              <% }); %>
+            </td>
+            <td>
+              <% const booked = ev.ticketTypes.reduce((s,t)=>s+t.bookedSeats,0); %>
+              <% const total  = ev.ticketTypes.reduce((s,t)=>s+t.totalSeats,0); %>
+              <%= booked %> / <%= total %>
+            </td>
+            <td>
+              <% if (ev.isActive) { %>
+                <span class="badge badge-on"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> ACTIVE</span>
+              <% } else { %>
+                <span class="badge badge-off"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> HIDDEN</span>
+              <% } %>
+            </td>
+            <td>
+              <div class="action-btns">
+                <a href="/admin/events/<%= ev._id %>/edit" class="btn-sm"><i class="bi bi-pencil-fill"></i> Edit</a>
+                <form method="POST" action="/admin/events/<%= ev._id %>/toggle" style="display:inline;">
+                  <button type="submit" class="btn-sm"><i class="bi bi-toggle-<%= ev.isActive ? 'on' : 'off' %>"></i> <%= ev.isActive ? 'Hide' : 'Show' %></button>
+                </form>
+                <form method="POST" action="/admin/events/<%= ev._id %>/delete" style="display:inline;" onsubmit="return confirm('Delete this event?')">
+                  <button type="submit" class="btn-sm danger"><i class="bi bi-trash-fill"></i> Delete</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          <% }); %>
+        </tbody>
+      </table>
+      <% } %>
+    </div>
+  </main>
+</div>
+<script>
+  // Pass query params to EJS flash
+  const urlParams = new URLSearchParams(window.location.search);
+  const success = urlParams.get('success');
+  if (success) {
+    const flash = document.querySelector('.flash');
+    if (!flash) {
+      const f = document.createElement('div');
+      f.className = 'flash';
+      f.innerHTML = '<i class="bi bi-check-circle-fill"></i> ' + success;
+      document.querySelector('.main').insertBefore(f, document.querySelector('.stats-grid'));
+    }
+  }
+</script>
+</body>
+</html>

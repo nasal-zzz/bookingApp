@@ -407,24 +407,168 @@
     async function downloadAll() {
       const btn = document.getElementById('dlAllBtn');
       btn.disabled = true;
-      btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Generating...';
+      btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Building PDF...';
 
       try {
         const { jsPDF } = window.jspdf;
 
-        for (let i = 0; i < TICKETS.length; i++) {
-          const doc = await buildTicketPDF(i);
-          doc.save('NightPass_Ticket_' + (i + 1) + '_' + TICKETS[i].attendeeName.replace(/\s+/g,'_') + '.pdf');
-          // Small delay between downloads
-          if (i < TICKETS.length - 1) await new Promise(r => setTimeout(r, 500));
+        // Build first ticket as base document
+        const mergedDoc = await buildTicketPDF(0);
+
+        // Add each remaining ticket as a NEW PAGE in the same document
+        for (let i = 1; i < TICKETS.length; i++) {
+          btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Adding ticket ' + (i+1) + ' of ' + TICKETS.length + '...';
+
+          // Build this ticket's PDF
+          const ticketDoc = await buildTicketPDF(i);
+
+          // Get the page data from ticketDoc and add it into mergedDoc
+          const ticketPageData = ticketDoc.output('arraybuffer');
+
+          // Use jsPDF's addPage and copy content by re-drawing into mergedDoc
+          mergedDoc.addPage([210, 148], 'landscape');
+
+          // Re-draw this ticket directly onto the new page of mergedDoc
+          await drawTicketOnDoc(mergedDoc, i);
         }
+
+        // Save as single PDF with booking ref
+        mergedDoc.save('NightPass_' + BOOKING.ref + '_AllTickets.pdf');
+
       } catch(e) {
         console.error('PDF error:', e);
-        alert('PDF generation failed. Please try again.');
+        alert('PDF generation failed: ' + e.message);
       }
 
       btn.disabled = false;
-      btn.innerHTML = '<i class="bi bi-download"></i> Download All PDF';
+      btn.innerHTML = '<i class="bi bi-download"></i> Download All as 1 PDF';
+    }
+
+    // Draw a single ticket onto an EXISTING jsPDF doc at its current page
+    async function drawTicketOnDoc(doc, ticketIndex) {
+      const t = TICKETS[ticketIndex];
+      const W = doc.internal.pageSize.getWidth();
+      const H = doc.internal.pageSize.getHeight();
+
+      // ── BACKGROUND ──
+      doc.setFillColor(8, 8, 14);
+      doc.rect(0, 0, W, H, 'F');
+
+      // ── HEADER BAND ──
+      doc.setFillColor(15, 22, 0);
+      doc.rect(0, 0, W * 0.55, H, 'F');
+
+      // Accent top bar
+      doc.setFillColor(200, 255, 0);
+      doc.rect(0, 0, W * 0.55, 2, 'F');
+
+      // Brand
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(7);
+      doc.setTextColor(120, 140, 80);
+      doc.text('NIGHTPASS · KOCHI', 12, 14);
+
+      // Event name
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(22);
+      doc.setTextColor(255, 255, 255);
+      const nameLines = doc.splitTextToSize(EVENT.name, 90);
+      doc.text(nameLines, 12, 26);
+
+      // Divider line
+      doc.setDrawColor(200, 255, 0);
+      doc.setLineWidth(0.5);
+      doc.line(12, 50, W * 0.55 - 10, 50);
+
+      // Info fields
+      const fields = [
+        { label: 'DATE',        value: EVENT.date },
+        { label: 'DOORS OPEN',  value: EVENT.doorsOpen },
+        { label: 'UNTIL',       value: EVENT.endTime },
+        { label: 'VENUE',       value: EVENT.venue },
+        { label: 'DRESS CODE',  value: EVENT.dressCode },
+        { label: 'TICKET TYPE', value: BOOKING.type.toUpperCase() },
+      ];
+      let y = 60;
+      fields.forEach((f, i) => {
+        const col = i < 3 ? 12 : 60;
+        const row = i < 3 ? y + (i * 22) : y + ((i - 3) * 22);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(6);
+        doc.setTextColor(120, 140, 80);
+        doc.text(f.label, col, row);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(9);
+        doc.setTextColor(230, 230, 230);
+        doc.text(f.value, col, row + 5);
+      });
+
+      // Price
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(18);
+      doc.setTextColor(200, 255, 0);
+      doc.text('Rs.' + BOOKING.price, 12, H - 10);
+
+      // ── PERFORATED DIVIDER ──
+      doc.setDrawColor(50, 50, 50);
+      doc.setLineWidth(0.3);
+      for (let dotY = 5; dotY < H - 5; dotY += 4) {
+        doc.line(W * 0.55, dotY, W * 0.55, dotY + 2);
+      }
+      doc.setFillColor(8, 8, 14);
+      doc.circle(W * 0.55, 0, 5, 'F');
+      doc.circle(W * 0.55, H, 5, 'F');
+
+      // ── RIGHT SIDE — QR + Attendee ──
+      const rx = W * 0.55 + 8;
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(14);
+      doc.setTextColor(255, 255, 255);
+      doc.text(t.attendeeName, rx, 18);
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8);
+      doc.setTextColor(120, 130, 100);
+      doc.text('Ticket ' + (ticketIndex + 1) + ' of ' + BOOKING.qty + ' · ' + BOOKING.type, rx, 25);
+
+      // QR Code
+      if (t.qrCode && t.qrCode.startsWith('data:image')) {
+        try { doc.addImage(t.qrCode, 'PNG', rx, 32, 55, 55); }
+        catch(e) {
+          doc.setFillColor(30, 30, 30);
+          doc.rect(rx, 32, 55, 55, 'F');
+        }
+      } else {
+        doc.setFillColor(30, 30, 30);
+        doc.rect(rx, 32, 55, 55, 'F');
+      }
+
+      // VALID badge
+      doc.setFillColor(20, 60, 30);
+      doc.roundedRect(rx, 91, 55, 8, 2, 2, 'F');
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(7);
+      doc.setTextColor(76, 220, 128);
+      doc.text('VALID · ONE TIME ENTRY', rx + 4, 96.5);
+
+      // Ticket ID
+      doc.setFont('courier', 'bold');
+      doc.setFontSize(7);
+      doc.setTextColor(120, 130, 100);
+      doc.text(t.ticketId, rx, 107);
+
+      // Booking ref
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(6);
+      doc.setTextColor(80, 90, 70);
+      doc.text('REF: ' + BOOKING.ref, rx, 113);
+
+      // Bottom note
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(6);
+      doc.setTextColor(60, 70, 50);
+      doc.text('SCAN AT ENTRY · 18+ · VALID PHOTO ID REQUIRED', rx, H - 6);
     }
 
     function openShare()  { document.getElementById('shareModal').classList.add('open'); }

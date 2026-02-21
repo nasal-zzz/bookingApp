@@ -4,17 +4,17 @@ const Event = require('../models/Event');
 const { optionalAuth, noCache } = require('../middleware/auth');
 
 // Home page — noCache ensures back button always hits server
-// so session is always read fresh and user sees correct nav state
 router.get('/', noCache, optionalAuth, async (req, res) => {
   try {
-    const event = await Event.findOne({ isActive: true }).sort({ date: 1 });
+    const events = await Event.find({ isActive: true }).sort({ isFeatured: -1, date: 1 });
     res.render('pages/index', {
       title: 'NightPass — Book Your Party Entry',
-      event,
+      events,
+      event: events[0] || null, // backward compat
       user: req.user || null,
     });
   } catch (err) {
-    res.render('pages/index', { title: 'NightPass', event: null, user: null });
+    res.render('pages/index', { title: 'NightPass', events: [], event: null, user: null });
   }
 });
 

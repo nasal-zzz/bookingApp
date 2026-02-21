@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Admin Login — NightPass</title>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Outfit:wght@400;600;700&family=Space+Mono&display=swap" rel="stylesheet"/>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:#08080e;color:#e8e8f0;font-family:'Outfit',sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;}
+    body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(255,255,255,0.012) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.012) 1px,transparent 1px);background-size:50px 50px;pointer-events:none;}
+    .card{background:#13131e;border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:2.5rem;width:100%;max-width:380px;position:relative;z-index:1;}
+    .card-top{height:3px;background:linear-gradient(90deg,transparent,#c8ff00,transparent);margin:-2.5rem -2.5rem 2rem;border-radius:12px 12px 0 0;}
+    .logo{font-family:'Anton',sans-serif;font-size:1.8rem;letter-spacing:4px;color:#fff;text-align:center;margin-bottom:0.3rem;}
+    .logo span{color:#c8ff00;}
+    .sub{text-align:center;font-family:'Space Mono',monospace;font-size:0.62rem;letter-spacing:2px;color:#5a5a72;margin-bottom:2rem;}
+    .lbl{font-family:'Space Mono',monospace;font-size:0.58rem;letter-spacing:2px;color:#5a5a72;text-transform:uppercase;display:block;margin-bottom:0.4rem;}
+    input{width:100%;background:#0f0f18;border:2px solid rgba(255,255,255,0.08);border-radius:7px;color:#e8e8f0;font-size:0.95rem;padding:0.8rem 1rem;font-family:'Outfit',sans-serif;outline:none;transition:border-color 0.2s;margin-bottom:1.2rem;}
+    input:focus{border-color:#c8ff00;}
+    .btn{width:100%;padding:0.95rem;background:#c8ff00;color:#000;font-family:'Outfit',sans-serif;font-weight:700;font-size:0.95rem;border:none;border-radius:7px;cursor:pointer;letter-spacing:1px;transition:box-shadow 0.2s;}
+    .btn:hover{box-shadow:0 0 30px rgba(200,255,0,0.3);}
+    .err{background:rgba(255,92,92,0.08);border:1px solid rgba(255,92,92,0.3);border-radius:6px;padding:0.7rem 1rem;color:#ff5c5c;font-size:0.82rem;margin-bottom:1rem;}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="card-top"></div>
+    <div class="logo">NIGHT<span>PASS</span></div>
+    <div class="sub">// ADMIN PANEL</div>
+    <% if (error) { %><div class="err"><%= error %></div><% } %>
+    <form method="POST" action="/admin/login">
+      <label class="lbl">Admin Password</label>
+      <input type="password" name="password" placeholder="Enter admin password" required autofocus/>
+      <button type="submit" class="btn">Enter Admin Panel</button>
+    </form>
+  </div>
+</body>
+</html>
