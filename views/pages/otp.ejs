@@ -329,5 +329,15 @@
       }
     }
   </script>
+
+  <script>
+    // Back-button guard — if session token exists, go forward not back
+    (function() {
+      // Replace current history entry so back button skips this page
+      if (window.history && window.history.replaceState) {
+        window.history.replaceState(null, '', window.location.href);
+      }
+    })();
+  </script>
 </body>
 </html>

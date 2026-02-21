@@ -1,10 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const Event = require('../models/Event');
-const { optionalAuth } = require('../middleware/auth');
+const { optionalAuth, noCache } = require('../middleware/auth');
 
-// Home page
-router.get('/', optionalAuth, async (req, res) => {
+// Home page — noCache ensures back button always hits server
+// so session is always read fresh and user sees correct nav state
+router.get('/', noCache, optionalAuth, async (req, res) => {
   try {
     const event = await Event.findOne({ isActive: true }).sort({ date: 1 });
     res.render('pages/index', {

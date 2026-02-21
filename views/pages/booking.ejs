@@ -7,19 +7,7 @@
   <div class="orb-tl"></div><div class="orb-br"></div>
 
   <!-- NAV -->
-  <nav style="padding:1.1rem 2rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);background:rgba(8,8,14,0.85);backdrop-filter:blur(20px);position:sticky;top:0;z-index:100;">
-    <a href="/" class="logo">NIGHT<span>PASS</span></a>
-    <div style="display:flex;align-items:center;gap:0.4rem;font-family:var(--font-mono);font-size:0.62rem;letter-spacing:1px;">
-      <span style="color:var(--success);display:flex;align-items:center;gap:0.3rem;"><span style="width:6px;height:6px;border-radius:50%;background:currentColor;display:inline-block;"></span> Verified</span>
-      <span style="width:20px;height:1px;background:var(--border);display:inline-block;"></span>
-      <span style="color:var(--accent);background:var(--accent-dim);border:1px solid rgba(200,255,0,0.2);padding:0.3rem 0.7rem;border-radius:20px;display:flex;align-items:center;gap:0.3rem;"><span style="width:6px;height:6px;border-radius:50%;background:currentColor;display:inline-block;"></span> Book Tickets</span>
-      <span style="width:20px;height:1px;background:var(--border);display:inline-block;"></span>
-      <span style="color:var(--muted);">Payment</span>
-      <span style="width:20px;height:1px;background:var(--border);display:inline-block;"></span>
-      <span style="color:var(--muted);">QR Pass</span>
-    </div>
-    <a href="/" style="color:var(--muted);text-decoration:none;font-size:0.8rem;letter-spacing:1px;text-transform:uppercase;">← Back</a>
-  </nav>
+  <%- include('../partials/navbar') %>
 
   <div style="max-width:1100px;margin:0 auto;padding:2.5rem 1.5rem 5rem;position:relative;z-index:1;">
 
@@ -437,6 +425,13 @@
       @media(max-width:600px) { .attendee-fields { grid-template-columns:1fr; } }
     `;
     document.head.appendChild(style);
+  </script>
+
+  <script>
+    // Replace history so back button skips login/otp pages
+    if (window.history && window.history.replaceState) {
+      window.history.replaceState(null, '', window.location.href);
+    }
   </script>
 </body>
 </html>

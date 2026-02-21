@@ -141,14 +141,7 @@
   <div class="orb1"></div>
   <div class="orb2"></div>
 
-  <!-- NAV -->
-  <nav>
-    <a href="/" class="logo">NIGHT<span>PASS</span></a>
-    <div class="nav-links">
-      <a href="/booking" class="nav-link"><i class="bi bi-ticket-perforated-fill"></i> <span>Book Tickets</span></a>
-      <a href="/auth/logout" class="nav-link danger"><i class="bi bi-box-arrow-right"></i> <span>Logout</span></a>
-    </div>
-  </nav>
+  <%- include('../partials/navbar') %>
 
   <div class="page-wrap">
     <span class="eyebrow">// my account</span>
@@ -554,6 +547,13 @@
 
       btnEl.disabled = false;
       btnEl.innerHTML = '<i class="bi bi-file-earmark-pdf-fill"></i> Download PDF';
+    }
+  </script>
+
+  <script>
+    // Replace history so back button skips login/otp pages
+    if (window.history && window.history.replaceState) {
+      window.history.replaceState(null, '', window.location.href);
     }
   </script>
 </body>

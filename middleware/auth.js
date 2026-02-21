@@ -1,98 +1,32 @@
-// const jwt = require('jsonwebtoken');
-// const User = require('../models/User');
-
-// // Protect routes — redirect to login if not authenticated
-// const requireAuth = async (req, res, next) => {
-//   try {
-//     const token = req.session.token || req.cookies.np_token;
-
-//     if (!token) {
-//       req.session.redirectAfterLogin = req.originalUrl;
-//       return res.redirect('/auth/login');
-//     }
-
-//     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-//     const user = await User.findById(decoded.id).select('-__v');
-
-//     if (!user || !user.isActive) {
-//       req.session.destroy();
-//       return res.redirect('/auth/login');
-//     }
-
-//     req.user = user;
-//     res.locals.user = user;
-//     next();
-//   } catch (err) {
-//     req.session.destroy();
-//     res.redirect('/auth/login');
-//   }
-// };
-
-// // Optional auth — attach user if logged in but don't block
-// const optionalAuth = async (req, res, next) => {
-//   try {
-//     const token = req.session.token || req.cookies.np_token;
-//     if (token) {
-//       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-//       const user = await User.findById(decoded.id);
-//       if (user) {
-//         req.user = user;
-//         res.locals.user = user;
-//       }
-//     }
-//   } catch (err) { /* ignore */ }
-//   next();
-// };
-
-// // Redirect to home if already logged in
-// const redirectIfAuth = (req, res, next) => {
-//   const token = req.session.token || req.cookies.np_token;
-//   if (token) {
-//     try {
-//       jwt.verify(token, process.env.JWT_SECRET);
-//       return res.redirect('/');
-//     } catch (err) { /* continue */ }
-//   }
-//   next();
-// };
-
-// // Sign a JWT token
-// const signToken = (userId) => {
-//   return jwt.sign({ id: userId }, process.env.JWT_SECRET, {
-//     expiresIn: process.env.JWT_EXPIRE || '7d',
-//   });
-// };
-
-// module.exports = { requireAuth, optionalAuth, redirectIfAuth, signToken };
-
-
 const jwt  = require('jsonwebtoken');
 const User = require('../models/User');
+
+// ── Core: resolve user from session (passport OR jwt) ──
+const resolveUser = async (req) => {
+  // 1. Passport already populated req.user (Google login)
+  if (req.user) return req.user;
+
+  // 2. JWT token in session (phone/OTP login)
+  const token = req.session.token || req.cookies.np_token;
+  if (!token) return null;
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user    = await User.findById(decoded.id).select('-__v');
+    if (user && user.isActive) return user;
+  } catch (e) { /* invalid token */ }
+
+  return null;
+};
 
 // ── Protect routes — redirect to login if not authenticated ──
 const requireAuth = async (req, res, next) => {
   try {
-    // Check 1 — passport session (Google login)
-    if (req.user) {
-      res.locals.user = req.user;
-      return next();
-    }
-
-    // Check 2 — JWT token (phone login)
-    const token = req.session.token || req.cookies.np_token;
-    if (!token) {
+    const user = await resolveUser(req);
+    if (!user) {
       req.session.redirectAfterLogin = req.originalUrl;
       return res.redirect('/auth/login');
     }
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user    = await User.findById(decoded.id).select('-__v');
-
-    if (!user || !user.isActive) {
-      req.session.destroy();
-      return res.redirect('/auth/login');
-    }
-
     req.user        = user;
     res.locals.user = user;
     next();
@@ -102,50 +36,45 @@ const requireAuth = async (req, res, next) => {
   }
 };
 
-// ── Optional auth — attach user if logged in ──
+// ── Optional auth — attach user if logged in, never block ──
 const optionalAuth = async (req, res, next) => {
   try {
-    // Check passport session first
-    if (req.user) {
-      res.locals.user = req.user;
-      return next();
-    }
-
-    // Then check JWT
-    const token = req.session.token || req.cookies.np_token;
-    if (token) {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      const user    = await User.findById(decoded.id).select('-__v');
-      if (user) {
-        req.user        = user;
-        res.locals.user = user;
-      }
+    const user = await resolveUser(req);
+    if (user) {
+      req.user        = user;
+      res.locals.user = user;
     }
   } catch (err) { /* ignore */ }
   next();
 };
 
 // ── Redirect to home if already logged in ──
-const redirectIfAuth = (req, res, next) => {
-  // Already logged in via passport (Google)
-  if (req.user) return res.redirect('/');
+const redirectIfAuth = async (req, res, next) => {
+  // No-cache so browser always asks server instead of using cached page
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+  res.set('Pragma', 'no-cache');
+  res.set('Expires', '0');
 
-  // Already logged in via JWT
-  const token = req.session.token || req.cookies.np_token;
-  if (token) {
-    try {
-      jwt.verify(token, process.env.JWT_SECRET);
-      return res.redirect('/');
-    } catch (err) { /* continue */ }
-  }
+  try {
+    const user = await resolveUser(req);
+    if (user) return res.redirect('/');
+  } catch (err) { /* ignore */ }
   next();
 };
 
-// ── Sign a JWT token ──
+// ── No-cache headers middleware ──
+const noCache = (req, res, next) => {
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+  res.set('Pragma', 'no-cache');
+  res.set('Expires', '0');
+  next();
+};
+
+// ── Sign JWT ──
 const signToken = (userId) => {
   return jwt.sign({ id: userId }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRE || '7d',
   });
 };
 
-module.exports = { requireAuth, optionalAuth, redirectIfAuth, signToken };
+module.exports = { requireAuth, optionalAuth, redirectIfAuth, noCache, signToken };

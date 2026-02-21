@@ -106,10 +106,7 @@
 <body>
   <div class="orb"></div>
 
-  <nav>
-    <a href="/" class="logo">NIGHT<span>PASS</span></a>
-    <a href="/booking/my-bookings" class="nav-link"><i class="bi bi-collection"></i> My Bookings</a>
-  </nav>
+  <%- include('../partials/navbar') %>
 
   <!-- SUCCESS HEADER -->
   <div class="success-header">
@@ -441,6 +438,13 @@
       if (method === 'whatsapp') window.open('https://api.whatsapp.com/send?text=' + encodeURIComponent(msg), '_blank');
       else if (method === 'copy') navigator.clipboard.writeText(window.location.href).then(() => alert('Link copied!'));
       closeShare();
+    }
+  </script>
+
+  <script>
+    // Replace history so back button skips login/otp pages
+    if (window.history && window.history.replaceState) {
+      window.history.replaceState(null, '', window.location.href);
     }
   </script>
 </body>

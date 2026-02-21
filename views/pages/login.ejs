@@ -185,17 +185,27 @@
         });
         const data = await res.json();
         if (data.success) {
-          window.location.href = data.redirect || '/auth/otp';
+          window.location.replace(data.redirect || '/auth/otp');
         } else {
           showError(data.message || 'Something went wrong. Try again.');
           setLoading(false);
-          if (data.redirect) setTimeout(() => window.location.href = data.redirect, 2000);
+          if (data.redirect) setTimeout(() => window.location.replace(data.redirect), 2000);
         }
       } catch(e) {
         showError('Network error. Check your connection and try again.');
         setLoading(false);
       }
     }
+  </script>
+
+  <script>
+    // Back-button guard — if session token exists, go forward not back
+    (function() {
+      // Replace current history entry so back button skips this page
+      if (window.history && window.history.replaceState) {
+        window.history.replaceState(null, '', window.location.href);
+      }
+    })();
   </script>
 </body>
 </html>

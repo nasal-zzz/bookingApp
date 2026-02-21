@@ -85,8 +85,16 @@ app.use((err, req, res, next) => {
   });
 });
 
+// const PORT = process.env.PORT || 3000;
+// app.listen(PORT, () => {
+//   console.log(`\n🚀 NightPass running at http://localhost:${PORT}`);
+//   console.log(`📦 Environment: ${process.env.NODE_ENV || 'development'}\n`);
+// });
+
+// module.exports = app;
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
+
+app.listen(PORT, "0.0.0.0", () => {
   console.log(`\n🚀 NightPass running at http://localhost:${PORT}`);
   console.log(`📦 Environment: ${process.env.NODE_ENV || 'development'}\n`);
 });

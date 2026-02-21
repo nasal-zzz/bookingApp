@@ -3,13 +3,7 @@
 <head><%- include('../partials/head') %></head>
 <body>
   <div class="orb-tl"></div>
-  <nav style="padding:1.1rem 2rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);background:rgba(8,8,14,0.85);backdrop-filter:blur(20px);position:sticky;top:0;z-index:100;">
-    <a href="/" class="logo">NIGHT<span>PASS</span></a>
-    <div style="display:flex;align-items:center;gap:1rem;">
-      <span style="font-size:0.82rem;color:var(--muted);">Hi, <%= user.firstName %> 👋</span>
-      <a href="/auth/logout" style="font-size:0.78rem;color:var(--muted);text-decoration:none;border:1px solid var(--border);padding:0.35rem 0.8rem;border-radius:4px;">Logout</a>
-    </div>
-  </nav>
+  <%- include('../partials/navbar') %>
 
   <div style="max-width:900px;margin:0 auto;padding:2.5rem 1.5rem 4rem;position:relative;z-index:1;">
     <p style="font-family:var(--font-mono);font-size:0.65rem;letter-spacing:3px;color:var(--accent);margin-bottom:0.5rem;">// your passes</p>
@@ -75,5 +69,12 @@
   </div>
 
   <%- include('../partials/scripts') %>
+
+  <script>
+    // Replace history so back button skips login/otp pages
+    if (window.history && window.history.replaceState) {
+      window.history.replaceState(null, '', window.location.href);
+    }
+  </script>
 </body>
 </html>
