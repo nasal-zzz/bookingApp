@@ -1,9 +1,10 @@
 const express = require('express');
 const router  = express.Router();
 const bookingController = require('../controllers/bookingController');
-const { requireAuth } = require('../middleware/auth');
+const { requireAuth, optionalAuth } = require('../middleware/auth');
 
 // Pages
+router.get('/event/:eventId', optionalAuth, bookingController.getEventDetail);   // public event detail page
 router.get('/',            requireAuth, bookingController.getBookingPage);
 router.get('/:eventId',   requireAuth, bookingController.getBookingPage);
 router.get('/ticket/:bookingId', requireAuth, bookingController.getTicket);

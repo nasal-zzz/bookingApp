@@ -62,8 +62,9 @@ exports.sendLoginOTP = async (req, res) => {
 
     // Send OTP
     const result = await createAndSendOTP(fullPhone, 'login');
+    console.log('OTP result:', JSON.stringify(result));
     if (!result.success) {
-      return res.json({ success: false, message: 'Failed to send OTP. Please try again.' });
+      return res.json({ success: false, message: result.message || 'Failed to send OTP. Please try again.' });
     }
 
     req.session.otpPhone = fullPhone;
@@ -107,8 +108,9 @@ exports.postSignup = async (req, res) => {
     req.session.otpMode = 'signup';
 
     const result = await createAndSendOTP(fullPhone, 'signup');
+    console.log('OTP result:', JSON.stringify(result));
     if (!result.success) {
-      return res.json({ success: false, message: 'Failed to send OTP. Please try again.' });
+      return res.json({ success: false, message: result.message || 'Failed to send OTP. Please try again.' });
     }
 
     return res.json({ success: true, redirect: '/auth/otp' });

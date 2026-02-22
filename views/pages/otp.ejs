@@ -7,11 +7,11 @@
   <link href="https://fonts.googleapis.com/css2?family=Anton&family=Outfit:wght@400;500;600;700&family=Space+Mono&display=swap" rel="stylesheet"/>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet"/>
   <style>
-    :root{--bg:#08080e;--surface:#0f0f18;--card:#13131e;--border:rgba(255,255,255,0.08);--accent:#c8ff00;--accent-dim:rgba(200,255,0,0.09);--text:#e8e8f0;--muted:#5a5a72;--error:#ff5c5c;--success:#4cdf80;}
+    :root{--bg:#0B0B0F;--surface:#14141C;--card:#14141C;--border:rgba(255,255,255,0.08);--accent:#6A0DAD;--accent-dim:rgba(106,13,173,0.09);--text:#FFFFFF;--muted:#B3B3B3;--error:#FF4444;--success:#00FF88;}
     *{box-sizing:border-box;margin:0;padding:0;}
     body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-height:100vh;display:flex;flex-direction:column;}
     body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(255,255,255,0.012) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.012) 1px,transparent 1px);background-size:50px 50px;pointer-events:none;}
-    .orb1{position:fixed;top:-150px;left:-100px;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(200,255,0,0.05) 0%,transparent 65%);pointer-events:none;}
+    .orb1{position:fixed;top:-150px;left:-100px;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(106,13,173,0.05) 0%,transparent 65%);pointer-events:none;}
     nav{position:relative;z-index:1;padding:1.1rem 2rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);}
     .logo{font-family:'Anton',sans-serif;font-size:1.5rem;letter-spacing:4px;color:#fff;text-decoration:none;}
     .logo span{color:var(--accent);}
@@ -19,7 +19,7 @@
     .back-link:hover{color:#fff;}
     .auth-wrapper{flex:1;display:flex;align-items:center;justify-content:center;padding:2rem 1rem;position:relative;z-index:1;}
     .auth-card{background:var(--card);border:1px solid var(--border);border-radius:14px;width:100%;max-width:440px;overflow:hidden;box-shadow:0 40px 80px rgba(0,0,0,0.5);}
-    .card-top-bar{height:3px;background:linear-gradient(90deg,transparent,var(--accent),transparent);}
+    .card-top-bar{height:3px;background:linear-gradient(90deg,transparent,#6A0DAD,transparent);}
     .card-inner{padding:2.2rem;}
 
     /* Steps */
@@ -29,15 +29,15 @@
     .step.done{color:var(--success);}.step.done .step-dot{border-color:var(--success);color:var(--success);}
     .step.active{color:var(--text);}.step.active .step-dot{background:var(--accent);border-color:var(--accent);color:#000;}
     .step-line{flex:1;height:1px;background:var(--border);margin:0 0.5rem;}
-    .step-line.done{background:rgba(76,223,128,0.3);}
+    .step-line.done{background:rgba(144,78,221,0.3);}
 
     /* Phone badge */
     .phone-badge{display:flex;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:1rem 1.2rem;margin-bottom:1.8rem;}
     .phone-badge-left{display:flex;align-items:center;gap:0.8rem;}
-    .phone-icon{width:40px;height:40px;background:var(--accent-dim);border:1px solid rgba(200,255,0,0.2);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--accent);font-size:1rem;}
+    .phone-icon{width:40px;height:40px;background:rgba(37,211,102,0.12);border:1px solid rgba(37,211,102,0.3);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#25d366;font-size:1.1rem;}
     .phone-label{font-family:'Space Mono',monospace;font-size:0.6rem;letter-spacing:1px;color:var(--muted);}
     .phone-number{font-size:1rem;font-weight:600;color:#fff;letter-spacing:1px;margin-top:2px;}
-    .change-link{font-size:0.8rem;color:var(--accent);text-decoration:none;font-weight:600;border:1px solid rgba(200,255,0,0.25);padding:0.3rem 0.8rem;border-radius:4px;}
+    .change-link{font-size:0.8rem;color:var(--accent);text-decoration:none;font-weight:600;border:1px solid rgba(106,13,173,0.3);padding:0.3rem 0.8rem;border-radius:4px;}
     .change-link:hover{background:var(--accent-dim);}
 
     .eyebrow{font-family:'Space Mono',monospace;font-size:0.62rem;letter-spacing:3px;color:var(--accent);display:block;margin-bottom:0.4rem;}
@@ -48,27 +48,27 @@
     .otp-row{display:flex;gap:0.6rem;justify-content:center;margin-bottom:1.5rem;}
     .otp-box{width:54px;height:62px;background:var(--surface);border:2px solid var(--border);border-radius:10px;text-align:center;font-family:'Anton',sans-serif;font-size:1.8rem;color:#fff;outline:none;transition:border-color 0.2s,box-shadow 0.2s,transform 0.1s;appearance:none;-moz-appearance:textfield;}
     .otp-box::-webkit-outer-spin-button,.otp-box::-webkit-inner-spin-button{-webkit-appearance:none;}
-    .otp-box:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(200,255,0,0.1);transform:scale(1.04);}
-    .otp-box.filled{border-color:rgba(200,255,0,0.4);background:rgba(200,255,0,0.05);}
+    .otp-box:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(106,13,173,0.1);transform:scale(1.04);}
+    .otp-box.filled{border-color:rgba(106,13,173,0.5);background:rgba(106,13,173,0.05);}
     .otp-box.has-error{border-color:var(--error);box-shadow:0 0 0 3px rgba(255,92,92,0.1);animation:shake 0.4s ease;}
-    .otp-box.is-success{border-color:var(--success);box-shadow:0 0 0 3px rgba(76,223,128,0.1);}
+    .otp-box.is-success{border-color:var(--success);box-shadow:0 0 0 3px rgba(106,13,173,0.15);}
     @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
 
     /* Status messages */
     .status-msg{text-align:center;font-size:0.84rem;padding:0.7rem 1rem;border-radius:6px;margin-bottom:1rem;display:none;align-items:center;justify-content:center;gap:0.5rem;}
     .status-msg.error{display:flex;background:rgba(255,92,92,0.1);border:1px solid rgba(255,92,92,0.25);color:var(--error);}
-    .status-msg.success-msg{display:flex;background:rgba(76,223,128,0.1);border:1px solid rgba(76,223,128,0.25);color:var(--success);}
+    .status-msg.success-msg{display:flex;background:rgba(106,13,173,0.15);border:1px solid rgba(144,78,221,0.25);color:var(--success);}
 
     /* Success animation */
     .success-anim{display:none;text-align:center;padding:1rem 0;}
-    .success-circle{width:80px;height:80px;border-radius:50%;background:rgba(76,223,128,0.1);border:2px solid var(--success);display:flex;align-items:center;justify-content:center;font-size:2.2rem;margin:0 auto 1rem;animation:popIn 0.4s ease;}
+    .success-circle{width:80px;height:80px;border-radius:50%;background:rgba(106,13,173,0.15);border:2px solid var(--success);display:flex;align-items:center;justify-content:center;font-size:2.2rem;margin:0 auto 1rem;animation:popIn 0.4s ease;}
     @keyframes popIn{0%{transform:scale(0.5);opacity:0}70%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
     .success-label{color:var(--success);font-weight:700;font-size:1rem;margin-bottom:0.3rem;}
     .success-sub{color:var(--muted);font-size:0.82rem;}
 
     /* Button */
-    .btn-submit{width:100%;padding:1rem;background:var(--accent);color:#000;font-family:'Outfit',sans-serif;font-weight:700;font-size:0.95rem;border:none;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:0.6rem;transition:transform 0.15s,box-shadow 0.15s;box-shadow:0 0 25px rgba(200,255,0,0.2);}
-    .btn-submit:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 0 45px rgba(200,255,0,0.4);}
+    .btn-submit{width:100%;padding:1rem;background:var(--accent);color:#000;font-family:'Outfit',sans-serif;font-weight:700;font-size:0.95rem;border:none;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:0.6rem;transition:transform 0.15s,box-shadow 0.15s;box-shadow:0 0 25px rgba(106,13,173,0.25);}
+    .btn-submit:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 0 45px rgba(106,13,173,0.5);}
     .btn-submit:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
     .spinner{width:18px;height:18px;border:2px solid rgba(0,0,0,0.25);border-top-color:#000;border-radius:50%;animation:spin 0.7s linear infinite;display:none;}
     @keyframes spin{to{transform:rotate(360deg)}}
@@ -115,9 +115,9 @@
         <!-- Phone badge -->
         <div class="phone-badge">
           <div class="phone-badge-left">
-            <div class="phone-icon"><i class="bi bi-phone-fill"></i></div>
+            <div class="phone-icon"><i class="bi bi-whatsapp"></i></div>
             <div>
-              <div class="phone-label">OTP SENT TO</div>
+              <div class="phone-label">WHATSAPP OTP SENT TO</div>
               <div class="phone-number"><%= phone %></div>
             </div>
           </div>
@@ -126,7 +126,10 @@
 
         <span class="eyebrow">// step 2 of 3</span>
         <h1>VERIFY<br/>NUMBER</h1>
-        <p class="subtitle">Enter the 6-digit OTP sent to your phone</p>
+        <p class="subtitle">
+          Enter the 6-digit OTP sent to your WhatsApp<br/>
+          <span style="font-size:0.78rem;color:#25d366;"><i class="bi bi-whatsapp"></i> Check your WhatsApp messages</span>
+        </p>
 
         <!-- OTP Inputs -->
         <div class="otp-row" id="otpRow">
@@ -262,7 +265,7 @@
           document.getElementById('verifyBtn').style.display = 'none';
           document.querySelector('.resend-area').style.display = 'none';
           document.getElementById('successAnim').style.display = 'block';
-          setTimeout(() => window.location.href = data.redirect || '/booking', 1500);
+          setTimeout(() => window.location.replace(data.redirect || '/booking'), 1500);
         } else {
           // Shake and show error
           boxes.forEach(b => { b.classList.add('has-error'); b.classList.remove('filled'); });
@@ -273,7 +276,7 @@
           }, 600);
           showStatus('error', data.message || 'Incorrect OTP. Please try again.');
           setLoading(false);
-          if (data.redirect) setTimeout(() => window.location.href = data.redirect, 2000);
+          if (data.redirect) setTimeout(() => window.location.replace(data.redirect), 2000);
         }
       } catch(e) {
         showStatus('error', 'Network error. Please try again.');
@@ -307,7 +310,7 @@
         });
         const data = await res.json();
         if (data.success) {
-          showStatus('success-msg', 'New OTP sent successfully!');
+          showStatus('success-msg', 'New OTP sent to your WhatsApp!');
           boxes.forEach(b => { b.value = ''; b.classList.remove('filled', 'has-error', 'is-success'); b.disabled = false; });
           boxes[0].focus();
           // Restart timer

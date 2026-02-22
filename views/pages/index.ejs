@@ -1,210 +1,820 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <meta name="theme-color" content="#0B0B0F"/>
   <title>NightPass — Book Your Party Entry</title>
-  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Outfit:wght@400;500;600;700&family=Space+Mono&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Outfit:wght@300;400;500;600;700&family=Space+Mono&display=swap" rel="stylesheet"/>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet"/>
   <style>
-    :root{--bg:#08080e;--surface:#0f0f18;--card:#13131e;--border:rgba(255,255,255,0.08);--accent:#c8ff00;--accent-dim:rgba(200,255,0,0.09);--text:#e8e8f0;--muted:#5a5a72;--success:#4cdf80;--error:#ff5c5c;}
-    *{box-sizing:border-box;margin:0;padding:0;}html{scroll-behavior:smooth;}
-    body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-height:100vh;overflow-x:hidden;}
-    body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(255,255,255,0.012) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.012) 1px,transparent 1px);background-size:50px 50px;pointer-events:none;}
-    .orb1{position:fixed;top:-200px;left:50%;transform:translateX(-50%);width:700px;height:500px;border-radius:50%;background:radial-gradient(ellipse,rgba(200,255,0,0.06) 0%,transparent 65%);pointer-events:none;}
-    .orb2{position:fixed;bottom:-200px;left:-150px;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(100,50,220,0.07) 0%,transparent 65%);pointer-events:none;}
+    /* ── VARIABLES & RESET ── */
+    :root {
+      --bg:#0B0B0F; --surface:#14141C; --card:#14141C;
+      --border:rgba(255,255,255,0.08); --accent:#6A0DAD;
+      --accent-dim:rgba(106,13,173,0.12); --text:#FFFFFF;
+      --muted:#B3B3B3; --success:#00FF88; --error:#FF4444;
+      --font-display:'Anton',sans-serif;
+      --font-body:'Outfit',sans-serif;
+      --font-mono:'Space Mono',monospace;
 
-    /* HERO */
-    .hero{min-height:calc(100vh - 65px);display:flex;align-items:center;justify-content:center;position:relative;z-index:1;padding:4rem 2rem;text-align:center;}
-    .hero-tag{display:inline-flex;align-items:center;gap:0.6rem;background:var(--accent-dim);border:1px solid rgba(200,255,0,0.2);border-radius:20px;padding:0.5rem 1.2rem;font-family:'Space Mono',monospace;font-size:0.68rem;letter-spacing:2px;color:var(--accent);margin-bottom:2rem;}
-    .live-dot{width:7px;height:7px;border-radius:50%;background:var(--accent);animation:pulse 1.5s infinite;}
-    @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(0.8)}}
-    .hero-title{font-family:'Anton',sans-serif;font-size:clamp(3.5rem,10vw,8rem);letter-spacing:3px;color:#fff;line-height:0.92;margin-bottom:1rem;}
-    .hero-title .a{color:var(--accent);}
-    .hero-title .d{color:rgba(255,255,255,0.18);}
-    .hero-sub{font-size:1.1rem;color:var(--muted);line-height:1.7;max-width:550px;margin:0 auto 2.5rem;}
-    .hero-cta{display:flex;align-items:center;justify-content:center;gap:1rem;flex-wrap:wrap;}
-    .btn-hero{display:inline-flex;align-items:center;gap:0.6rem;background:var(--accent);color:#000;padding:1rem 2.5rem;border-radius:6px;text-decoration:none;font-weight:700;font-size:1rem;letter-spacing:1px;transition:transform 0.15s,box-shadow 0.15s;box-shadow:0 0 30px rgba(200,255,0,0.2);}
-    .btn-hero:hover{transform:translateY(-3px);box-shadow:0 0 60px rgba(200,255,0,0.5);color:#000;}
-    .btn-hero-out{display:inline-flex;align-items:center;gap:0.6rem;background:transparent;color:var(--text);padding:1rem 2rem;border-radius:6px;text-decoration:none;font-weight:600;font-size:0.95rem;border:1px solid var(--border);transition:border-color 0.2s,color 0.2s;}
-    .btn-hero-out:hover{border-color:rgba(255,255,255,0.25);color:#fff;}
+      /* ── TYPOGRAPHY SCALE ── */
+      --title-max: 3rem;       /* headings / event names */
+      --body-max: 1rem;        /* body text */
+      --desc-max: 0.75rem;     /* descriptions / labels */
+    }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    html{scroll-behavior:smooth;}
+    body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-height:100vh;overflow-x:hidden;font-size:var(--body-max);}
+    body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(255,255,255,0.012) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.012) 1px,transparent 1px);background-size:50px 50px;pointer-events:none;z-index:0;}
 
-    /* SECTIONS */
-    .section{max-width:1100px;margin:0 auto;padding:5rem 2rem;position:relative;z-index:1;}
-    .section-tag{font-family:'Space Mono',monospace;font-size:0.65rem;letter-spacing:3px;color:var(--accent);display:block;margin-bottom:0.5rem;}
-    .section-title{font-family:'Anton',sans-serif;font-size:clamp(2rem,4vw,3rem);letter-spacing:2px;color:#fff;margin-bottom:2rem;}
+    /* ── HERO SLIDER ── */
+    .hero-slider {
+      position: relative;
+      width: 100%;
+      height: calc(100vh - 60px);
+      min-height: 460px;
+      max-height: 780px;
+      overflow: hidden;
+      background: #0a0a0f;
+    }
 
-    /* EVENT CARDS */
-    .events-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:1.5rem;}
-    .event-card{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:border-color 0.2s,transform 0.2s;display:flex;flex-direction:column;}
-    .event-card:hover{border-color:rgba(200,255,0,0.2);transform:translateY(-4px);}
-    .event-card.featured{border-color:rgba(200,255,0,0.3);}
-    .event-card-top{height:3px;background:linear-gradient(90deg,transparent,var(--accent),transparent);}
-    .event-poster{height:140px;background:linear-gradient(135deg,#0a0a0f,#1c2200,#3a4a00);display:flex;align-items:center;justify-content:center;font-size:3.5rem;position:relative;}
-    .featured-badge{position:absolute;top:10px;left:10px;background:var(--accent);color:#000;font-family:'Space Mono',monospace;font-size:0.55rem;letter-spacing:2px;padding:0.2rem 0.6rem;border-radius:2px;font-weight:700;}
-    .sold-out-overlay{position:absolute;inset:0;background:rgba(8,8,14,0.75);display:flex;align-items:center;justify-content:center;font-family:'Anton',sans-serif;font-size:1.5rem;letter-spacing:3px;color:var(--error);}
-    .event-body{padding:1.3rem;flex:1;display:flex;flex-direction:column;}
-    .event-name{font-family:'Anton',sans-serif;font-size:1.3rem;letter-spacing:2px;color:#fff;margin-bottom:0.8rem;}
-    .event-meta{display:flex;flex-direction:column;gap:0.4rem;margin-bottom:1rem;}
-    .event-meta-item{display:flex;align-items:center;gap:0.5rem;font-size:0.8rem;color:var(--muted);}
-    .event-meta-item i{color:var(--accent);width:14px;}
-    .tier-pills{display:flex;flex-wrap:wrap;gap:0.4rem;margin-bottom:1.2rem;}
-    .tier-pill{font-family:'Space Mono',monospace;font-size:0.56rem;letter-spacing:1px;padding:0.2rem 0.6rem;border-radius:10px;border:1px solid;}
-    .event-footer{display:flex;align-items:center;justify-content:space-between;margin-top:auto;}
-    .event-price{font-family:'Anton',sans-serif;font-size:1.4rem;color:var(--accent);letter-spacing:1px;}
-    .event-price span{font-family:'Outfit',sans-serif;font-size:0.75rem;color:var(--muted);font-weight:400;}
-    .btn-book{display:flex;align-items:center;gap:0.4rem;background:var(--accent);color:#000;padding:0.6rem 1.2rem;border-radius:5px;text-decoration:none;font-weight:700;font-size:0.82rem;letter-spacing:1px;transition:box-shadow 0.2s,transform 0.15s;border:none;cursor:pointer;}
-    .btn-book:hover{box-shadow:0 0 20px rgba(200,255,0,0.3);transform:translateY(-1px);color:#000;}
-    .btn-book.disabled{background:rgba(255,255,255,0.1);color:var(--muted);cursor:not-allowed;pointer-events:none;}
+    /* Each slide */
+    .slide {
+      position: absolute; inset: 0;
+      opacity: 0;
+      transition: opacity 0.7s ease;
+      display: flex; align-items: flex-end;
+    }
+    .slide.active { opacity: 1; z-index: 2; }
+    .slide.prev   { opacity: 0; z-index: 1; }
 
-    /* Countdown */
-    .countdown-bar{background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:1.5rem 2rem;position:relative;z-index:1;}
-    .countdown-inner{max-width:700px;margin:0 auto;display:flex;align-items:center;justify-content:center;gap:3rem;flex-wrap:wrap;}
-    .cd-item{text-align:center;}
-    .cd-num{font-family:'Anton',sans-serif;font-size:2.5rem;color:var(--accent);line-height:1;letter-spacing:2px;}
-    .cd-lbl{font-family:'Space Mono',monospace;font-size:0.58rem;letter-spacing:2px;color:var(--muted);margin-top:0.2rem;}
-    .cd-sep{font-family:'Anton',sans-serif;font-size:2rem;color:var(--border);line-height:1;}
+    /* Banner image — desktop vs mobile */
+    .slide-bg {
+      position: absolute; inset: 0;
+      background-size: cover;
+      background-position: center top;
+      background-repeat: no-repeat;
+    }
+    /* Dark gradient over image so text is legible */
+    .slide-bg::after {
+      content:'';
+      position:absolute; inset:0;
+      background: linear-gradient(
+        to right,
+        rgba(8,8,14,0.92) 0%,
+        rgba(8,8,14,0.7)  40%,
+        rgba(8,8,14,0.2)  70%,
+        rgba(8,8,14,0.05) 100%
+      );
+    }
+    /* On mobile: also darken from bottom for readability */
+    @media(max-width:768px){
+      .slide-bg::after {
+        background: linear-gradient(
+          to top,
+          rgba(8,8,14,0.95) 0%,
+          rgba(8,8,14,0.7)  50%,
+          rgba(8,8,14,0.2)  100%
+        );
+      }
+    }
 
-    /* No events */
-    .no-events{text-align:center;padding:4rem;background:var(--card);border:1px solid var(--border);border-radius:12px;}
-    .no-events-icon{font-size:3rem;margin-bottom:1rem;}
-    .no-events-title{font-family:'Anton',sans-serif;font-size:1.5rem;color:#fff;margin-bottom:0.5rem;}
-    .no-events-sub{color:var(--muted);font-size:0.9rem;}
+    /* Slide content */
+    .slide-content {
+      position: relative; z-index: 3;
+      padding: 0 5vw 5vh;
+      max-width: 560px;
+      animation: slideUp 0.5s ease both;
+    }
+    @keyframes slideUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
 
-    footer{border-top:1px solid var(--border);padding:2rem;text-align:center;position:relative;z-index:1;}
-    .f-logo{font-family:'Anton',sans-serif;font-size:1.8rem;letter-spacing:4px;color:#fff;margin-bottom:0.4rem;}
-    .f-logo span{color:var(--accent);}
-    .f-sub{font-size:0.8rem;color:var(--muted);}
+    .slide-date {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: var(--desc-max);
+      letter-spacing: 2px;
+      color: #fff;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 20px;
+      padding: 0.28rem 0.85rem;
+      margin-bottom: 1rem;
+      text-transform: uppercase;
+    }
+    .slide-name {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 5vw, var(--title-max));
+      letter-spacing: 2px;
+      color: #fff;
+      line-height: 1.05;
+      margin-bottom: 0.15rem;
+    }
+    .slide-name .accent { color: var(--accent); }
+    .slide-venue {
+      display: flex; align-items: center; gap: 0.4rem;
+      font-size: var(--desc-max);
+      color: rgba(255,255,255,0.7);
+      margin-bottom: 0.9rem;
+    }
+    .slide-venue i { color: var(--accent); }
+    .slide-desc {
+      font-size: var(--desc-max);
+      color: rgba(255,255,255,0.6);
+      line-height: 1.65;
+      max-width: 420px;
+      margin-bottom: 1.4rem;
+    }
+    .slide-btns { display: flex; gap: 0.8rem; flex-wrap: wrap; }
+    .btn-book-now {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      background: var(--accent); color: #fff;
+      padding: 0.7rem 1.5rem; border-radius: 6px;
+      text-decoration: none; font-weight: 700;
+      font-size: var(--desc-max); letter-spacing: 0.5px;
+      transition: box-shadow 0.2s, transform 0.15s;
+      box-shadow: 0 0 24px rgba(106,13,173,0.35);
+    }
+    .btn-book-now:hover { transform: translateY(-2px); box-shadow: 0 0 40px rgba(106,13,173,0.55); color: #fff; }
+    .btn-view-details {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      background: transparent; color: #fff;
+      padding: 0.7rem 1.4rem; border-radius: 6px;
+      text-decoration: none; font-weight: 600;
+      font-size: var(--desc-max);
+      border: 1px solid rgba(255,255,255,0.25);
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .btn-view-details:hover { border-color: rgba(255,255,255,0.5); background: rgba(255,255,255,0.06); color: #fff; }
 
-    @media(max-width:600px){.hero-title{font-size:3rem;}.events-grid{grid-template-columns:1fr;}.countdown-inner{gap:1.5rem;}}
+    /* Slider arrows */
+    .slider-arrow {
+      position: absolute; top: 50%; transform: translateY(-50%);
+      z-index: 10; width: 44px; height: 44px;
+      background: rgba(8,8,14,0.65);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 50%; cursor: pointer; color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; transition: background 0.2s, border-color 0.2s;
+    }
+    .slider-arrow:hover { background: rgba(106,13,173,0.45); border-color: rgba(106,13,173,0.5); }
+    .slider-arrow.prev { left: 1.2rem; }
+    .slider-arrow.next { right: 1.2rem; }
+
+    /* Slider dots */
+    .slider-dots {
+      position: absolute; bottom: 1.4rem; left: 50%; transform: translateX(-50%);
+      z-index: 10; display: flex; align-items: center; gap: 0.5rem;
+    }
+    .slider-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: rgba(255,255,255,0.3); cursor: pointer;
+      transition: background 0.3s, width 0.3s, border-radius 0.3s;
+    }
+    .slider-dot.active {
+      width: 24px; border-radius: 4px;
+      background: var(--accent);
+    }
+
+    /* ── SPONSORS BAR ── */
+    .sponsors-bar {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 0.7rem 2rem;
+      overflow: hidden;
+      position: relative; z-index: 1;
+    }
+    .sponsors-label {
+      text-align: center;
+      font-family: var(--font-mono);
+      font-size: var(--desc-max);
+      letter-spacing: 3px;
+      color: var(--muted);
+      margin-bottom: 0.6rem;
+    }
+    .sponsors-track-wrap { overflow: hidden; }
+    .sponsors-track {
+      display: flex; gap: 1.2rem;
+      animation: scrollSponsors 22s linear infinite;
+      width: max-content;
+    }
+    .sponsors-track:hover { animation-play-state: paused; }
+    @keyframes scrollSponsors { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+    .sponsor-item {
+      height: 56px; min-width: 160px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-mono);
+      font-size: var(--desc-max);
+      color: var(--muted);
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+    .sponsor-item img { height: 100%; width: 100%; object-fit: contain; padding: 0.5rem 1rem; }
+
+    /* ── EVENTS GRID ── */
+    .section { max-width:1100px; margin:0 auto; padding:4rem 2rem; position:relative; z-index:1; }
+    .section-tag { font-family:var(--font-mono); font-size:var(--desc-max); letter-spacing:3px; color:var(--accent); display:block; margin-bottom:0.4rem; text-transform:uppercase; }
+    .section-title { font-family:var(--font-display); font-size:clamp(1.6rem,3.5vw,var(--title-max)); letter-spacing:2px; color:#fff; margin-bottom:1.8rem; }
+
+    .events-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:1.2rem; }
+    .event-card { background:var(--card); border:1px solid var(--border); border-radius:12px; overflow:hidden; transition:border-color 0.2s, transform 0.2s; display:flex; flex-direction:column; }
+    .event-card:hover { border-color:rgba(106,13,173,0.3); transform:translateY(-4px); }
+    .event-card.featured { border-color:rgba(106,13,173,0.4); }
+    .event-card-top { height:2px; background:linear-gradient(90deg,transparent,#6A0DAD,transparent); }
+
+    .event-poster {
+      height: 130px;
+      background: linear-gradient(135deg,#0B0B0F,#1a0a2e,#2d0a5c);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 3rem; position: relative; overflow: hidden;
+    }
+    .event-poster img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+    .featured-badge { position:absolute; top:8px; left:8px; background:var(--accent); color:#fff; font-family:var(--font-mono); font-size:0.55rem; letter-spacing:2px; padding:0.18rem 0.55rem; border-radius:2px; font-weight:700; z-index:2; }
+    .sold-out-overlay { position:absolute; inset:0; background:rgba(8,8,14,0.75); display:flex; align-items:center; justify-content:center; font-family:var(--font-display); font-size:1.3rem; letter-spacing:3px; color:var(--error); z-index:3; }
+
+    .event-body { padding:1.1rem; flex:1; display:flex; flex-direction:column; }
+    .event-name { font-family:var(--font-display); font-size:1.2rem; letter-spacing:1.5px; color:#fff; margin-bottom:0.65rem; }
+    .event-meta { display:flex; flex-direction:column; gap:0.32rem; margin-bottom:0.8rem; }
+    .event-meta-item { display:flex; align-items:center; gap:0.4rem; font-size:var(--desc-max); color:var(--muted); }
+    .event-meta-item i { color:var(--accent); width:13px; }
+    .tier-pills { display:flex; flex-wrap:wrap; gap:0.35rem; margin-bottom:1rem; }
+    .tier-pill { font-family:var(--font-mono); font-size:0.55rem; letter-spacing:1px; padding:0.18rem 0.55rem; border-radius:10px; border:1px solid; }
+    .event-footer { display:flex; align-items:center; justify-content:space-between; margin-top:auto; }
+    .event-price { font-family:var(--font-display); font-size:1.3rem; color:var(--accent); }
+    .event-price span { font-family:var(--font-body); font-size:var(--desc-max); color:var(--muted); font-weight:400; }
+    .btn-ev-book {
+      display:flex; align-items:center; gap:0.35rem;
+      background:var(--accent); color:#fff;
+      padding:0.55rem 1.1rem; border-radius:5px;
+      text-decoration:none; font-weight:700;
+      font-size:var(--desc-max); letter-spacing:0.5px;
+      transition:box-shadow 0.2s, transform 0.15s; border:none; cursor:pointer;
+    }
+    .btn-ev-book:hover { box-shadow:0 0 20px rgba(106,13,173,0.4); transform:translateY(-1px); color:#fff; }
+    .btn-ev-book.disabled { background:rgba(255,255,255,0.08); color:var(--muted); cursor:not-allowed; pointer-events:none; }
+
+    .no-events { text-align:center; padding:3.5rem; background:var(--card); border:1px solid var(--border); border-radius:12px; }
+    .no-events-icon { font-size:2.5rem; margin-bottom:0.8rem; }
+    .no-events-title { font-family:var(--font-display); font-size:1.3rem; color:#fff; margin-bottom:0.4rem; }
+    .no-events-sub { color:var(--muted); font-size:var(--desc-max); }
+
+    footer { border-top:1px solid var(--border); padding:1.8rem 2rem; text-align:center; position:relative; z-index:1; }
+    .f-logo { font-family:var(--font-display); font-size:1.5rem; letter-spacing:4px; color:#fff; margin-bottom:0.3rem; }
+    .f-logo span { color:var(--accent); }
+    .f-sub { font-size:var(--desc-max); color:var(--muted); }
+
+    @media(max-width:600px){
+      .hero-slider{ max-height:520px; }
+      .events-grid{ grid-template-columns:1fr; }
+      .slider-arrow{ display:none; }
+    }
   </style>
 </head>
 <body>
-  <div class="orb1"></div>
-  <div class="orb2"></div>
 
   <%- include('../partials/navbar') %>
 
-  <!-- HERO -->
-  <section class="hero">
-    <div>
-      <div class="hero-tag"><div class="live-dot"></div> NIGHTPASS · KOCHI · 2026</div>
-      <h1 class="hero-title">YOUR<br/><span class="a">NIGHT</span><span class="d"> STARTS</span><br/>HERE</h1>
-      <p class="hero-sub">Book tickets for Kochi's most electrifying underground parties. Verified entry. QR passes. No queues.</p>
-      <div class="hero-cta">
-        <% if (locals.user && user) { %>
-          <a href="#events" class="btn-hero"><i class="bi bi-ticket-perforated-fill"></i> Browse Events</a>
-          <a href="/user/profile" class="btn-hero-out"><i class="bi bi-person-fill"></i> My Profile</a>
-        <% } else { %>
-          <a href="#events" class="btn-hero"><i class="bi bi-ticket-perforated-fill"></i> Browse Events</a>
-          <a href="/auth/signup" class="btn-hero-out"><i class="bi bi-person-plus"></i> Create Account</a>
+  <!-- ═══════════════ HERO SLIDER ═══════════════ -->
+  <%
+    const tierColors = {standard:'#a0a0a0',silver:'#c0c8d8',gold:'#f5c842',platinum:'#6A0DAD',vip:'#bf80ff',general:'#a0a0a0'};
+    const sliderEvents = events && events.length ? events : [];
+  %>
+
+  <% if (sliderEvents.length > 0) { %>
+  <div class="hero-slider" id="heroSlider">
+
+    <% sliderEvents.forEach(function(ev, idx){ %>
+    <%
+      const evSoldOut = ev.ticketTypes.length > 0 && ev.ticketTypes.every(t => t.bookedSeats >= t.totalSeats);
+      const evMinPrice = ev.ticketTypes.filter(t=>t.isActive&&t.bookedSeats<t.totalSeats);
+      const minP = evMinPrice.length ? Math.min(...evMinPrice.map(t=>t.price)) : 0;
+
+      // Choose banner: use bannerDesktop/bannerMobile if set, else gradient fallback
+      const hasBanner = ev.bannerDesktop || ev.bannerMobile;
+      const bgDesktop = ev.bannerDesktop || '';
+      const bgMobile  = ev.bannerMobile  || ev.bannerDesktop || '';
+    %>
+    <div class="slide <%= idx===0?'active':'' %>" data-index="<%= idx %>">
+
+      <!-- Background banner -->
+      <div class="slide-bg"
+        style="<% if(hasBanner){ %>background-image:url('<%= bgDesktop %>')<% } else { %>background:linear-gradient(135deg,#0a0014 0%,#1a0030 40%,#2a0050 70%,#600020 100%)<% } %>;"
+        id="slideBg<%= idx %>">
+      </div>
+
+      <!-- Content overlay -->
+      <div class="slide-content">
+        <span class="slide-date">
+          <%= new Date(ev.date).toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'}).toUpperCase() %>
+        </span>
+
+        <!-- Split name: first word white, second purple -->
+        <%
+          const nameParts = ev.name.trim().split(' ');
+          const firstName = nameParts[0] || '';
+          const restName  = nameParts.slice(1).join(' ') || '';
+        %>
+        <div class="slide-name">
+          <%= firstName %><% if(restName){ %><br/><span class="accent"><%= restName %></span><% } %>
+        </div>
+
+        <div class="slide-venue">
+          <i class="bi bi-geo-alt-fill"></i>
+          <%= ev.venue %>
+        </div>
+
+        <% if(ev.description){ %>
+        <p class="slide-desc"><%= ev.description.substring(0,120) %><%= ev.description.length>120?'…':'' %></p>
         <% } %>
+
+        <div class="slide-btns">
+          <% if (evSoldOut) { %>
+            <span class="btn-book-now" style="opacity:0.5;cursor:not-allowed;">Sold Out</span>
+          <% } else if (locals.user && user) { %>
+            <a href="/booking/event/<%= ev._id %>" class="btn-book-now"><i class="bi bi-ticket-perforated-fill"></i> Book Now</a>
+          <% } else { %>
+            <a href="/booking/event/<%= ev._id %>" class="btn-book-now"><i class="bi bi-ticket-perforated-fill"></i> Book Now</a>
+          <% } %>
+          <a href="#events" class="btn-view-details">View Details</a>
+        </div>
       </div>
     </div>
-  </section>
+    <% }); %>
 
-  <!-- COUNTDOWN (shows for next upcoming event) -->
-  <% if (event) { %>
-  <div class="countdown-bar">
-    <div class="countdown-inner">
-      <div style="font-family:'Space Mono',monospace;font-size:0.62rem;letter-spacing:2px;color:var(--muted);margin-right:1rem;">NEXT EVENT IN</div>
-      <div class="cd-item"><div class="cd-num" id="cdDays">--</div><div class="cd-lbl">Days</div></div>
-      <div class="cd-sep">:</div>
-      <div class="cd-item"><div class="cd-num" id="cdHours">--</div><div class="cd-lbl">Hours</div></div>
-      <div class="cd-sep">:</div>
-      <div class="cd-item"><div class="cd-num" id="cdMins">--</div><div class="cd-lbl">Minutes</div></div>
-      <div class="cd-sep">:</div>
-      <div class="cd-item"><div class="cd-num" id="cdSecs">--</div><div class="cd-lbl">Seconds</div></div>
+    <!-- Arrows -->
+    <% if(sliderEvents.length > 1){ %>
+    <button class="slider-arrow prev" onclick="sliderMove(-1)" aria-label="Previous">
+      <i class="bi bi-chevron-left"></i>
+    </button>
+    <button class="slider-arrow next" onclick="sliderMove(1)" aria-label="Next">
+      <i class="bi bi-chevron-right"></i>
+    </button>
+    <% } %>
+
+    <!-- Dots -->
+    <div class="slider-dots" id="sliderDots">
+      <% sliderEvents.forEach(function(ev, idx){ %>
+      <div class="slider-dot <%= idx===0?'active':'' %>" onclick="sliderGo(<%= idx %>)"></div>
+      <% }); %>
     </div>
+  </div>
+  <% } else { %>
+  <!-- Fallback hero if no events -->
+  <div class="hero-slider" style="display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1rem;background:linear-gradient(135deg,#0a0014,#1a0030);">
+    <div style="font-family:'Anton',sans-serif;font-size:var(--title-max);color:#fff;letter-spacing:3px;text-align:center;">YOUR NIGHT<br/><span style="color:var(--accent);">STARTS HERE</span></div>
+    <p style="color:var(--muted);font-size:var(--desc-max);text-align:center;">Kochi's most electrifying underground parties.</p>
+    <a href="/auth/signup" class="btn-book-now"><i class="bi bi-person-plus"></i> Create Account</a>
   </div>
   <% } %>
 
-  <!-- EVENTS -->
+  <!-- ═══════════════ SPONSORS BAR ═══════════════ -->
+  <div class="sponsors-bar">
+    <div class="sponsors-label">SPONSORS</div>
+    <div class="sponsors-track-wrap">
+      <div class="sponsors-track" id="sponsorsTrack">
+        <!-- Duplicated for seamless scroll -->
+        <% [1,2,3,4,5,6,1,2,3,4,5,6].forEach(function(n){ %>
+        <div class="sponsor-item">Banner <%= n %></div>
+        <% }); %>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ EVENTS GRID ═══════════════ -->
   <div class="section" id="events">
     <span class="section-tag">// upcoming events</span>
     <div class="section-title">EVENTS</div>
 
-    <% const tierColors = {standard:'#a0a0a0',silver:'#c0c8d8',gold:'#f5c842',platinum:'#c8ff00',vip:'#bf80ff',general:'#a0a0a0'}; %>
-
     <% if (!events || events.length === 0) { %>
-      <div class="no-events">
-        <div class="no-events-icon">🎶</div>
-        <div class="no-events-title">NO EVENTS YET</div>
-        <div class="no-events-sub">Check back soon — something big is coming.</div>
-      </div>
+    <div class="no-events">
+      <div class="no-events-icon">🎶</div>
+      <div class="no-events-title">NO EVENTS YET</div>
+      <div class="no-events-sub">Check back soon — something big is coming.</div>
+    </div>
     <% } else { %>
-      <div class="events-grid">
-        <% events.forEach(function(ev) { %>
-        <%
-          const isSoldOut = ev.ticketTypes.length > 0 && ev.ticketTypes.every(t => t.bookedSeats >= t.totalSeats);
-          const activeTiers = ev.ticketTypes.filter(t => t.isActive);
-          const minPrice = activeTiers.length ? Math.min(...activeTiers.map(t => t.price)) : 0;
-        %>
-        <div class="event-card <%= ev.isFeatured ? 'featured' : '' %>">
-          <div class="event-card-top"></div>
-          <div class="event-poster">
+    <div class="events-grid">
+      <% events.forEach(function(ev){ %>
+      <%
+        const isSoldOut = ev.ticketTypes.length > 0 && ev.ticketTypes.every(t => t.bookedSeats >= t.totalSeats);
+        const activeTiers = ev.ticketTypes.filter(t => t.isActive);
+        const minPrice = activeTiers.length ? Math.min(...activeTiers.map(t => t.price)) : 0;
+      %>
+      <div class="event-card <%= ev.isFeatured?'featured':'' %>">
+        <div class="event-card-top"></div>
+        <div class="event-poster">
+          <% if(ev.bannerDesktop || ev.bannerMobile){ %>
+            <img src="<%= ev.bannerDesktop||ev.bannerMobile %>" alt="<%= ev.name %>" loading="lazy"/>
+          <% } else { %>
             <%= ev.poster || '🎶' %>
-            <% if (ev.isFeatured) { %><div class="featured-badge">FEATURED</div><% } %>
-            <% if (isSoldOut) { %><div class="sold-out-overlay">SOLD OUT</div><% } %>
+          <% } %>
+          <% if(ev.isFeatured){ %><div class="featured-badge">FEATURED</div><% } %>
+          <% if(isSoldOut){ %><div class="sold-out-overlay">SOLD OUT</div><% } %>
+        </div>
+        <div class="event-body">
+          <div class="event-name"><%= ev.name.toUpperCase() %></div>
+          <div class="event-meta">
+            <div class="event-meta-item"><i class="bi bi-calendar3"></i> <%= new Date(ev.date).toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'long',year:'numeric'}) %></div>
+            <div class="event-meta-item"><i class="bi bi-clock"></i> <%= ev.doorsOpen %> – <%= ev.endTime %></div>
+            <div class="event-meta-item"><i class="bi bi-geo-alt-fill"></i> <%= ev.venue %></div>
+            <div class="event-meta-item"><i class="bi bi-person-check-fill"></i> <%= ev.ageLimit %>+ · <%= ev.dressCode %></div>
           </div>
-          <div class="event-body">
-            <div class="event-name"><%= ev.name.toUpperCase() %></div>
-            <div class="event-meta">
-              <div class="event-meta-item"><i class="bi bi-calendar3"></i> <%= new Date(ev.date).toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'long',year:'numeric'}) %></div>
-              <div class="event-meta-item"><i class="bi bi-clock"></i> <%= ev.doorsOpen %> – <%= ev.endTime %></div>
-              <div class="event-meta-item"><i class="bi bi-geo-alt-fill"></i> <%= ev.venue %></div>
-              <div class="event-meta-item"><i class="bi bi-person-check-fill"></i> <%= ev.ageLimit %>+ · <%= ev.dressCode %></div>
+          <div class="tier-pills">
+            <% ev.ticketTypes.filter(t=>t.isActive).forEach(function(t){ %>
+            <span class="tier-pill" style="color:<%= tierColors[t.category]||'#6A0DAD' %>;border-color:<%= tierColors[t.category]||'#6A0DAD' %>33;background:<%= tierColors[t.category]||'#6A0DAD' %>11;">
+              <%= t.name %> · ₹<%= t.price.toLocaleString('en-IN') %>
+            </span>
+            <% }); %>
+          </div>
+          <div class="event-footer">
+            <div class="event-price">
+              <% if(minPrice > 0){ %>₹<%= minPrice.toLocaleString('en-IN') %> <span>onwards</span><% } %>
             </div>
-            <!-- Ticket tier pills -->
-            <div class="tier-pills">
-              <% ev.ticketTypes.filter(t=>t.isActive).forEach(function(t){ %>
-              <span class="tier-pill" style="color:<%= tierColors[t.category]||'#c8ff00' %>;border-color:<%= tierColors[t.category]||'#c8ff00' %>33;background:<%= tierColors[t.category]||'#c8ff00' %>11;">
-                <%= t.name %> · ₹<%= t.price.toLocaleString('en-IN') %>
-              </span>
-              <% }); %>
-            </div>
-            <div class="event-footer">
-              <div class="event-price">
-                <% if (minPrice > 0) { %>₹<%= minPrice.toLocaleString('en-IN') %> <span>onwards</span><% } %>
-              </div>
-              <% if (isSoldOut) { %>
-                <span class="btn-book disabled"><i class="bi bi-x-circle"></i> Sold Out</span>
-              <% } else if (locals.user && user) { %>
-                <a href="/booking/<%= ev._id %>" class="btn-book"><i class="bi bi-ticket-perforated-fill"></i> Book Now</a>
-              <% } else { %>
-                <a href="/auth/login?next=/booking/<%= ev._id %>" class="btn-book"><i class="bi bi-ticket-perforated-fill"></i> Book Now</a>
-              <% } %>
-            </div>
+            <% if(isSoldOut){ %>
+              <span class="btn-ev-book disabled"><i class="bi bi-x-circle"></i> Sold Out</span>
+            <% } else if(locals.user && user){ %>
+              <a href="/booking/event/<%= ev._id %>" class="btn-ev-book"><i class="bi bi-ticket-perforated-fill"></i> Book Now</a>
+            <% } else { %>
+              <a href="/booking/event/<%= ev._id %>" class="btn-ev-book"><i class="bi bi-ticket-perforated-fill"></i> Book Now</a>
+            <% } %>
           </div>
         </div>
-        <% }); %>
       </div>
+      <% }); %>
+    </div>
     <% } %>
   </div>
 
-  <footer>
-    <div class="f-logo">NIGHT<span>PASS</span></div>
-    <div class="f-sub">© 2026 NightPass · Kochi · All rights reserved.</div>
+  <!-- ═══════════════ ABOUT SECTION ═══════════════ -->
+  <div class="section" id="about" style="padding-top:2rem;">
+    <span class="section-tag">// who we are</span>
+    <div class="section-title">ABOUT US</div>
+
+    <div class="about-grid">
+      <!-- Vision card (highlighted) -->
+      <div class="about-card about-card--active">
+        <div class="about-card-icon">
+          <i class="bi bi-eye"></i>
+        </div>
+        <h3 class="about-card-title">Our Vision</h3>
+        <p class="about-card-desc">To elevate Kerala's indigenous musical formats to a global cinematic standard while preserving their authentic, raw emotion.</p>
+        <ul class="about-checklist">
+          <li><i class="bi bi-check2"></i> Global representation of regional art</li>
+          <li><i class="bi bi-check2"></i> Sustaining authentic cultural roots</li>
+          <li><i class="bi bi-check2"></i> Empowering independent musicians</li>
+        </ul>
+      </div>
+
+      <!-- Mission card -->
+      <div class="about-card">
+        <div class="about-card-icon">
+          <i class="bi bi-bullseye"></i>
+        </div>
+        <h3 class="about-card-title">Our Mission</h3>
+        <p class="about-card-desc">Creating world-class live event experiences that bridge the gap between traditional artists and modern audiences.</p>
+        <ul class="about-checklist">
+          <li><i class="bi bi-check2"></i> Orchestrating 50+ mega events yearly</li>
+          <li><i class="bi bi-check2"></i> Nurturing 1000+ upcoming artists</li>
+          <li><i class="bi bi-check2"></i> Establishing premium venues across Kerala</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ CONTACT SECTION ═══════════════ -->
+  <div class="section" id="contact" style="padding-top:1rem;">
+    <span class="section-tag">// get in touch</span>
+    <div class="section-title">CONTACT US</div>
+
+    <div class="contact-grid">
+      <div class="contact-info">
+        <div class="contact-item">
+          <div class="contact-icon"><i class="bi bi-geo-alt-fill"></i></div>
+          <div>
+            <div class="contact-label">Address</div>
+            <div class="contact-val">Kochi, Kerala, India</div>
+          </div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-icon"><i class="bi bi-envelope-fill"></i></div>
+          <div>
+            <div class="contact-label">Email</div>
+            <div class="contact-val">info@nightpass.in</div>
+          </div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-icon"><i class="bi bi-telephone-fill"></i></div>
+          <div>
+            <div class="contact-label">Phone</div>
+            <div class="contact-val">+91 98765 43210</div>
+          </div>
+        </div>
+        <div class="contact-socials">
+          <a href="#" class="c-soc"><i class="bi bi-facebook"></i></a>
+          <a href="#" class="c-soc"><i class="bi bi-instagram"></i></a>
+          <a href="#" class="c-soc"><i class="bi bi-twitter-x"></i></a>
+          <a href="#" class="c-soc"><i class="bi bi-youtube"></i></a>
+        </div>
+      </div>
+
+      <form class="contact-form" onsubmit="handleContactForm(event)">
+        <div class="cf-row">
+          <div class="cf-group">
+            <label class="cf-label">Your Name</label>
+            <input class="cf-input" type="text" placeholder="John Doe" required />
+          </div>
+          <div class="cf-group">
+            <label class="cf-label">Email</label>
+            <input class="cf-input" type="email" placeholder="you@email.com" required />
+          </div>
+        </div>
+        <div class="cf-group">
+          <label class="cf-label">Subject</label>
+          <input class="cf-input" type="text" placeholder="Event enquiry, partnership..." required />
+        </div>
+        <div class="cf-group">
+          <label class="cf-label">Message</label>
+          <textarea class="cf-input cf-textarea" placeholder="Tell us more..." required></textarea>
+        </div>
+        <button type="submit" class="cf-submit">
+          <i class="bi bi-send-fill"></i> Send Message
+        </button>
+        <div class="cf-success" id="cfSuccess" style="display:none;">
+          <i class="bi bi-check-circle-fill"></i> Message sent! We'll get back to you soon.
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ═══════════════ RICH FOOTER ═══════════════ -->
+  <footer class="site-footer" id="footer">
+    <div class="site-footer-inner">
+      <!-- Brand col -->
+      <div class="footer-brand">
+        <div class="footer-logo">
+          <i class="bi bi-music-note-beamed"></i>
+          <span><%= locals.appName || 'NightPass' %></span>
+        </div>
+        <p class="footer-tagline">A premium collective dedicated to scaling the musical heritage of Kerala through grand cinematic live events.</p>
+        <div class="footer-socials">
+          <a href="#" class="f-soc"><i class="bi bi-facebook"></i></a>
+          <a href="#" class="f-soc"><i class="bi bi-instagram"></i></a>
+          <a href="#" class="f-soc"><i class="bi bi-twitter-x"></i></a>
+          <a href="#" class="f-soc"><i class="bi bi-youtube"></i></a>
+        </div>
+      </div>
+
+      <!-- Quick Links -->
+      <div class="footer-col">
+        <div class="footer-col-title">Quick Links</div>
+        <div class="footer-col-line"></div>
+        <a href="/" class="footer-link">Home</a>
+        <a href="/#events" class="footer-link">Browse Events</a>
+        <a href="/#about" class="footer-link">About Us</a>
+        <a href="/#contact" class="footer-link">Contact Us</a>
+      </div>
+
+      <!-- Support -->
+      <div class="footer-col">
+        <div class="footer-col-title">Support</div>
+        <div class="footer-col-line"></div>
+        <a href="#" class="footer-link">FAQ</a>
+        <a href="#" class="footer-link">Terms & Conditions</a>
+        <a href="#" class="footer-link">Privacy Policy</a>
+        <a href="#" class="footer-link">Cancellation Policy</a>
+      </div>
+
+      <!-- Contact Us -->
+      <div class="footer-col">
+        <div class="footer-col-title">Contact Us</div>
+        <div class="footer-col-line"></div>
+        <div class="footer-contact-item"><i class="bi bi-geo-alt-fill"></i> Kochi, Kerala, India — 682001</div>
+        <div class="footer-contact-item"><i class="bi bi-envelope-fill"></i> info@nightpass.in</div>
+        <div class="footer-contact-item"><i class="bi bi-telephone-fill"></i> +91 98765 43210</div>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      © 2026 <%= locals.appName || 'NightPass' %>. All rights reserved.
+    </div>
   </footer>
 
+  <!-- ═══════════════ STYLES FOR NEW SECTIONS ═══════════════ -->
+  <style>
+    /* About */
+    .about-grid { display:grid; grid-template-columns:1fr 1fr; gap:1.2rem; }
+    @media(max-width:700px){ .about-grid{ grid-template-columns:1fr; } }
+
+    .about-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 2rem 1.8rem;
+      transition: border-color 0.2s;
+    }
+    .about-card--active {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(106,13,173,0.18), 0 8px 40px rgba(106,13,173,0.08);
+    }
+    .about-card-icon {
+      width: 46px; height: 46px; border-radius: 50%;
+      border: 2px solid var(--accent);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--accent); font-size: 1.15rem;
+      margin-bottom: 1.2rem;
+    }
+    .about-card-title {
+      font-family: var(--font-body); font-weight: 700;
+      font-size: 1.35rem; color: #fff; margin-bottom: 0.75rem;
+    }
+    .about-card-desc {
+      font-size: var(--desc-max); color: var(--muted);
+      line-height: 1.7; margin-bottom: 1.1rem;
+    }
+    .about-checklist { list-style: none; display: flex; flex-direction: column; gap: 0.55rem; }
+    .about-checklist li {
+      display: flex; align-items: center; gap: 0.6rem;
+      font-size: var(--desc-max); color: #ccc;
+    }
+    .about-checklist li i { color: var(--accent); font-size: 0.85rem; flex-shrink: 0; }
+
+    /* Contact */
+    .contact-grid { display:grid; grid-template-columns:1fr 1.4fr; gap:2rem; }
+    @media(max-width:760px){ .contact-grid{ grid-template-columns:1fr; } }
+
+    .contact-info { display:flex; flex-direction:column; gap:1.2rem; }
+    .contact-item { display:flex; align-items:flex-start; gap:1rem; }
+    .contact-icon {
+      width:40px; height:40px; border-radius:8px; flex-shrink:0;
+      background:var(--accent-dim); border:1px solid rgba(106,13,173,0.25);
+      display:flex; align-items:center; justify-content:center;
+      color:var(--accent); font-size:0.95rem;
+    }
+    .contact-label { font-family:var(--font-mono); font-size:0.6rem; letter-spacing:2px; color:var(--muted); margin-bottom:0.2rem; text-transform:uppercase; }
+    .contact-val { font-size:var(--desc-max); color:#fff; font-weight:500; }
+    .contact-socials { display:flex; gap:0.6rem; margin-top:0.5rem; }
+    .c-soc {
+      width:38px; height:38px; border-radius:8px;
+      background:rgba(255,255,255,0.05); border:1px solid var(--border);
+      display:flex; align-items:center; justify-content:center;
+      color:var(--muted); font-size:0.9rem; text-decoration:none;
+      transition:background 0.2s, color 0.2s, border-color 0.2s;
+    }
+    .c-soc:hover { background:rgba(106,13,173,0.2); color:#fff; border-color:rgba(106,13,173,0.4); }
+
+    .contact-form { display:flex; flex-direction:column; gap:0.9rem; }
+    .cf-row { display:grid; grid-template-columns:1fr 1fr; gap:0.9rem; }
+    @media(max-width:500px){ .cf-row{ grid-template-columns:1fr; } }
+    .cf-group { display:flex; flex-direction:column; gap:0.35rem; }
+    .cf-label { font-family:var(--font-mono); font-size:0.6rem; letter-spacing:2px; color:var(--muted); text-transform:uppercase; }
+    .cf-input {
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:6px; color:#fff; font-family:var(--font-body);
+      font-size:var(--desc-max); padding:0.7rem 0.9rem; outline:none;
+      transition:border-color 0.2s, box-shadow 0.2s; width:100%;
+    }
+    .cf-input::placeholder { color:#555; }
+    .cf-input:focus { border-color:var(--accent); box-shadow:0 0 0 3px rgba(106,13,173,0.08); }
+    .cf-textarea { resize:vertical; min-height:110px; }
+    .cf-submit {
+      display:flex; align-items:center; justify-content:center; gap:0.5rem;
+      background:var(--accent); color:#fff; border:none; border-radius:6px;
+      font-family:var(--font-body); font-weight:700; font-size:var(--desc-max);
+      padding:0.8rem 1.8rem; cursor:pointer; width:fit-content;
+      transition:box-shadow 0.2s, transform 0.15s;
+      box-shadow:0 0 20px rgba(106,13,173,0.25);
+    }
+    .cf-submit:hover { transform:translateY(-2px); box-shadow:0 0 40px rgba(106,13,173,0.45); }
+    .cf-success {
+      display:flex; align-items:center; gap:0.5rem;
+      background:rgba(0,255,136,0.08); border:1px solid rgba(0,255,136,0.25);
+      border-radius:6px; padding:0.7rem 1rem;
+      color:var(--success); font-size:var(--desc-max);
+    }
+
+    /* Rich Footer */
+    .site-footer {
+      background:#0a0a10;
+      border-top:1px solid var(--border);
+      position:relative; z-index:1;
+    }
+    .site-footer-inner {
+      max-width:1100px; margin:0 auto;
+      padding:3rem 2rem 2rem;
+      display:grid;
+      grid-template-columns:1.6fr 1fr 1fr 1.2fr;
+      gap:2.5rem;
+    }
+    @media(max-width:900px){ .site-footer-inner{ grid-template-columns:1fr 1fr; } }
+    @media(max-width:520px){ .site-footer-inner{ grid-template-columns:1fr; gap:1.8rem; } }
+
+    .footer-logo {
+      display:flex; align-items:center; gap:0.5rem;
+      font-family:var(--font-body); font-weight:700;
+      font-size:var(--body-max); color:#fff; margin-bottom:0.8rem;
+    }
+    .footer-logo i { color:var(--accent); font-size:1.1rem; }
+    .footer-tagline { font-size:var(--desc-max); color:var(--muted); line-height:1.7; margin-bottom:1.1rem; }
+    .footer-socials { display:flex; gap:0.55rem; }
+    .f-soc {
+      width:36px; height:36px; border-radius:50%;
+      background:rgba(255,255,255,0.06); border:1px solid var(--border);
+      display:flex; align-items:center; justify-content:center;
+      color:var(--muted); font-size:0.85rem; text-decoration:none;
+      transition:background 0.2s, color 0.2s;
+    }
+    .f-soc:hover { background:rgba(106,13,173,0.25); color:#fff; }
+
+    .footer-col { display:flex; flex-direction:column; gap:0.1rem; }
+    .footer-col-title { font-family:var(--font-body); font-weight:700; font-size:var(--body-max); color:#fff; margin-bottom:0.5rem; }
+    .footer-col-line { height:2px; width:32px; background:var(--accent); border-radius:2px; margin-bottom:0.8rem; }
+    .footer-link {
+      color:var(--muted); text-decoration:none; font-size:var(--desc-max);
+      padding:0.3rem 0; transition:color 0.2s;
+    }
+    .footer-link:hover { color:#fff; }
+    .footer-contact-item {
+      display:flex; align-items:flex-start; gap:0.6rem;
+      font-size:var(--desc-max); color:var(--muted);
+      padding:0.3rem 0; line-height:1.5;
+    }
+    .footer-contact-item i { color:var(--accent); margin-top:2px; flex-shrink:0; }
+
+    .footer-bottom {
+      border-top:1px solid var(--border);
+      text-align:center; padding:1rem 2rem;
+      font-size:var(--desc-max); color:#555;
+    }
+  </style>
+
+  <!-- ═══════════════ SLIDER SCRIPT ═══════════════ -->
   <script>
-    <% if (event) { %>
-    (function() {
-      const target = new Date('<%= new Date(event.date).toISOString() %>').getTime();
-      function tick() {
-        const diff = target - Date.now();
-        if (diff <= 0) { ['cdDays','cdHours','cdMins','cdSecs'].forEach(id => document.getElementById(id).textContent = '00'); return; }
-        const pad = n => String(n).padStart(2,'0');
-        document.getElementById('cdDays').textContent  = pad(Math.floor(diff/86400000));
-        document.getElementById('cdHours').textContent = pad(Math.floor((diff%86400000)/3600000));
-        document.getElementById('cdMins').textContent  = pad(Math.floor((diff%3600000)/60000));
-        document.getElementById('cdSecs').textContent  = pad(Math.floor((diff%60000)/1000));
+  (function(){
+    const slides = document.querySelectorAll('.slide');
+    const dots   = document.querySelectorAll('.slider-dot');
+    const total  = slides.length;
+    if(!total) return;
+
+    let current = 0;
+    let timer   = null;
+
+    // Mobile: swap bg image to mobile banner
+    const isMobile = window.innerWidth <= 768;
+
+    <% sliderEvents.forEach(function(ev, idx){ %>
+    <% if(ev.bannerMobile || ev.bannerDesktop){ %>
+    (function(){
+      const bg = document.getElementById('slideBg<%= idx %>');
+      if(bg && isMobile){
+        const mobileUrl = '<%= ev.bannerMobile || ev.bannerDesktop %>';
+        if(mobileUrl) bg.style.backgroundImage = "url('" + mobileUrl + "')";
       }
-      tick(); setInterval(tick, 1000);
     })();
     <% } %>
+    <% }); %>
 
-    if (window.history && window.history.replaceState)
-      window.history.replaceState(null, '', window.location.href);
+    function goTo(n) {
+      slides[current].classList.remove('active');
+      dots[current] && dots[current].classList.remove('active');
+      current = (n + total) % total;
+      slides[current].classList.add('active');
+      dots[current] && dots[current].classList.add('active');
+    }
+
+    window.sliderMove = function(dir){ clearTimer(); goTo(current + dir); startTimer(); }
+    window.sliderGo   = function(n)  { clearTimer(); goTo(n);             startTimer(); }
+
+    function startTimer(){ timer = setInterval(function(){ goTo(current + 1); }, 5000); }
+    function clearTimer(){ clearInterval(timer); }
+
+    if(total > 1) startTimer();
+
+    // Pause on hover
+    const slider = document.getElementById('heroSlider');
+    if(slider){
+      slider.addEventListener('mouseenter', clearTimer);
+      slider.addEventListener('mouseleave', function(){ if(total>1) startTimer(); });
+    }
+  })();
+  </script>
+
+  <script>
+    function handleContactForm(e) {
+      e.preventDefault();
+      const btn = e.target.querySelector('.cf-submit');
+      btn.disabled = true;
+      btn.innerHTML = '<span style="width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite;display:inline-block;"></span> Sending...';
+      setTimeout(function() {
+        btn.innerHTML = '<i class="bi bi-send-fill"></i> Send Message';
+        btn.disabled = false;
+        e.target.reset();
+        const ok = document.getElementById('cfSuccess');
+        if(ok){ ok.style.display='flex'; setTimeout(()=>ok.style.display='none', 5000); }
+      }, 1500);
+    }
   </script>
 </body>
 </html>

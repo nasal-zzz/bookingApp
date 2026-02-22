@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../partials/head') %>
+  <title><%= event.name %> — NightPass</title>
+  <style>
+    /* ── HERO BANNER ── */
+    .ev-hero {
+      position: relative;
+      width: 100%;
+      height: 420px;
+      overflow: hidden;
+      background: #0B0B0F;
+    }
+    .ev-hero-img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      object-position: center top;
+      display: block;
+    }
+    .ev-hero-fallback {
+      width: 100%; height: 100%;
+      background: linear-gradient(135deg, #0B0B0F, #1a0a2e, #2d0a5c);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 6rem;
+    }
+    .ev-hero-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to bottom, rgba(11,11,15,0.1) 0%, rgba(11,11,15,0.85) 100%);
+    }
+    .ev-hero-badge {
+      position: absolute; top: 1.2rem; left: 1.2rem;
+      background: #6A0DAD; color: #fff;
+      font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 2px;
+      padding: 0.3rem 0.8rem; border-radius: 2px; font-weight: 700;
+    }
+
+    /* ── LAYOUT ── */
+    .ev-layout {
+      max-width: 1200px; margin: 0 auto;
+      padding: 2rem 1.5rem 5rem;
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      gap: 2.5rem;
+      position: relative; z-index: 1;
+    }
+    @media(max-width: 900px) {
+      .ev-layout { grid-template-columns: 1fr; }
+      .ev-sidebar { order: -1; }
+      .ev-hero { height: 260px; }
+    }
+
+    /* ── LEFT CONTENT ── */
+    .ev-title {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      letter-spacing: 2px; color: #fff; line-height: 1.05;
+      margin-bottom: 0.6rem;
+    }
+    .ev-tagline {
+      font-size: 1rem; color: var(--muted); margin-bottom: 1.2rem; line-height: 1.6;
+    }
+
+    /* Tags */
+    .ev-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.5rem; }
+    .ev-tag {
+      background: rgba(106,13,173,0.12); border: 1px solid rgba(106,13,173,0.4);
+      color: #bf80ff; border-radius: 20px;
+      padding: 0.3rem 0.9rem; font-size: 0.78rem; font-weight: 500;
+    }
+
+    /* Interest bar */
+    .ev-interest {
+      display: flex; align-items: center; justify-content: space-between;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 1rem 1.3rem; margin-bottom: 2rem;
+    }
+    .ev-interest-left { display: flex; align-items: center; gap: 0.7rem; }
+    .ev-interest-icon { font-size: 1.4rem; color: #00FF88; }
+    .ev-interest-count { font-weight: 700; color: #fff; font-size: 1rem; }
+    .ev-interest-label { color: var(--muted); font-size: 0.85rem; }
+    .btn-interested {
+      background: transparent; border: 1.5px solid #6A0DAD;
+      color: #bf80ff; border-radius: 8px; padding: 0.55rem 1.3rem;
+      font-weight: 600; font-size: 0.85rem; cursor: pointer; font-family: var(--font-body);
+      transition: all 0.2s;
+    }
+    .btn-interested:hover, .btn-interested.active {
+      background: #6A0DAD; color: #fff;
+    }
+
+    /* Sections */
+    .ev-section { margin-bottom: 2.5rem; }
+    .ev-section-title {
+      font-family: var(--font-display); font-size: 1.3rem;
+      letter-spacing: 1px; color: #fff; margin-bottom: 1rem;
+      padding-bottom: 0.6rem; border-bottom: 1px solid var(--border);
+    }
+    .ev-about { color: var(--muted); line-height: 1.8; font-size: 0.95rem; }
+    .ev-about p { margin-bottom: 0.8rem; }
+
+    /* Artists grid */
+    .ev-artists { display: flex; flex-wrap: wrap; gap: 1.2rem; }
+    .ev-artist {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 0.5rem; width: 120px;
+    }
+    .ev-artist-img {
+      width: 110px; height: 110px; border-radius: 10px;
+      object-fit: cover; border: 1px solid var(--border);
+      background: var(--surface);
+    }
+    .ev-artist-img-placeholder {
+      width: 110px; height: 110px; border-radius: 10px;
+      background: linear-gradient(135deg, #1a0a2e, #2d0a5c);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2.5rem; border: 1px solid var(--border);
+    }
+    .ev-artist-name { font-weight: 700; color: #fff; font-size: 0.88rem; text-align: center; }
+    .ev-artist-role { color: var(--muted); font-size: 0.75rem; text-align: center; }
+
+    /* Ticket tiers */
+    .ev-tiers { display: flex; flex-direction: column; gap: 0.8rem; }
+    .ev-tier {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 1rem 1.2rem;
+      display: flex; align-items: center; justify-content: space-between;
+      transition: border-color 0.2s;
+    }
+    .ev-tier:hover { border-color: rgba(106,13,173,0.4); }
+    .ev-tier-left { display: flex; align-items: center; gap: 0.9rem; }
+    .ev-tier-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .ev-tier-name { font-weight: 700; color: #fff; font-size: 0.95rem; }
+    .ev-tier-includes { color: var(--muted); font-size: 0.78rem; margin-top: 2px; }
+    .ev-tier-price { font-family: var(--font-display); font-size: 1.3rem; color: var(--accent); }
+    .ev-tier-seats {
+      font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 1px;
+      color: #FF4444; margin-top: 2px; text-align: right;
+    }
+    .ev-tier-soldout { color: var(--muted); font-size: 0.8rem; font-style: italic; }
+
+    /* M-Ticket box */
+    .ev-mticket {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 1rem 1.3rem;
+      display: flex; align-items: center; gap: 1rem;
+    }
+    .ev-mticket-icon { font-size: 1.8rem; color: var(--muted); flex-shrink: 0; }
+    .ev-mticket-text { flex: 1; color: var(--muted); font-size: 0.85rem; line-height: 1.5; }
+    .ev-mticket-link { color: var(--accent); font-weight: 600; font-size: 0.85rem; white-space: nowrap; text-decoration: none; }
+    .ev-mticket-link:hover { text-decoration: underline; }
+
+    /* Terms */
+    .ev-terms {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; overflow: hidden;
+    }
+    .ev-terms-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem 1.3rem; cursor: pointer; user-select: none;
+    }
+    .ev-terms-header-title { font-weight: 700; color: #fff; font-size: 0.95rem; }
+    .ev-terms-chevron { color: var(--muted); transition: transform 0.2s; font-size: 1rem; }
+    .ev-terms-chevron.open { transform: rotate(90deg); }
+    .ev-terms-body { display: none; padding: 0 1.3rem 1rem; }
+    .ev-terms-body.open { display: block; }
+    .ev-terms-body ul { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
+    .ev-terms-body li { color: var(--muted); font-size: 0.85rem; padding-left: 1rem; position: relative; line-height: 1.5; }
+    .ev-terms-body li::before { content: '·'; position: absolute; left: 0; color: var(--accent); }
+
+    /* ── SIDEBAR ── */
+    .ev-sidebar { position: relative; }
+    .ev-sticky { position: sticky; top: 80px; }
+    .ev-info-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; overflow: hidden; margin-bottom: 1rem;
+    }
+    .ev-info-list { padding: 1.3rem; display: flex; flex-direction: column; gap: 1.1rem; }
+    .ev-info-item { display: flex; align-items: flex-start; gap: 1rem; }
+    .ev-info-icon {
+      width: 36px; height: 36px; border-radius: 8px;
+      background: rgba(106,13,173,0.12); border: 1px solid rgba(106,13,173,0.2);
+      display: flex; align-items: center; justify-content: center;
+      color: #bf80ff; font-size: 0.9rem; flex-shrink: 0;
+    }
+    .ev-info-label { font-family: var(--font-mono); font-size: 0.58rem; letter-spacing: 1px; color: var(--muted); margin-bottom: 2px; }
+    .ev-info-value { font-weight: 600; color: #fff; font-size: 0.9rem; line-height: 1.3; }
+    .ev-info-sub { color: var(--muted); font-size: 0.75rem; margin-top: 1px; }
+    .ev-map-link { color: var(--accent); font-size: 0.8rem; text-decoration: none; display: inline-flex; align-items: center; gap: 0.3rem; margin-top: 2px; }
+    .ev-map-link:hover { text-decoration: underline; }
+
+    /* Filling fast warning */
+    .ev-filling {
+      background: rgba(255,183,0,0.08); border: 1px solid rgba(255,183,0,0.3);
+      border-radius: 10px; padding: 0.9rem 1.1rem;
+      display: flex; align-items: center; gap: 0.7rem;
+      margin-bottom: 1rem;
+    }
+    .ev-filling-icon { color: #FFB800; font-size: 1rem; flex-shrink: 0; }
+    .ev-filling-text { color: #FFB800; font-size: 0.83rem; font-weight: 500; }
+
+    /* CTA Block */
+    .ev-cta-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; padding: 1.3rem;
+    }
+    .ev-cta-price { font-family: var(--font-display); font-size: 2.2rem; color: #fff; letter-spacing: 1px; }
+    .ev-cta-price-sub { font-size: 0.75rem; color: #00FF88; font-weight: 600; margin-bottom: 1rem; }
+    .btn-book-now {
+      display: flex; align-items: center; justify-content: center; gap: 0.6rem;
+      width: 100%; padding: 1rem;
+      background: linear-gradient(135deg, #6A0DAD, #904EDD);
+      color: #fff; border: none; border-radius: 10px;
+      font-family: var(--font-display); font-size: 1.1rem; letter-spacing: 2px;
+      cursor: pointer; text-decoration: none;
+      transition: transform 0.15s, box-shadow 0.2s;
+      box-shadow: 0 4px 30px rgba(106,13,173,0.4);
+    }
+    .btn-book-now:hover { transform: translateY(-2px); box-shadow: 0 8px 40px rgba(106,13,173,0.6); color: #fff; }
+    .btn-book-now.disabled { background: rgba(255,255,255,0.1); color: var(--muted); cursor: not-allowed; pointer-events: none; box-shadow: none; }
+    .ev-cta-note { text-align: center; color: var(--muted); font-size: 0.72rem; margin-top: 0.7rem; }
+
+    /* Back link */
+    .ev-back {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      color: var(--muted); text-decoration: none; font-size: 0.82rem;
+      letter-spacing: 1px; text-transform: uppercase; margin-bottom: 1.5rem;
+      transition: color 0.2s; position: relative; z-index: 1; padding: 0 1.5rem;
+      max-width: 1200px; margin: 0 auto; display: flex; padding-top: 1.5rem;
+    }
+    .ev-back:hover { color: #fff; }
+    .ev-back-wrap { max-width: 1200px; margin: 0 auto; padding: 1.2rem 1.5rem 0; }
+  </style>
+</head>
+<body>
+  <div class="orb-tl"></div><div class="orb-br"></div>
+
+  <%- include('../partials/navbar') %>
+
+  <!-- Hero Banner -->
+  <div class="ev-hero">
+    <% if (event.bannerDesktop) { %>
+      <img class="ev-hero-img" src="<%= event.bannerDesktop %>" alt="<%= event.name %>"/>
+    <% } else { %>
+      <div class="ev-hero-fallback"><%= event.poster || '🎶' %></div>
+    <% } %>
+    <div class="ev-hero-overlay"></div>
+    <% if (event.isFeatured) { %><div class="ev-hero-badge">FEATURED</div><% } %>
+  </div>
+
+  <!-- Back link -->
+  <div class="ev-back-wrap">
+    <a href="/" class="back-link"><i class="bi bi-arrow-left"></i> All Events</a>
+  </div>
+
+  <!-- Main Layout -->
+  <div class="ev-layout">
+
+    <!-- LEFT COLUMN -->
+    <div class="ev-left">
+
+      <!-- Title & Tags -->
+      <h1 class="ev-title"><%= event.name.toUpperCase() %></h1>
+      <% if (event.tagline) { %><p class="ev-tagline"><%= event.tagline %></p><% } %>
+
+      <!-- Tags / Genre -->
+      <div class="ev-tags">
+        <% if (event.genre) { %><span class="ev-tag"><%= event.genre %></span><% } %>
+        <% if (event.dressCode) { %><span class="ev-tag"><%= event.dressCode %></span><% } %>
+        <span class="ev-tag"><%= event.ageLimit %>+ Only</span>
+        <% if (event.language) { %><span class="ev-tag"><%= event.language %></span><% } %>
+      </div>
+
+      <!-- Interest Bar -->
+      <div class="ev-interest">
+        <div class="ev-interest-left">
+          <span class="ev-interest-icon">👍</span>
+          <div>
+            <span class="ev-interest-count"><%= event.interestedCount ? (event.interestedCount >= 1000 ? (event.interestedCount/1000).toFixed(1)+'k' : event.interestedCount) : Math.floor(Math.random()*900+100) %></span>
+            <span class="ev-interest-label"> are interested</span>
+          </div>
+        </div>
+        <button class="btn-interested" id="interestedBtn" onclick="toggleInterest()">I'm Interested</button>
+      </div>
+
+      <!-- About -->
+      <% if (event.description) { %>
+      <div class="ev-section">
+        <div class="ev-section-title">About The Event</div>
+        <div class="ev-about">
+          <% event.description.split('\n').forEach(function(para){ %>
+            <% if(para.trim()){ %><p><%= para %></p><% } %>
+          <% }); %>
+        </div>
+      </div>
+      <% } %>
+
+      <!-- Artists / Lineup -->
+      <% if (event.artists && event.artists.length > 0) { %>
+      <div class="ev-section">
+        <div class="ev-section-title">Artists</div>
+        <div class="ev-artists">
+          <% event.artists.forEach(function(artist){ %>
+          <div class="ev-artist">
+            <% if (artist.image) { %>
+              <img class="ev-artist-img" src="<%= artist.image %>" alt="<%= artist.name %>"/>
+            <% } else { %>
+              <div class="ev-artist-img-placeholder">🎤</div>
+            <% } %>
+            <div class="ev-artist-name"><%= artist.name %></div>
+            <div class="ev-artist-role"><%= artist.role || '' %></div>
+          </div>
+          <% }); %>
+        </div>
+      </div>
+      <% } %>
+
+      <!-- Ticket Tiers -->
+      <div class="ev-section">
+        <div class="ev-section-title">Tickets</div>
+        <div class="ev-tiers">
+          <% const tierColors = {standard:'#a0a0a0',silver:'#c0c8d8',gold:'#f5c842',platinum:'#904EDD',vip:'#bf80ff',general:'#a0a0a0'}; %>
+          <% event.ticketTypes.filter(t => t.isActive).forEach(function(t){ %>
+          <%
+            const color   = tierColors[t.category] || '#6A0DAD';
+            const isSO    = t.bookedSeats >= t.totalSeats;
+            const leftPct = Math.round(((t.totalSeats - t.bookedSeats) / t.totalSeats) * 100);
+            const isLow   = !isSO && leftPct <= 20;
+          %>
+          <div class="ev-tier">
+            <div class="ev-tier-left">
+              <div class="ev-tier-dot" style="background:<%= color %>; box-shadow: 0 0 6px <%= color %>88;"></div>
+              <div>
+                <div class="ev-tier-name"><%= t.name %></div>
+                <% if (t.includes && t.includes.length > 0) { %>
+                  <div class="ev-tier-includes"><%= t.includes.join(' · ') %></div>
+                <% } %>
+              </div>
+            </div>
+            <div style="text-align:right;">
+              <% if (isSO) { %>
+                <div class="ev-tier-soldout">Sold Out</div>
+              <% } else { %>
+                <div class="ev-tier-price">₹<%= t.price.toLocaleString('en-IN') %></div>
+                <% if (isLow) { %>
+                  <div class="ev-tier-seats">Only <%= t.totalSeats - t.bookedSeats %> left!</div>
+                <% } %>
+              <% } %>
+            </div>
+          </div>
+          <% }); %>
+        </div>
+      </div>
+
+      <!-- M-Ticket -->
+      <div class="ev-section">
+        <div class="ev-section-title">M-Ticket</div>
+        <div class="ev-mticket">
+          <div class="ev-mticket-icon"><i class="bi bi-phone"></i></div>
+          <div class="ev-mticket-text">Contactless Ticketing &amp; Fast-track Entry with M-ticket.</div>
+          <a href="#" class="ev-mticket-link">Learn How</a>
+        </div>
+      </div>
+
+      <!-- Terms & Conditions -->
+      <div class="ev-section">
+        <div class="ev-terms">
+          <div class="ev-terms-header" onclick="toggleTerms()">
+            <span class="ev-terms-header-title">Terms &amp; Conditions</span>
+            <i class="bi bi-chevron-right ev-terms-chevron" id="termsChevron"></i>
+          </div>
+          <div class="ev-terms-body" id="termsBody">
+            <ul>
+              <li>This event is strictly <%= event.ageLimit %>+. Valid government ID required at entry.</li>
+              <li>Dress code: <strong><%= event.dressCode %></strong>. Management reserves the right to deny entry.</li>
+              <li>Each QR ticket is valid for one-time entry only. No re-entry allowed.</li>
+              <li>Tickets once booked are non-refundable and non-transferable.</li>
+              <li>Outside food, beverages, and prohibited substances are not allowed.</li>
+              <li>NightPass is not responsible for loss or theft of personal belongings.</li>
+              <li>Event timings and artists are subject to change without prior notice.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT SIDEBAR -->
+    <div class="ev-sidebar">
+      <div class="ev-sticky">
+
+        <!-- Event Info Card -->
+        <div class="ev-info-card">
+          <div class="ev-info-list">
+
+            <div class="ev-info-item">
+              <div class="ev-info-icon"><i class="bi bi-calendar3"></i></div>
+              <div>
+                <div class="ev-info-label">DATE</div>
+                <div class="ev-info-value">
+                  <%= new Date(event.date).toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'numeric'}) %>
+                </div>
+                <% if (event.endDate) { %>
+                  <div class="ev-info-sub">– <%= new Date(event.endDate).toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'numeric'}) %></div>
+                  <div class="ev-info-sub">Multi-day Event</div>
+                <% } %>
+              </div>
+            </div>
+
+            <div class="ev-info-item">
+              <div class="ev-info-icon"><i class="bi bi-clock"></i></div>
+              <div>
+                <div class="ev-info-label">TIME</div>
+                <div class="ev-info-value"><%= event.doorsOpen %> Onwards</div>
+                <div class="ev-info-sub">Entry starts at <%= event.doorsOpen %></div>
+              </div>
+            </div>
+
+            <% if (event.duration) { %>
+            <div class="ev-info-item">
+              <div class="ev-info-icon"><i class="bi bi-hourglass-split"></i></div>
+              <div>
+                <div class="ev-info-label">DURATION</div>
+                <div class="ev-info-value"><%= event.duration %></div>
+              </div>
+            </div>
+            <% } %>
+
+            <% if (event.language) { %>
+            <div class="ev-info-item">
+              <div class="ev-info-icon"><i class="bi bi-translate"></i></div>
+              <div>
+                <div class="ev-info-label">LANGUAGE</div>
+                <div class="ev-info-value"><%= event.language %></div>
+              </div>
+            </div>
+            <% } %>
+
+            <% if (event.genre) { %>
+            <div class="ev-info-item">
+              <div class="ev-info-icon"><i class="bi bi-music-note-beamed"></i></div>
+              <div>
+                <div class="ev-info-label">GENRE</div>
+                <div class="ev-info-value"><%= event.genre %></div>
+              </div>
+            </div>
+            <% } %>
+
+            <div class="ev-info-item">
+              <div class="ev-info-icon"><i class="bi bi-geo-alt-fill"></i></div>
+              <div>
+                <div class="ev-info-label">VENUE</div>
+                <div class="ev-info-value"><%= event.venue %></div>
+                <% if (event.venueAddress) { %><div class="ev-info-sub"><%= event.venueAddress %></div><% } %>
+                <a href="https://maps.google.com?q=<%= encodeURIComponent(event.venue + ' ' + (event.venueAddress||'')) %>"
+                   target="_blank" class="ev-map-link">
+                  View on Map <i class="bi bi-box-arrow-up-right"></i>
+                </a>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Filling Fast Warning -->
+        <% const totalSeats = event.ticketTypes.reduce((s,t)=>s+t.totalSeats,0);
+           const bookedSeats = event.ticketTypes.reduce((s,t)=>s+t.bookedSeats,0);
+           const fillPct = totalSeats > 0 ? (bookedSeats/totalSeats)*100 : 0;
+        %>
+        <% if (fillPct >= 50 && fillPct < 100) { %>
+        <div class="ev-filling">
+          <i class="bi bi-exclamation-circle-fill ev-filling-icon"></i>
+          <span class="ev-filling-text">Bookings are filling fast for this venue!</span>
+        </div>
+        <% } %>
+
+        <!-- Price + Book Now CTA -->
+        <div class="ev-cta-card">
+          <%
+            const activeTypes = event.ticketTypes.filter(t => t.isActive && t.bookedSeats < t.totalSeats);
+            const minP = activeTypes.length ? Math.min(...activeTypes.map(t=>t.price)) : null;
+            const isSoldOut = event.ticketTypes.length > 0 && activeTypes.length === 0;
+          %>
+          <% if (minP !== null) { %>
+            <div class="ev-cta-price">₹<%= minP.toLocaleString('en-IN') %></div>
+            <div class="ev-cta-price-sub">Filling Fast</div>
+          <% } %>
+
+          <% if (isSoldOut) { %>
+            <div class="btn-book-now disabled"><i class="bi bi-x-circle"></i> SOLD OUT</div>
+          <% } else if (locals.user && user) { %>
+            <a href="/booking/<%= event._id %>" class="btn-book-now">
+              <i class="bi bi-ticket-perforated-fill"></i> BOOK NOW
+            </a>
+          <% } else { %>
+            <a href="/auth/login?next=/booking/<%= event._id %>" class="btn-book-now">
+              <i class="bi bi-ticket-perforated-fill"></i> BOOK NOW
+            </a>
+          <% } %>
+          <div class="ev-cta-note"><i class="bi bi-shield-check"></i> Secure &nbsp;·&nbsp; <i class="bi bi-qr-code"></i> Instant QR &nbsp;·&nbsp; <i class="bi bi-whatsapp"></i> WhatsApp Ticket</div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    function toggleTerms() {
+      const body    = document.getElementById('termsBody');
+      const chevron = document.getElementById('termsChevron');
+      body.classList.toggle('open');
+      chevron.classList.toggle('open');
+    }
+
+    function toggleInterest() {
+      const btn = document.getElementById('interestedBtn');
+      btn.classList.toggle('active');
+      btn.textContent = btn.classList.contains('active') ? "Interested ✓" : "I'm Interested";
+    }
+  </script>
+</body>
+</html>

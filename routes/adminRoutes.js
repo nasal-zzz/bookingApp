@@ -2,41 +2,47 @@ const express = require('express');
 const router  = express.Router();
 const adminController = require('../controllers/adminController');
 
-// Simple admin password check middleware
+// ── Admin credentials ──
+// Hardcoded admin + support for .env override
+const ADMINS = [
+  { username: 'admin-melatturpattu', password: 'mainAdminMelatturPattu' },
+  // Extra admins can be added here or via env:
+  // { username: process.env.ADMIN_USER, password: process.env.ADMIN_PASSWORD }
+];
+
+const checkAdmin = (username, password) =>
+  ADMINS.some(a => a.username === username && a.password === password);
+
+// ── Auth middleware ──
 const adminAuth = (req, res, next) => {
-  const adminPass = req.session.adminAuth;
-  if (adminPass === process.env.ADMIN_PASSWORD) return next();
-
-  // Check login form submission
+  if (req.session.adminLoggedIn) return next();
   if (req.method === 'POST' && req.path === '/login') return next();
-
-  // Return JSON error for API/fetch requests, HTML for browser navigation
   if (req.path !== '/login') {
-    const isJson = req.headers['content-type'] && req.headers['content-type'].includes('application/json');
-    if (isJson || req.xhr) {
-      return res.status(401).json({ success: false, message: 'Not authenticated. Please log in to admin panel.' });
-    }
+    const isJson = req.headers['content-type']?.includes('application/json') || req.xhr;
+    if (isJson) return res.status(401).json({ success: false, message: 'Not authenticated.' });
     return res.render('admin/login', { title: 'Admin Login — NightPass', error: null });
   }
   next();
 };
 
 router.get('/login', (req, res) => {
-  if (req.session.adminAuth === process.env.ADMIN_PASSWORD) return res.redirect('/admin');
+  if (req.session.adminLoggedIn) return res.redirect('/admin');
   res.render('admin/login', { title: 'Admin Login', error: null });
 });
 
 router.post('/login', (req, res) => {
-  const { password } = req.body;
-  if (password === process.env.ADMIN_PASSWORD) {
-    req.session.adminAuth = password;
+  const { username, password } = req.body;
+  if (checkAdmin(username, password)) {
+    req.session.adminLoggedIn = true;
+    req.session.adminUser = username;
     return res.redirect('/admin');
   }
-  res.render('admin/login', { title: 'Admin Login', error: 'Incorrect password.' });
+  res.render('admin/login', { title: 'Admin Login', error: 'Incorrect username or password.' });
 });
 
 router.get('/logout', (req, res) => {
-  delete req.session.adminAuth;
+  delete req.session.adminLoggedIn;
+  delete req.session.adminUser;
   res.redirect('/admin/login');
 });
 

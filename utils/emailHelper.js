@@ -1,4 +1,5 @@
 const nodemailer = require('nodemailer');
+const { generateTicketPDF } = require('./pdfHelper');
 
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || 'smtp.gmail.com',
@@ -61,10 +62,15 @@ const sendBookingConfirmation = async ({ to, name, booking, event }) => {
           </p>
         </div>
 
-        <div style="text-align:center;margin-top:30px;">
+        <div style="background:rgba(200,255,0,0.06);border:1px solid rgba(200,255,0,0.2);border-radius:8px;padding:16px;margin-top:20px;text-align:center;">
+          <p style="margin:0 0 6px;font-size:13px;color:#c8ff00;font-weight:700;">📎 Your tickets are attached to this email</p>
+          <p style="margin:0;font-size:12px;color:#aaa;">Open the attached file in your browser and press <strong style="color:#fff;">Ctrl+P → Save as PDF</strong> to save your QR tickets.</p>
+        </div>
+
+        <div style="text-align:center;margin-top:20px;">
           <a href="${process.env.APP_URL}/booking/ticket/${booking._id}" 
              style="background:#c8ff00;color:#000;padding:12px 30px;border-radius:4px;text-decoration:none;font-weight:700;letter-spacing:1px;">
-            VIEW MY TICKETS
+            VIEW MY TICKETS ONLINE
           </a>
         </div>
       </div>
@@ -73,14 +79,30 @@ const sendBookingConfirmation = async ({ to, name, booking, event }) => {
       </div>
     </div>`;
 
-  await transporter.sendMail({
+  // Generate ticket PDF buffer
+  let pdfAttachment = null;
+  try {
+    const pdfBuffer = await generateTicketPDF({ booking, event });
+    pdfAttachment = {
+      filename: `NightPass_${booking.bookingRef}_Tickets.html`,
+      content: pdfBuffer,
+      contentType: 'text/html',
+    };
+    console.log('📄 Ticket PDF generated:', pdfBuffer.length, 'bytes');
+  } catch (pdfErr) {
+    console.error('⚠ PDF generation failed (email will send without attachment):', pdfErr.message);
+  }
+
+  const mailOptions = {
     from: `"NightPass" <${process.env.SMTP_USER}>`,
     to,
-    subject: `✅ Booking Confirmed — ${event.name} [${booking.bookingRef}]`,
+    subject: `🎟 Your Tickets — ${event.name} [${booking.bookingRef}]`,
     html,
-  });
+    attachments: pdfAttachment ? [pdfAttachment] : [],
+  };
 
-  console.log(`📧 Confirmation email sent to ${to}`);
+  await transporter.sendMail(mailOptions);
+  console.log(`📧 Confirmation email sent to ${to} ${pdfAttachment ? '(with ticket attachment)' : '(no attachment)'}`);
 };
 
 module.exports = { sendBookingConfirmation };

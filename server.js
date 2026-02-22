@@ -24,6 +24,26 @@ app.use(cookieParser());
 app.use(methodOverride('_method'));
 app.use(express.static(path.join(__dirname, 'public')));
 
+// ── Dedicated QR image route (bypasses ngrok interstitial for Twilio) ──
+app.get('/qr/:filename', (req, res) => {
+  const fs   = require('fs');
+  const path = require('path');
+  // Ensure filename is safe (no path traversal)
+  const filename = path.basename(req.params.filename);
+  const file     = path.join(__dirname, 'public', 'qr', filename);
+  if (!fs.existsSync(file)) {
+    console.warn('QR file not found:', file);
+    return res.status(404).send('QR not found');
+  }
+  res.set({
+    'Content-Type':               'image/png',
+    'ngrok-skip-browser-warning': '1',
+    'Cache-Control':              'public, max-age=86400',
+    'Access-Control-Allow-Origin':'*',
+  });
+  res.sendFile(file);
+});
+
 // ── SESSION (must be before passport) ──
 app.use(session({
   secret: process.env.SESSION_SECRET || 'nightpass_secret_key_2026',

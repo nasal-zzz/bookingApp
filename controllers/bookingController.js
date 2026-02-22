@@ -9,6 +9,22 @@ const User = require('../models/User');
 const { generateTicketId, generateQRCode, buildQRPayload } = require('../utils/qrHelper');
 
 // ── GET /booking/:eventId ──
+
+exports.getEventDetail = async (req, res) => {
+  try {
+    const event = await Event.findById(req.params.eventId);
+    if (!event || !event.isActive) return res.redirect('/');
+    res.render('pages/event-detail', {
+      title: event.name + ' — NightPass',
+      event,
+      user: req.user || null,
+    });
+  } catch (err) {
+    console.error('getEventDetail error:', err);
+    res.redirect('/');
+  }
+};
+
 exports.getBookingPage = async (req, res) => {
   try {
     // Support /booking?event=ID or /booking/EVENT_ID
@@ -243,20 +259,40 @@ exports.verifyPayment = async (req, res) => {
       console.error('User booking link failed (non-critical):', userErr.message);
     }
 
-    // ── Send confirmation email (non-blocking) ──
+    // ── Fetch event doc once for notifications ──
+    let eventDoc = null;
     try {
-      if (req.user.email) {
+      eventDoc = await Event.findById(pending.eventId);
+    } catch(e) { console.error('Event fetch error:', e.message); }
+
+    // ── Send confirmation email (non-blocking) ──
+    if (req.user.email && eventDoc) {
+      try {
         const { sendBookingConfirmation } = require('../utils/emailHelper');
-        const eventDoc = await Event.findById(pending.eventId);
         sendBookingConfirmation({
           to: req.user.email,
           name: req.user.firstName,
           booking,
           event: eventDoc,
         }).catch(e => console.error('Email send error:', e.message));
+      } catch (emailErr) {
+        console.error('Email helper error (non-critical):', emailErr.message);
       }
-    } catch (emailErr) {
-      console.error('Email helper error (non-critical):', emailErr.message);
+    }
+
+    // ── Send WhatsApp ticket link (non-blocking) ──
+    if (req.user.phone && eventDoc) {
+      try {
+        const { sendWhatsAppTickets } = require('../utils/whatsappHelper');
+        sendWhatsAppTickets({
+          phone: req.user.phone,        // already in +91XXXXXXXXXX format
+          name:  req.user.firstName,
+          booking,
+          event: eventDoc,
+        }).catch(e => console.error('WhatsApp ticket send error:', e.message));
+      } catch (waErr) {
+        console.error('WhatsApp helper error (non-critical):', waErr.message);
+      }
     }
 
     // ── Clear session ──

@@ -3,6 +3,51 @@ const Booking = require('../models/Booking');
 const User    = require('../models/User');
 
 // ── GET /admin ── Dashboard
+
+// ── Parse event form body into DB-ready object ──
+function parseEventBody(b) {
+  // Parse tickets
+  let rawTiers = [];
+  try { rawTiers = JSON.parse(b.ticketTypesJson || '[]'); } catch(e) {}
+  const ticketTypes = rawTiers.map(t => ({
+    category:    t.category,
+    price:       parseInt(t.price)        || 0,
+    ageLimit:    parseInt(t.ageLimit)     || 18,
+    ticketType:  t.ticketType             || 'single',
+    totalSeats:  parseInt(t.totalSeats)   || 0,
+    bookedSeats: parseInt(t.bookedSeats)  || 0,
+    terms:       t.terms                  || '',
+    isActive:    t.isActive === true || t.isActive === 'true',
+    isCombo:     t.isCombo  === true || t.isCombo  === 'true',
+    comboCount:  parseInt(t.comboCount)   || 1,
+  }));
+
+  // Parse artists
+  let artists = [];
+  try { artists = JSON.parse(b.artistsJson || '[]'); } catch(e) {}
+
+  return {
+    name:             b.name,
+    shortDescription: b.shortDescription || '',
+    about:            b.about            || '',
+    bannerDesktop:    b.bannerDesktop    || '',
+    bannerMobile:     b.bannerMobile     || '',
+    bannerDetail:     b.bannerDetail     || '',
+    artists,
+    date:             new Date(b.date),
+    doorsOpen:        b.doorsOpen        || '8:00 PM',
+    endTime:          b.endTime          || '4:00 AM',
+    venue:            b.venue,
+    venueAddress:     b.venueAddress     || '',
+    googleMapLink:    b.googleMapLink    || '',
+    dressCode:        b.dressCode        || 'All Black',
+    convenienceFee:   parseInt(b.convenienceFee) || 20,
+    isActive:         b.isActive === 'true' || b.isActive === true,
+    isFeatured:       b.isFeatured === 'true' || b.isFeatured === true,
+    ticketTypes,
+  };
+}
+
 exports.getDashboard = async (req, res) => {
   try {
     const [events, totalBookings, totalUsers] = await Promise.all([
@@ -43,55 +88,17 @@ exports.getNewEvent = (req, res) => {
 exports.postCreateEvent = async (req, res) => {
   try {
     const b = req.body;
-
-    // Parse ticket tiers from hidden JSON field (set by browser JS before submit)
-    let rawTiers = [];
-    try {
-      rawTiers = JSON.parse(b.ticketTypesJson || '[]');
-    } catch(e) {
-      console.error('❌ ticketTypesJson parse error:', e.message, '| raw:', b.ticketTypesJson);
-    }
-    console.log('📋 Create — ticketTypesJson raw:', b.ticketTypesJson);
-    console.log('📋 Create — parsed tiers:', rawTiers.length, JSON.stringify(rawTiers));
-
-    const ticketTypes = rawTiers.map(t => ({
-      name:        (t.name || '').trim(),
-      category:    t.category || 'standard',
-      price:       parseInt(t.price)       || 0,
-      totalSeats:  parseInt(t.totalSeats)  || 0,
-      bookedSeats: parseInt(t.bookedSeats) || 0,
-      includes:    Array.isArray(t.includes) ? t.includes : [],
-      isActive:    true,
-    }));
-
-    const event = await Event.create({
-      name:           b.name,
-      tagline:        b.tagline        || '',
-      description:    b.description   || '',
-      date:           new Date(b.date),
-      doorsOpen:      b.doorsOpen      || '8:00 PM',
-      endTime:        b.endTime        || '4:00 AM',
-      venue:          b.venue,
-      venueAddress:   b.venueAddress   || '',
-      dressCode:      b.dressCode      || 'All Black',
-      ageLimit:       parseInt(b.ageLimit)       || 18,
-      convenienceFee: parseInt(b.convenienceFee) || 20,
-      poster:         b.poster         || '🎶',
-      genre:          b.genre          || 'Electronic',
-      ticketTypes,
-      isActive:   b.isActive   === true || b.isActive === 'on',
-      isFeatured: b.isFeatured === true || b.isFeatured === 'on',
-    });
-
+    const eventData = parseEventBody(b);
+    const event = await Event.create(eventData);
     console.log('✅ Event created:', event.name, '| Tiers:', event.ticketTypes.length);
-    res.redirect('/admin?success=Event+created');
+    return res.redirect('/admin?success=Event+created');
   } catch (err) {
-    console.error('❌ Create event error:', err.message);
-    res.render('admin/event-form', { title: 'New Event — Admin', event: null, error: err.message });
+    console.error('postCreateEvent error:', err);
+    return res.render('admin/event-form', { title: 'New Event', event: null, error: err.message });
   }
 };
 
-// ── GET /admin/events/:id/edit ── Edit form
+
 exports.getEditEvent = async (req, res) => {
   try {
     const event = await Event.findById(req.params.id);
@@ -106,56 +113,18 @@ exports.getEditEvent = async (req, res) => {
 exports.postUpdateEvent = async (req, res) => {
   try {
     const b = req.body;
-
-    // Parse ticket tiers from hidden JSON field
-    let rawTiers2 = [];
-    try {
-      rawTiers2 = JSON.parse(b.ticketTypesJson || '[]');
-    } catch(e) {
-      console.error('❌ ticketTypesJson parse error:', e.message, '| raw:', b.ticketTypesJson);
-    }
-    console.log('📋 Update — ticketTypesJson raw:', b.ticketTypesJson);
-    console.log('📋 Update — parsed tiers:', rawTiers2.length, JSON.stringify(rawTiers2));
-
-    const ticketTypes = rawTiers2.map(t => ({
-      name:        (t.name || '').trim(),
-      category:    t.category || 'standard',
-      price:       parseInt(t.price)       || 0,
-      totalSeats:  parseInt(t.totalSeats)  || 0,
-      bookedSeats: parseInt(t.bookedSeats) || 0,
-      includes:    Array.isArray(t.includes) ? t.includes : [],
-      isActive:    true,
-    }));
-
-    await Event.findByIdAndUpdate(req.params.id, {
-      name:           b.name,
-      tagline:        b.tagline        || '',
-      description:    b.description   || '',
-      date:           new Date(b.date),
-      doorsOpen:      b.doorsOpen      || '8:00 PM',
-      endTime:        b.endTime        || '4:00 AM',
-      venue:          b.venue,
-      venueAddress:   b.venueAddress   || '',
-      dressCode:      b.dressCode      || 'All Black',
-      ageLimit:       parseInt(b.ageLimit)       || 18,
-      convenienceFee: parseInt(b.convenienceFee) || 20,
-      poster:         b.poster         || '🎶',
-      genre:          b.genre          || 'Electronic',
-      ticketTypes,
-      isActive:   b.isActive   === true || b.isActive   === 'on',
-      isFeatured: b.isFeatured === true || b.isFeatured === 'on',
-    });
-
-    console.log('✅ Event updated | Tiers:', ticketTypes.length);
-    res.redirect('/admin?success=Event+updated');
+    const eventData = parseEventBody(b);
+    await Event.findByIdAndUpdate(req.params.id, eventData, { new: true });
+    console.log('✅ Event updated:', req.params.id);
+    return res.redirect('/admin?success=Event+updated');
   } catch (err) {
-    console.error('❌ Update event error:', err.message);
-    const event = await Event.findById(req.params.id).catch(()=>null);
-    res.render('admin/event-form', { title: 'Edit Event — Admin', event, error: err.message });
+    console.error('postUpdateEvent error:', err);
+    const event = await Event.findById(req.params.id).catch(() => null);
+    return res.render('admin/event-form', { title: 'Edit Event', event, error: err.message });
   }
 };
 
-// ── POST /admin/events/:id/delete ── Delete
+
 exports.deleteEvent = async (req, res) => {
   try {
     await Event.findByIdAndDelete(req.params.id);
