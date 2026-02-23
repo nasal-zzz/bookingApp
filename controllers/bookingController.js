@@ -2,60 +2,83 @@ const dns = require('dns');
 dns.setServers(['8.8.8.8', '8.8.4.4']);
 
 const Razorpay = require('razorpay');
-const crypto = require('crypto');
-const Event = require('../models/Event');
-const Booking = require('../models/Booking');
-const User = require('../models/User');
+const crypto   = require('crypto');
+const Event    = require('../models/Event');
+const Booking  = require('../models/Booking');
+const SeatMap  = require('../models/SeatMap');
+const User     = require('../models/User');
 const { generateTicketId, generateQRCode, buildQRPayload } = require('../utils/qrHelper');
 
-// ── GET /booking/:eventId ──
-
-exports.getEventDetail = async (req, res) => {
+// ─────────────────────────────────────────────────────────────
+// STEP 1 — GET /booking/seatmap/:eventId
+// If event has an active seatmap → render seat picker
+// If no seatmap → redirect straight to details page (no zone)
+// ─────────────────────────────────────────────────────────────
+exports.getSeatPicker = async (req, res) => {
   try {
-    const event = await Event.findById(req.params.eventId);
-    if (!event || !event.isActive) return res.redirect('/');
-    res.render('pages/event-detail', {
-      title: event.name + ' — NightPass',
-      event,
-      user: req.user || null,
+    const event   = await Event.findById(req.params.eventId);
+    const seatMap = await SeatMap.findOne({ event: req.params.eventId, isActive: true }).lean();
+    if (!event) return res.redirect('/');
+    if (!seatMap) return res.redirect(`/booking/details/${req.params.eventId}`);
+    const CAT_COLORS = { platinum:'#9D4EDD', gold:'#f5c842', silver:'#c0c8d8', fanfit:'#00FF88', family:'#FF6B6B' };
+    res.render('pages/seatpicker', {
+      title: `Choose Your Zone — ${event.name}`,
+      event, seatMap, CAT_COLORS, user: req.user,
     });
-  } catch (err) {
-    console.error('getEventDetail error:', err);
+  } catch(err) {
+    console.error('getSeatPicker error:', err);
     res.redirect('/');
   }
 };
 
-exports.getBookingPage = async (req, res) => {
+// ─────────────────────────────────────────────────────────────
+// STEP 2 — GET /booking/details/:eventId
+// Render the attendee details form (comes from seatpicker)
+// ─────────────────────────────────────────────────────────────
+exports.getDetailsPage = async (req, res) => {
   try {
-    // Support /booking?event=ID or /booking/EVENT_ID
-    const eventId = req.params.eventId || req.query.event;
-    const event = eventId
-      ? await Event.findOne({ _id: eventId, isActive: true })
-      : await Event.findOne({ isActive: true }).sort({ date: 1 });
-
-    if (!event) {
-      return res.render('pages/error', {
-        title: 'Event Not Found',
-        message: 'This event is no longer available. Check other events!',
-        code: 404,
-      });
-    }
-    res.render('pages/booking', {
-      title: 'Book Tickets — NightPass',
+    const event = await Event.findById(req.params.eventId);
+    if (!event) return res.redirect('/');
+    res.render('pages/booking-details', {
+      title: `Attendee Details — ${event.name}`,
       event,
       user: req.user,
-      error: null,
+      query: req.query,
     });
-  } catch (err) {
-    console.error('getBookingPage error:', err);
-    res.status(500).render('pages/error', { message: err.message, code: 500 });
+  } catch(err) {
+    console.error('getDetailsPage error:', err);
+    res.redirect('/');
   }
 };
 
-// ── POST /booking/create-order ──
+// ─────────────────────────────────────────────────────────────
+// LEGACY — GET /booking/:eventId
+// Keep for backward compat — redirects to seatmap or details
+// ─────────────────────────────────────────────────────────────
+exports.getBookingPage = async (req, res) => {
+  try {
+    const eventId = req.params.eventId || null;
+    const event   = eventId
+      ? await Event.findById(eventId)
+      : await Event.findOne({ isActive: true }).sort({ date: 1 });
+    if (!event) return res.redirect('/');
+
+    const seatMap = await SeatMap.findOne({ event: event._id, isActive: true }).lean();
+    if (seatMap) return res.redirect(`/booking/seatmap/${event._id}`);
+    return res.redirect(`/booking/details/${event._id}`);
+  } catch(err) {
+    console.error('getBookingPage error:', err);
+    res.redirect('/');
+  }
+};
+
+// ─────────────────────────────────────────────────────────────
+// POST /booking/create-order
+// Creates Razorpay order & stores pending data in session
+// ─────────────────────────────────────────────────────────────
 exports.createOrder = async (req, res) => {
   try {
-    const { ticketType, quantity, couponCode, attendees } = req.body;
+    const { ticketType, quantity, couponCode, attendees, zone } = req.body;
     const qty = parseInt(quantity) || 1;
 
     const eventId = req.body.eventId || req.session.pendingEventId;
@@ -64,31 +87,20 @@ exports.createOrder = async (req, res) => {
       : await Event.findOne({ isActive: true }).sort({ date: 1 });
     if (!event) return res.json({ success: false, message: 'Event not found.' });
 
-    // DEBUG — log what we received vs what's in DB
-    console.log('🎟 ticketType received:', JSON.stringify(ticketType));
-    console.log('🎟 eventId received:', eventId);
-    console.log('🎟 event found:', event ? event.name : 'NOT FOUND');
-    console.log('🎟 DB ticketTypes:', event ? event.ticketTypes.map(t => t.name) : []);
-
-    // Find ticket type (case-insensitive, trim whitespace)
     const ttype = event.ticketTypes.find(
-      t => t.name.trim().toLowerCase() === (ticketType || '').trim().toLowerCase()
+      t => (t.category||'').trim().toLowerCase() === (ticketType||'').trim().toLowerCase()
     );
-    if (!ttype) {
-      console.error('❌ No match! received:', ticketType, '| available:', event.ticketTypes.map(t=>t.name));
-      return res.json({ success: false, message: 'Invalid ticket type selected.' });
-    }
+    if (!ttype) return res.json({ success: false, message: 'Invalid ticket type selected.' });
 
     const available = ttype.totalSeats - ttype.bookedSeats;
     if (available <= 0) return res.json({ success: false, message: 'This ticket type is sold out.' });
+    if (qty > 10)       return res.json({ success: false, message: 'Max 10 tickets per booking.' });
     if (available < qty) return res.json({ success: false, message: `Only ${available} seats left.` });
 
-    // Pricing
     const pricePerTicket = ttype.price;
     const subtotal = pricePerTicket * qty;
-    const convFee = event.convenienceFee || 20;
+    const convFee  = event.convenienceFee || 20;
 
-    // Coupon
     const COUPONS = { 'PARTY10': 100, 'NIGHT20': 200, 'FIRST50': 50 };
     let discount = 0;
     if (couponCode && COUPONS[couponCode.toUpperCase()]) {
@@ -97,34 +109,31 @@ exports.createOrder = async (req, res) => {
 
     const totalAmount = Math.max(subtotal - discount + convFee, 0);
 
-    // Create Razorpay order
     const razorpay = new Razorpay({
-      key_id: process.env.RAZORPAY_KEY_ID,
+      key_id:     process.env.RAZORPAY_KEY_ID,
       key_secret: process.env.RAZORPAY_KEY_SECRET,
     });
-
     const order = await razorpay.orders.create({
-      amount: totalAmount * 100,
+      amount:   totalAmount * 100,
       currency: 'INR',
-      receipt: 'NP_' + Date.now(),
+      receipt:  'NP_' + Date.now(),
     });
 
-    // Store everything in session for verify step
     req.session.pendingBooking = {
-      eventId: event._id.toString(),
-      ticketType: ttype.name,
-      quantity: qty,
+      eventId:        event._id.toString(),
+      ticketType:     ttype.category,
+      zone:           zone || '',
+      quantity:       qty,
       pricePerTicket,
       subtotal,
       discount,
-      couponCode: couponCode ? couponCode.toUpperCase() : null,
+      couponCode:     couponCode ? couponCode.toUpperCase() : null,
       convenienceFee: convFee,
       totalAmount,
-      attendees: Array.isArray(attendees) ? attendees : [attendees],
-      orderId: order.id,
+      attendees:      Array.isArray(attendees) ? attendees : [attendees],
+      orderId:        order.id,
     };
 
-    // Force session save
     await new Promise((resolve, reject) => {
       req.session.save(err => err ? reject(err) : resolve());
     });
@@ -132,14 +141,14 @@ exports.createOrder = async (req, res) => {
     console.log('✅ Order created:', order.id, '| Total:', totalAmount);
 
     return res.json({
-      success: true,
-      orderId: order.id,
-      amount: totalAmount * 100,
-      key: process.env.RAZORPAY_KEY_ID,
+      success:  true,
+      orderId:  order.id,
+      amount:   totalAmount * 100,
+      key:      process.env.RAZORPAY_KEY_ID,
       currency: 'INR',
-      prefill: {
-        name: req.user.firstName + ' ' + (req.user.lastName || ''),
-        email: req.user.email || '',
+      prefill:  {
+        name:    (req.user.firstName + ' ' + (req.user.lastName || '')).trim(),
+        email:   req.user.email || '',
         contact: req.user.phone || '',
       },
     });
@@ -149,196 +158,318 @@ exports.createOrder = async (req, res) => {
   }
 };
 
-// ── POST /booking/verify-payment ──
-exports.verifyPayment = async (req, res) => {
+// ─────────────────────────────────────────────────────────────
+// POST /booking/save-pending  — user dismissed Razorpay modal
+// Save booking record with paymentStatus = 'pending'
+// ─────────────────────────────────────────────────────────────
+exports.savePending = async (req, res) => {
   try {
-    const { razorpay_payment_id, razorpay_order_id, razorpay_signature } = req.body;
-
-    console.log('🔍 Verifying payment:', razorpay_payment_id);
-    console.log('🔍 Session pending:', JSON.stringify(req.session.pendingBooking));
-
     const pending = req.session.pendingBooking;
+    if (!pending) return res.json({ success: false, message: 'No pending booking in session' });
 
-    if (!pending) {
-      console.error('❌ No pendingBooking in session');
-      return res.json({
-        success: false,
-        message: 'Session expired. But your payment was received! Contact support with Payment ID: ' + razorpay_payment_id,
-      });
-    }
+    const { orderId } = req.body;
 
-    // ── Verify Razorpay signature ──
-    const expectedSig = crypto
-      .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
-      .update(razorpay_order_id + '|' + razorpay_payment_id)
-      .digest('hex');
+    // Check if already saved (don't duplicate)
+    const existing = await Booking.findOne({ orderId: orderId || pending.orderId });
+    if (existing) return res.json({ success: true, bookingId: existing._id });
 
-    if (expectedSig !== razorpay_signature) {
-      console.error('❌ Signature mismatch');
-      return res.json({ success: false, message: 'Payment signature verification failed.' });
-    }
-
-    console.log('✅ Signature verified');
-
-    // ── Generate tickets + QR codes ──
+    // Minimal attendee placeholders
     const tickets = [];
     const attendees = pending.attendees || [];
-
     for (let i = 0; i < pending.quantity; i++) {
-      const ticketId = generateTicketId(i);
       const attendee = attendees[i] || attendees[0] || { name: req.user.firstName, age: 25 };
-
-      const qrPayload = buildQRPayload({
-        ticketId,
-        bookingRef: 'PENDING',
-        eventId: pending.eventId,
-        paymentId: razorpay_payment_id,
-        attendeeName: attendee.name || req.user.firstName,
-        ticketType: pending.ticketType,
-      });
-
-      let qrCode = '';
-      try {
-        qrCode = await generateQRCode(qrPayload);
-      } catch (qrErr) {
-        console.error('QR generation failed for ticket', i, qrErr.message);
-        qrCode = ''; // continue without QR rather than fail entire booking
-      }
-
       tickets.push({
-        ticketId,
-        attendee: {
-          name: attendee.name || req.user.firstName,
-          age: parseInt(attendee.age) || 25,
-          special: attendee.special || '',
-        },
-        qrData: JSON.stringify(qrPayload),
-        qrCode,
+        ticketId: generateTicketId(i),
+        attendee: { name: attendee.name || req.user.firstName, age: parseInt(attendee.age) || 25, special: attendee.special || '' },
+        qrData: '',
+        qrCode: '',
       });
     }
 
-    console.log('✅ Generated', tickets.length, 'tickets');
-
-    // ── Save booking to DB ──
     const booking = await Booking.create({
-      user: req.user._id,
-      event: pending.eventId,
-      ticketType: pending.ticketType,
+      user:           req.user._id,
+      event:          pending.eventId,
+      ticketType:     pending.ticketType,
       pricePerTicket: pending.pricePerTicket,
-      quantity: pending.quantity,
-      subtotal: pending.subtotal,
-      discount: pending.discount || 0,
-      couponCode: pending.couponCode || null,
+      quantity:       pending.quantity,
+      subtotal:       pending.subtotal,
+      discount:       pending.discount || 0,
+      couponCode:     pending.couponCode || null,
       convenienceFee: pending.convenienceFee || 20,
-      totalAmount: pending.totalAmount,
+      totalAmount:    pending.totalAmount,
       tickets,
-      paymentStatus: 'paid',
-      paymentId: razorpay_payment_id,
-      orderId: razorpay_order_id,
-      signature: razorpay_signature,
-      contactPhone: req.user.phone || '',
-      contactEmail: req.user.email || '',
+      paymentStatus:  'pending',
+      orderId:        pending.orderId,
+      contactPhone:   req.user.phone || '',
+      contactEmail:   req.user.email || '',
     });
 
-    console.log('✅ Booking saved:', booking.bookingRef);
-
-    // ── Update seat count ──
-    try {
-      await Event.updateOne(
-        { _id: pending.eventId, 'ticketTypes.name': pending.ticketType },
-        { $inc: { 'ticketTypes.$.bookedSeats': pending.quantity } }
-      );
-    } catch (seatErr) {
-      console.error('Seat count update failed (non-critical):', seatErr.message);
-    }
-
-    // ── Link booking to user ──
-    try {
-      await User.findByIdAndUpdate(req.user._id, { $push: { bookings: booking._id } });
-    } catch (userErr) {
-      console.error('User booking link failed (non-critical):', userErr.message);
-    }
-
-    // ── Fetch event doc once for notifications ──
-    let eventDoc = null;
-    try {
-      eventDoc = await Event.findById(pending.eventId);
-    } catch(e) { console.error('Event fetch error:', e.message); }
-
-    // ── Send confirmation email (non-blocking) ──
-    if (req.user.email && eventDoc) {
-      try {
-        const { sendBookingConfirmation } = require('../utils/emailHelper');
-        sendBookingConfirmation({
-          to: req.user.email,
-          name: req.user.firstName,
-          booking,
-          event: eventDoc,
-        }).catch(e => console.error('Email send error:', e.message));
-      } catch (emailErr) {
-        console.error('Email helper error (non-critical):', emailErr.message);
-      }
-    }
-
-    // ── Send WhatsApp ticket link (non-blocking) ──
-    if (req.user.phone && eventDoc) {
-      try {
-        const { sendWhatsAppTickets } = require('../utils/whatsappHelper');
-        sendWhatsAppTickets({
-          phone: req.user.phone,        // already in +91XXXXXXXXXX format
-          name:  req.user.firstName,
-          booking,
-          event: eventDoc,
-        }).catch(e => console.error('WhatsApp ticket send error:', e.message));
-      } catch (waErr) {
-        console.error('WhatsApp helper error (non-critical):', waErr.message);
-      }
-    }
-
-    // ── Clear session ──
-    delete req.session.pendingBooking;
+    await User.findByIdAndUpdate(req.user._id, { $push: { bookings: booking._id } }).catch(() => {});
+    // Store booking id in session so retry-payment can pick it up
+    req.session.pendingBookingId = booking._id.toString();
     req.session.save(() => {});
 
-    return res.json({
-      success: true,
-      bookingId: booking._id,
-      bookingRef: booking.bookingRef,
-    });
-
-  } catch (err) {
-    console.error('❌ verifyPayment FULL ERROR:', err);
-    res.json({
-      success: false,
-      message: 'Booking save failed: ' + err.message,
-    });
+    console.log('💾 Pending booking saved:', booking.bookingRef);
+    return res.json({ success: true, bookingId: booking._id });
+  } catch(err) {
+    console.error('savePending error:', err);
+    res.json({ success: false, message: err.message });
   }
 };
 
-// ── GET /booking/ticket/:bookingId ──
-exports.getTicket = async (req, res) => {
+// ─────────────────────────────────────────────────────────────
+// POST /booking/save-failed  — payment.failed event
+// ─────────────────────────────────────────────────────────────
+exports.saveFailed = async (req, res) => {
+  try {
+    const pending = req.session.pendingBooking;
+    if (!pending) return res.json({ success: false });
+
+    const { orderId, error } = req.body;
+    const existing = await Booking.findOne({ orderId: orderId || pending.orderId });
+    if (existing) {
+      await Booking.findByIdAndUpdate(existing._id, { paymentStatus: 'failed' });
+      return res.json({ success: true });
+    }
+
+    const tickets = [];
+    const attendees = pending.attendees || [];
+    for (let i = 0; i < pending.quantity; i++) {
+      const attendee = attendees[i] || attendees[0] || { name: req.user.firstName, age: 25 };
+      tickets.push({ ticketId: generateTicketId(i), attendee: { name: attendee.name || req.user.firstName, age: parseInt(attendee.age)||25, special: attendee.special||'' }, qrData:'', qrCode:'' });
+    }
+
+    const booking = await Booking.create({
+      user: req.user._id, event: pending.eventId, ticketType: pending.ticketType,
+      pricePerTicket: pending.pricePerTicket, quantity: pending.quantity, subtotal: pending.subtotal,
+      discount: pending.discount||0, couponCode: pending.couponCode||null, convenienceFee: pending.convenienceFee||20,
+      totalAmount: pending.totalAmount, tickets, paymentStatus: 'failed',
+      orderId: pending.orderId, contactPhone: req.user.phone||'', contactEmail: req.user.email||'',
+    });
+    await User.findByIdAndUpdate(req.user._id, { $push: { bookings: booking._id } }).catch(() => {});
+    console.log('❌ Failed booking saved:', booking.bookingRef);
+    res.json({ success: true });
+  } catch(err) {
+    res.json({ success: false, message: err.message });
+  }
+};
+
+// ─────────────────────────────────────────────────────────────
+// GET /booking/retry-payment/:bookingId
+// Re-open payment for pending/failed booking with original details
+// ─────────────────────────────────────────────────────────────
+exports.retryPayment = async (req, res) => {
   try {
     const booking = await Booking.findOne({
       _id: req.params.bookingId,
       user: req.user._id,
     }).populate('event');
 
-    if (!booking) {
+    if (!booking || !['pending','failed'].includes(booking.paymentStatus)) {
+      return res.redirect('/booking/my-bookings');
+    }
+
+    const event = booking.event;
+    if (!event || !event.isActive) return res.redirect('/booking/my-bookings');
+
+    // Check if tickets still available
+    const ttype = event.ticketTypes.find(t => t.category === booking.ticketType);
+    const available = ttype ? (ttype.totalSeats - ttype.bookedSeats) : 0;
+    if (available < booking.quantity) {
+      return res.redirect('/booking/my-bookings?msg=sold_out');
+    }
+
+    // Re-populate session with original booking details
+    req.session.pendingBooking = {
+      bookingId:      booking._id.toString(),    // existing booking to update
+      eventId:        event._id.toString(),
+      ticketType:     booking.ticketType,
+      quantity:       booking.quantity,
+      pricePerTicket: booking.pricePerTicket,
+      subtotal:       booking.subtotal,
+      discount:       booking.discount || 0,
+      couponCode:     booking.couponCode || null,
+      convenienceFee: booking.convenienceFee,
+      totalAmount:    booking.totalAmount,
+      attendees:      booking.tickets.map(t => ({ name: t.attendee.name, age: t.attendee.age, special: t.attendee.special||'' })),
+    };
+    await new Promise((resolve,reject)=>{ req.session.save(err=>err?reject(err):resolve()); });
+
+    // Create a new Razorpay order
+    const razorpay = new Razorpay({ key_id: process.env.RAZORPAY_KEY_ID, key_secret: process.env.RAZORPAY_KEY_SECRET });
+    const order = await razorpay.orders.create({ amount: booking.totalAmount * 100, currency: 'INR', receipt: 'NP_RETRY_' + Date.now() });
+    req.session.pendingBooking.orderId = order.id;
+    await new Promise((resolve,reject)=>{ req.session.save(err=>err?reject(err):resolve()); });
+
+    res.render('pages/retry-payment', {
+      title:   `Complete Payment — ${event.name}`,
+      booking, event,
+      order,
+      user: req.user,
+      rzpKey: process.env.RAZORPAY_KEY_ID,
+    });
+  } catch(err) {
+    console.error('retryPayment error:', err);
+    res.redirect('/booking/my-bookings');
+  }
+};
+
+// ─────────────────────────────────────────────────────────────
+// POST /booking/verify-payment
+// Verifies Razorpay signature, completes booking
+// ─────────────────────────────────────────────────────────────
+exports.verifyPayment = async (req, res) => {
+  try {
+    const { razorpay_payment_id, razorpay_order_id, razorpay_signature } = req.body;
+    const pending = req.session.pendingBooking;
+
+    if (!pending) {
+      return res.json({ success: false, message: 'Session expired. Contact support with Payment ID: ' + razorpay_payment_id });
+    }
+
+    // Verify signature
+    const expectedSig = crypto
+      .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+      .update(razorpay_order_id + '|' + razorpay_payment_id)
+      .digest('hex');
+
+    if (expectedSig !== razorpay_signature) {
+      return res.json({ success: false, message: 'Payment signature verification failed.' });
+    }
+
+    // If this is a retry, update existing booking
+    if (pending.bookingId) {
+      const existingBooking = await Booking.findById(pending.bookingId);
+      if (existingBooking) {
+        // Generate QR codes for existing tickets
+        for (let i = 0; i < existingBooking.tickets.length; i++) {
+          const t = existingBooking.tickets[i];
+          const qrPayload = buildQRPayload({ ticketId: t.ticketId, bookingRef: existingBooking.bookingRef, eventId: pending.eventId, paymentId: razorpay_payment_id, attendeeName: t.attendee.name, ticketType: pending.ticketType });
+          try { t.qrCode = await generateQRCode(qrPayload); t.qrData = JSON.stringify(qrPayload); } catch(e) { t.qrCode = ''; }
+        }
+        existingBooking.paymentStatus = 'paid';
+        existingBooking.paymentId     = razorpay_payment_id;
+        existingBooking.orderId       = razorpay_order_id;
+        existingBooking.signature     = razorpay_signature;
+        await existingBooking.save();
+
+        // Update seat count
+        await Event.updateOne(
+          { _id: pending.eventId, 'ticketTypes.category': pending.ticketType },
+          { $inc: { 'ticketTypes.$.bookedSeats': pending.quantity } }
+        ).catch(() => {});
+
+        delete req.session.pendingBooking;
+        req.session.save(() => {});
+
+        return res.json({ success: true, bookingId: existingBooking._id, bookingRef: existingBooking.bookingRef });
+      }
+    }
+
+    // Generate tickets + QR codes (new booking)
+    const tickets = [];
+    const attendees = pending.attendees || [];
+    for (let i = 0; i < pending.quantity; i++) {
+      const ticketId = generateTicketId(i);
+      const attendee = attendees[i] || attendees[0] || { name: req.user.firstName, age: 25 };
+      const qrPayload = buildQRPayload({ ticketId, bookingRef: 'PENDING', eventId: pending.eventId, paymentId: razorpay_payment_id, attendeeName: attendee.name || req.user.firstName, ticketType: pending.ticketType });
+      let qrCode = '';
+      try { qrCode = await generateQRCode(qrPayload); } catch(e) {}
+      tickets.push({ ticketId, attendee: { name: attendee.name || req.user.firstName, age: parseInt(attendee.age) || 25, special: attendee.special || '' }, qrData: JSON.stringify(qrPayload), qrCode });
+    }
+
+    const booking = await Booking.create({
+      user:           req.user._id,
+      event:          pending.eventId,
+      ticketType:     pending.ticketType,
+      pricePerTicket: pending.pricePerTicket,
+      quantity:       pending.quantity,
+      subtotal:       pending.subtotal,
+      discount:       pending.discount || 0,
+      couponCode:     pending.couponCode || null,
+      convenienceFee: pending.convenienceFee || 20,
+      totalAmount:    pending.totalAmount,
+      tickets,
+      paymentStatus:  'paid',
+      paymentId:      razorpay_payment_id,
+      orderId:        razorpay_order_id,
+      signature:      razorpay_signature,
+      contactPhone:   req.user.phone || '',
+      contactEmail:   req.user.email || '',
+    });
+
+    // Update seat count
+    await Event.updateOne(
+      { _id: pending.eventId, 'ticketTypes.category': pending.ticketType },
+      { $inc: { 'ticketTypes.$.bookedSeats': pending.quantity } }
+    ).catch(() => {});
+
+    // Link to user
+    await User.findByIdAndUpdate(req.user._id, { $push: { bookings: booking._id } }).catch(() => {});
+
+    // Send notifications (non-blocking)
+    let eventDoc = null;
+    try { eventDoc = await Event.findById(pending.eventId); } catch(e) {}
+
+    if (req.user.email && eventDoc) {
+      try {
+        const { sendBookingConfirmation } = require('../utils/emailHelper');
+        sendBookingConfirmation({ to: req.user.email, name: req.user.firstName, booking, event: eventDoc }).catch(() => {});
+      } catch(e) {}
+    }
+    if (req.user.phone && eventDoc) {
+      try {
+        const { sendWhatsAppTickets } = require('../utils/whatsappHelper');
+        sendWhatsAppTickets({ phone: req.user.phone, name: req.user.firstName, booking, event: eventDoc }).catch(() => {});
+      } catch(e) {}
+    }
+
+    delete req.session.pendingBooking;
+    req.session.save(() => {});
+
+    return res.json({ success: true, bookingId: booking._id, bookingRef: booking.bookingRef });
+  } catch(err) {
+    console.error('verifyPayment FULL ERROR:', err);
+    res.json({ success: false, message: 'Booking save failed: ' + err.message });
+  }
+};
+
+// ─────────────────────────────────────────────────────────────
+// GET /booking/success/:bookingId  — success page
+// ─────────────────────────────────────────────────────────────
+exports.getSuccessPage = async (req, res) => {
+  try {
+    const booking = await Booking.findOne({
+      _id: req.params.bookingId,
+      user: req.user._id,
+    }).populate('event');
+
+    if (!booking || booking.paymentStatus !== 'paid') {
       return res.redirect('/booking/my-bookings');
     }
 
     res.render('pages/ticket', {
-      title: 'Your Ticket — NightPass',
+      title:   `Booking Confirmed — NightPass`,
       booking,
-      event: booking.event,
-      user: req.user,
+      event:   booking.event,
+      user:    req.user,
     });
-  } catch (err) {
-    console.error('getTicket error:', err);
+  } catch(err) {
+    console.error('getSuccessPage error:', err);
     res.status(500).render('pages/error', { message: err.message, code: 500 });
   }
 };
 
-// ── GET /booking/my-bookings ──
+// ─────────────────────────────────────────────────────────────
+// GET /booking/ticket/:bookingId  — legacy, redirect to success
+// ─────────────────────────────────────────────────────────────
+exports.getTicket = async (req, res) => {
+  return res.redirect('/booking/success/' + req.params.bookingId);
+};
+
+// ─────────────────────────────────────────────────────────────
+// GET /booking/my-bookings
+// ─────────────────────────────────────────────────────────────
 exports.getMyBookings = async (req, res) => {
   try {
     const bookings = await Booking.find({ user: req.user._id })
@@ -346,36 +477,33 @@ exports.getMyBookings = async (req, res) => {
       .sort({ createdAt: -1 });
 
     res.render('pages/my-bookings', {
-      title: 'My Bookings — NightPass',
+      title:    'My Tickets — NightPass',
       bookings,
-      user: req.user,
+      user:     req.user,
     });
-  } catch (err) {
+  } catch(err) {
     console.error('getMyBookings error:', err);
     res.status(500).render('pages/error', { message: err.message, code: 500 });
   }
 };
 
-// ── GET /api/event ── (single, for booking page)
+// API endpoints
 exports.getEventData = async (req, res) => {
   try {
     const eventId = req.query.id;
-    const event = eventId
-      ? await Event.findOne({ _id: eventId, isActive: true })
-      : await Event.findOne({ isActive: true }).sort({ date: 1 });
+    const event = eventId ? await Event.findOne({ _id: eventId, isActive: true }) : await Event.findOne({ isActive: true }).sort({ date: 1 });
     if (!event) return res.json({ success: false, message: 'No active event.' });
     res.json({ success: true, event });
-  } catch (err) {
+  } catch(err) {
     res.json({ success: false, message: err.message });
   }
 };
 
-// ── GET /api/events ── (all active events for homepage)
 exports.getAllEvents = async (req, res) => {
   try {
     const events = await Event.find({ isActive: true }).sort({ isFeatured: -1, date: 1 });
     res.json({ success: true, events });
-  } catch (err) {
+  } catch(err) {
     res.json({ success: false, message: err.message });
   }
 };

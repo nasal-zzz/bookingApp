@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Step 2 — Attendee Details · <%= event.name %></title>
+  <%- include('../partials/head') %>
+  <style>
+    .step-bar{background:#0e0e18;border-bottom:1px solid rgba(255,255,255,0.07);padding:0 1.5rem;height:52px;display:flex;align-items:center;justify-content:space-between;gap:1rem;}
+    .step-back{display:flex;align-items:center;gap:0.4rem;color:#B3B3B3;text-decoration:none;font-size:0.78rem;transition:color 0.2s;white-space:nowrap;}
+    .step-back:hover{color:#fff;}
+    .steps{display:flex;align-items:center;flex:1;justify-content:center;}
+    .step-item{display:flex;align-items:center;gap:0.4rem;font-size:0.68rem;color:#444;white-space:nowrap;}
+    .step-item.active{color:var(--accent);}
+    .step-item.done{color:#666;}
+    .step-num{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.58rem;font-weight:700;border:1.5px solid #333;background:#0e0e18;flex-shrink:0;}
+    .step-item.active .step-num{border-color:var(--accent);background:rgba(106,13,173,0.15);color:var(--accent);}
+    .step-item.done .step-num{border-color:#555;background:#555;color:#0e0e18;}
+    .step-line{width:22px;height:1px;background:#333;margin:0 0.22rem;flex-shrink:0;}
+    .step-line.done{background:#555;}
+    .event-lbl{font-family:var(--font-mono);font-size:0.6rem;color:#444;letter-spacing:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px;}
+
+    .pg-wrap{max-width:1040px;margin:0 auto;padding:2rem 1.5rem 5rem;display:grid;grid-template-columns:1fr 360px;gap:1.5rem;align-items:start;}
+    @media(max-width:860px){.pg-wrap{grid-template-columns:1fr;}}
+
+    /* Zone summary banner */
+    .zone-banner{display:flex;align-items:center;gap:0.8rem;background:rgba(106,13,173,0.08);border:1px solid rgba(106,13,173,0.22);border-radius:10px;padding:0.85rem 1.2rem;margin-bottom:1.4rem;}
+    .zb-icon{width:40px;height:40px;border-radius:8px;background:rgba(106,13,173,0.18);display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;}
+    .zb-info{flex:1;}
+    .zb-zone{font-family:var(--font-display);font-size:1rem;letter-spacing:1px;color:#fff;margin-bottom:0.12rem;}
+    .zb-meta{font-size:0.72rem;color:#B3B3B3;}
+    .zb-change{font-size:0.72rem;color:var(--accent);text-decoration:none;border-bottom:1px solid rgba(106,13,173,0.35);}
+
+    /* Section cards */
+    .sec-card{background:var(--card,#14141C);border:1px solid rgba(255,255,255,0.07);border-radius:10px;overflow:hidden;margin-bottom:1.2rem;}
+    .sec-hd{padding:1rem 1.4rem;border-bottom:1px solid rgba(255,255,255,0.07);display:flex;align-items:center;gap:0.75rem;}
+    .sec-num{width:26px;height:26px;border-radius:50%;background:var(--accent,#6A0DAD);color:#fff;font-family:var(--font-display);font-size:0.82rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .sec-title{font-family:var(--font-display);font-size:1.1rem;letter-spacing:2px;color:#fff;}
+    .sec-body{padding:1.4rem;}
+
+    /* Selected ticket display */
+    #selTicketDisplay{transition:border-color 0.2s;}
+
+    /* Qty row */
+    .qty-sep{height:1px;background:rgba(255,255,255,0.07);margin:0 0 1.2rem;}
+    .qty-lbl{font-family:var(--font-mono);font-size:0.58rem;letter-spacing:2px;color:#555;text-transform:uppercase;margin-bottom:0.9rem;display:block;}
+    .qty-row{display:flex;align-items:center;gap:1.1rem;}
+    .qty-btn{width:42px;height:42px;border-radius:8px;background:var(--surface,#14141C);border:1px solid rgba(255,255,255,0.08);color:#fff;font-size:1.25rem;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:0.18s;flex-shrink:0;}
+    .qty-btn:hover{border-color:var(--accent);color:var(--accent);}
+    .qty-btn:disabled{opacity:0.28;cursor:not-allowed;}
+    .qty-num{font-family:var(--font-display);font-size:2.8rem;color:#fff;letter-spacing:2px;min-width:55px;text-align:center;line-height:1;}
+    .qty-right{flex:1;}
+    .qty-total-lbl{font-size:0.72rem;color:#B3B3B3;font-family:var(--font-mono);margin-bottom:0.2rem;}
+    .qty-total-val{font-family:var(--font-display);font-size:1.5rem;color:var(--accent);letter-spacing:1px;}
+    .qty-chips{display:flex;gap:0.4rem;flex-wrap:wrap;margin-top:1.2rem;}
+    .tix-chip{background:var(--surface,#14141C);border:1px solid rgba(255,255,255,0.07);border-radius:4px;padding:0.3rem 0.65rem;font-family:var(--font-mono);font-size:0.62rem;color:#B3B3B3;letter-spacing:1px;display:flex;align-items:center;gap:0.35rem;}
+    .tix-chip i{color:var(--accent);}
+
+    /* Attendee forms */
+    .att-card{background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.07);border-radius:8px;padding:1.1rem;margin-bottom:0.8rem;}
+    .att-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.9rem;}
+    .att-badge-wrap{display:flex;align-items:center;gap:0.55rem;}
+    .att-num{width:25px;height:25px;border-radius:50%;background:rgba(106,13,173,0.2);border:1px solid rgba(106,13,173,0.35);display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:0.62rem;color:var(--accent);}
+    .att-lbl{font-size:0.8rem;font-weight:600;color:#fff;}
+    .you-chip{font-family:var(--font-mono);font-size:0.58rem;letter-spacing:1px;background:rgba(106,13,173,0.1);border:1px solid rgba(106,13,173,0.3);color:var(--accent);padding:0.18rem 0.55rem;border-radius:10px;}
+    .att-fields{display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;}
+    @media(max-width:480px){.att-fields{grid-template-columns:1fr;}}
+    .form-label{font-family:var(--font-mono);font-size:0.55rem;letter-spacing:1.5px;color:#555;display:block;margin-bottom:0.3rem;text-transform:uppercase;}
+    .form-inp{width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:#fff;font-size:0.88rem;padding:0.6rem 0.85rem;font-family:var(--font-body);outline:none;transition:border-color 0.18s;}
+    .form-inp:focus{border-color:rgba(106,13,173,0.4);}
+    .form-inp.err{border-color:#FF4444;}
+    .form-inp[readonly]{opacity:0.55;cursor:not-allowed;}
+    .field-err{font-size:0.68rem;color:#FF4444;margin-top:0.22rem;display:none;align-items:center;gap:0.25rem;}
+    .field-err.show{display:flex;}
+    .special-toggle{display:flex;align-items:center;gap:0.45rem;font-size:0.78rem;color:#B3B3B3;cursor:pointer;margin-top:0.75rem;}
+    .special-toggle i{color:var(--accent);}
+    .special-inp{width:100%;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:6px;color:#fff;font-size:0.85rem;padding:0.65rem 0.85rem;font-family:var(--font-body);outline:none;resize:none;margin-top:0.65rem;display:none;transition:border-color 0.18s;}
+    .special-inp.show{display:block;}
+    .special-inp:focus{border-color:rgba(106,13,173,0.35);}
+
+    /* Order summary */
+    .sum-card{background:var(--card,#14141C);border:1px solid rgba(255,255,255,0.07);border-radius:10px;overflow:hidden;}
+    .sum-sticky-wrap{position:sticky;top:72px;}
+    .sum-top{height:3px;background:linear-gradient(90deg,transparent,var(--accent),transparent);}
+    .sum-body{padding:1.4rem;}
+    .sum-hd{font-family:var(--font-display);font-size:1.1rem;letter-spacing:2px;color:#fff;margin-bottom:1.1rem;}
+    .sum-event{display:flex;align-items:center;gap:0.75rem;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:6px;padding:0.8rem;margin-bottom:1rem;}
+    .sum-evt-ico{width:42px;height:42px;border-radius:6px;background:linear-gradient(135deg,#150820,#2d0a5c);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;}
+    .sum-evt-name{font-family:var(--font-display);font-size:0.95rem;letter-spacing:1px;color:#fff;}
+    .sum-evt-sub{font-size:0.7rem;color:#B3B3B3;margin-top:0.1rem;}
+    .sum-row{display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;border-bottom:1px solid rgba(255,255,255,0.06);font-size:0.82rem;}
+    .sum-row:last-of-type{border-bottom:none;}
+    .sum-row .lbl{color:#B3B3B3;}.sum-row .val{color:#fff;font-weight:500;}
+    .sum-total-row{display:flex;align-items:center;justify-content:space-between;padding:0.8rem 0;border-top:1px solid rgba(255,255,255,0.08);margin-top:0.2rem;}
+    .sum-total-lbl{font-family:var(--font-display);font-size:0.95rem;letter-spacing:1px;color:#fff;}
+    .sum-total-val{font-family:var(--font-display);font-size:1.9rem;color:var(--accent);letter-spacing:2px;text-shadow:0 0 20px rgba(106,13,173,0.35);}
+    .coupon-row{display:flex;gap:0.45rem;margin:0.4rem 0 0.9rem;}
+    .coupon-inp{flex:1;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:#fff;font-size:0.82rem;padding:0.62rem 0.85rem;font-family:var(--font-mono);letter-spacing:1px;outline:none;text-transform:uppercase;transition:border-color 0.18s;min-width:0;}
+    .coupon-inp::placeholder{color:#444;text-transform:none;letter-spacing:0;font-size:0.75rem;}
+    .coupon-inp:focus{border-color:rgba(106,13,173,0.4);}
+    .coupon-btn{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);color:var(--accent);font-size:0.76rem;font-weight:700;padding:0 0.9rem;border-radius:6px;cursor:pointer;letter-spacing:1px;transition:0.18s;white-space:nowrap;}
+    .coupon-btn:hover{border-color:var(--accent);background:rgba(106,13,173,0.1);}
+    .coupon-msg{display:none;align-items:center;gap:0.4rem;font-size:0.75rem;margin-bottom:0.35rem;}
+    .coupon-msg.show{display:flex;}
+    .disc-row{display:none;justify-content:space-between;align-items:center;padding:0.5rem 0;border-bottom:1px solid rgba(255,255,255,0.06);font-size:0.82rem;}
+    .disc-row.show{display:flex;}
+
+    .btn-pay{width:100%;padding:1.05rem;background:var(--accent);color:#fff;font-family:var(--font-body);font-weight:700;font-size:0.95rem;letter-spacing:1px;border:none;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:0.55rem;transition:0.18s;box-shadow:0 0 26px rgba(106,13,173,0.22);position:relative;overflow:hidden;}
+    .btn-pay:hover{transform:translateY(-2px);box-shadow:0 0 48px rgba(106,13,173,0.48);}
+    .btn-pay:disabled{opacity:0.38;cursor:not-allowed;transform:none;box-shadow:none;}
+    .spin{width:18px;height:18px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:sp 0.7s linear infinite;display:none;}
+    @keyframes sp{to{transform:rotate(360deg)}}
+    .rzp-note{display:flex;align-items:center;justify-content:center;gap:0.4rem;margin-top:0.7rem;font-size:0.7rem;color:#555;}
+    .rzp-badge{font-family:var(--font-mono);font-size:0.65rem;background:#072654;color:#5a9dff;border:1px solid rgba(90,157,255,0.3);padding:0.12rem 0.45rem;border-radius:3px;}
+
+    /* Mobile bottom bar */
+    .mob-bar{display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(11,11,15,0.97);backdrop-filter:blur(20px);border-top:1px solid rgba(255,255,255,0.08);padding:0.9rem 1.4rem;z-index:50;align-items:center;justify-content:space-between;gap:1rem;}
+    .mob-bar-total{font-family:var(--font-display);font-size:1.7rem;color:var(--accent);letter-spacing:1px;}
+    .mob-bar-lbl{font-size:0.65rem;color:#B3B3B3;font-family:var(--font-mono);}
+    .btn-mob-pay{background:var(--accent);color:#fff;font-family:var(--font-body);font-weight:700;font-size:0.88rem;padding:0.8rem 1.6rem;border:none;border-radius:6px;cursor:pointer;white-space:nowrap;}
+    @media(max-width:860px){.mob-bar{display:flex;}}
+  </style>
+</head>
+<body>
+  <div class="step-bar">
+    <a href="/booking/seatmap/<%= event._id %>" class="step-back"><i class="bi bi-arrow-left"></i> Back</a>
+    <div class="steps">
+      <div class="step-item done"><div class="step-num"><i class="bi bi-check" style="font-size:0.6rem;"></i></div><span>Zone</span></div>
+      <div class="step-line done"></div>
+      <div class="step-item active"><div class="step-num">2</div><span>Details</span></div>
+      <div class="step-line"></div>
+      <div class="step-item"><div class="step-num">3</div><span>Payment</span></div>
+      <div class="step-line"></div>
+      <div class="step-item"><div class="step-num"><i class="bi bi-check" style="font-size:0.6rem;"></i></div><span>Done</span></div>
+    </div>
+    <div class="event-lbl"><%= event.name.toUpperCase() %></div>
+  </div>
+
+  <%- include('../partials/navbar') %>
+
+  <div class="pg-wrap">
+    <!-- LEFT -->
+    <div>
+      <!-- Zone summary -->
+      <div class="zone-banner" id="zoneBanner">
+        <div class="zb-icon">🗺️</div>
+        <div class="zb-info">
+          <div class="zb-zone" id="zbZone">No zone selected</div>
+          <div class="zb-meta" id="zbMeta">Go back to pick a zone</div>
+        </div>
+        <a href="/booking/seatmap/<%= event._id %>" class="zb-change">← Change</a>
+      </div>
+
+      <!-- Selected ticket type display (from step 1, read-only) -->
+      <div class="sec-card">
+        <div class="sec-hd"><div class="sec-num">1</div><div class="sec-title">SELECTED TICKET</div></div>
+        <div class="sec-body">
+          <!-- JS fills this in from sessionStorage/URL -->
+          <div id="selTicketDisplay" style="display:flex;align-items:center;gap:1rem;background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:1rem 1.2rem;margin-bottom:1.2rem;">
+            <div id="selTicketColor" style="width:44px;height:44px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;background:rgba(106,13,173,0.2);">🎟️</div>
+            <div style="flex:1;">
+              <div id="selTicketCat" style="font-family:var(--font-display);font-size:1.1rem;letter-spacing:2px;color:#fff;margin-bottom:0.2rem;">—</div>
+              <div id="selTicketPrice" style="font-family:var(--font-mono);font-size:0.85rem;color:var(--accent);">—</div>
+            </div>
+            <a href="/booking/seatmap/<%= event._id %>" style="font-size:0.72rem;color:var(--accent);text-decoration:none;border-bottom:1px solid rgba(106,13,173,0.35);white-space:nowrap;">← Change</a>
+          </div>
+          <!-- Hidden input carries the category value for JS -->
+          <input type="hidden" id="hiddenTicketType" value=""/>
+          <div class="qty-sep"></div>
+          <span class="qty-lbl">Number of Tickets</span>
+          <div class="qty-row">
+            <button class="qty-btn" id="qtyMinus" onclick="changeQty(-1)" disabled>−</button>
+            <div class="qty-num" id="qtyDisplay">1</div>
+            <button class="qty-btn" id="qtyPlus" onclick="changeQty(1)">+</button>
+            <div class="qty-right">
+              <div class="qty-total-lbl">TOTAL AMOUNT</div>
+              <div class="qty-total-val" id="qtyTotalAmt">—</div>
+              <div style="font-size:0.68rem;color:#555;margin-top:0.15rem;">Max 10 per booking</div>
+            </div>
+          </div>
+          <div class="qty-chips" id="qtyChips">
+            <div class="tix-chip"><i class="bi bi-ticket-perforated-fill"></i> TICKET #1</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Attendees -->
+      <div class="sec-card">
+        <div class="sec-hd"><div class="sec-num">2</div><div class="sec-title">ATTENDEE DETAILS</div></div>
+        <div class="sec-body">
+          <div style="display:flex;align-items:flex-start;gap:0.55rem;background:rgba(106,13,173,0.06);border:1px solid rgba(106,13,173,0.14);border-radius:6px;padding:0.75rem;font-size:0.78rem;color:#B3B3B3;margin-bottom:1.3rem;">
+            <i class="bi bi-info-circle-fill" style="color:var(--accent);flex-shrink:0;margin-top:2px;"></i>
+            Each ticket requires a name — printed on the QR pass and checked at entry. Must be 18+.
+          </div>
+          <div id="attendeeForms"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT — summary -->
+    <div>
+      <div class="sum-sticky-wrap"><div class="sum-card">
+        <div class="sum-top"></div>
+        <div class="sum-body">
+          <div class="sum-hd">ORDER SUMMARY</div>
+          <div class="sum-event">
+            <div class="sum-evt-ico">🎶</div>
+            <div>
+              <div class="sum-evt-name"><%= event.name.toUpperCase() %></div>
+              <div class="sum-evt-sub"><%= new Date(event.date).toDateString() %> · <%= event.venue %></div>
+            </div>
+          </div>
+          <div class="sum-row"><span class="lbl">Zone</span><span class="val" id="sumZone">—</span></div>
+          <div class="sum-row"><span class="lbl">Ticket Type</span><span class="val" id="sumType">—</span></div>
+          <div class="sum-row"><span class="lbl">Price each</span><span class="val" id="sumPrice" style="color:var(--accent);font-family:var(--font-mono);">—</span></div>
+          <div class="sum-row"><span class="lbl">Quantity</span><span class="val" id="sumQty">× 1</span></div>
+          <div class="sum-row"><span class="lbl">Subtotal</span><span class="val" id="sumSub">—</span></div>
+          <div class="disc-row" id="discRow"><span class="lbl" style="color:#00FF88;">Discount</span><span class="val" id="discVal" style="color:#00FF88;">—</span></div>
+          <div class="sum-row"><span class="lbl">Convenience fee</span><span class="val" id="sumFee">₹<%= event.convenienceFee||20 %></span></div>
+          <div class="sum-total-row">
+            <div class="sum-total-lbl">TOTAL</div>
+            <div class="sum-total-val" id="sumTotal">—</div>
+          </div>
+          <!-- Coupon -->
+          <div class="coupon-row">
+            <input class="coupon-inp" type="text" id="couponInp" placeholder="Coupon code"/>
+            <button class="coupon-btn" onclick="applyCoupon()">APPLY</button>
+          </div>
+          <div class="coupon-msg" id="couponMsg"></div>
+          <!-- Pay -->
+          <button class="btn-pay" id="payBtn" onclick="doPayment()">
+            <i class="bi bi-lock-fill"></i>
+            <span id="payBtnTxt">Pay Now</span>
+            <div class="spin" id="paySpinner"></div>
+          </button>
+          <div class="rzp-note">Powered by <span class="rzp-badge">razorpay</span></div>
+        </div>
+      </div></div><!-- /sum-sticky-wrap -->
+    </div>
+  </div>
+
+  <!-- Mobile bottom bar -->
+  <div class="mob-bar" id="mobBar">
+    <div>
+      <div class="mob-bar-lbl">TOTAL PAYABLE</div>
+      <div class="mob-bar-total" id="mobTotal">—</div>
+    </div>
+    <button class="btn-mob-pay" onclick="doPayment()"><i class="bi bi-lock-fill"></i> Pay Now</button>
+  </div>
+
+  <%- include('../partials/scripts') %>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <script>
+  const EVENT_DATA = <%- JSON.stringify(event) %>;
+  const CONV_FEE   = <%= event.convenienceFee||20 %>;
+  const USER       = <%- JSON.stringify(user?{name:(user.firstName||'')+' '+(user.lastName||''),phone:user.phone||'',email:user.email||''}:{name:'',phone:'',email:''}) %>;
+  const TCOLORS    = {platinum:'#9D4EDD',gold:'#f5c842',silver:'#c0c8d8',fanfit:'#00FF88',family:'#FF6B6B'};
+
+  let qty = 1, price = 0, selTypeName = '', discAmt = 0, couponApplied = false, couponCode = null;
+  let selZone = '', selZoneCategory = '';
+
+  // ─── READ ZONE/CATEGORY FROM STEP 1 ─────────────────────────────
+  (function(){
+    try{
+      const raw=sessionStorage.getItem('np_sel');
+      const urlP=new URLSearchParams(location.search);
+      let urlCat='', urlQty=1;
+
+      if(raw){
+        const d=JSON.parse(raw);
+        selZone=d.zone||''; selZoneCategory=d.category||'';
+        urlCat=d.category||''; urlQty=d.qty||1;
+      }
+      // URL params override (for direct links)
+      if(urlP.get('cat')) urlCat=urlP.get('cat');
+      if(urlP.get('qty')) urlQty=parseInt(urlP.get('qty'))||1;
+
+      // Find the matching ticket type from server data
+      const tt=EVENT_DATA.ticketTypes.find(t=>t.category===urlCat);
+      if(tt && tt.bookedSeats < tt.totalSeats){
+        price=tt.price; selTypeName=tt.category;
+      } else {
+        // Fallback to first available
+        const fallback=EVENT_DATA.ticketTypes.find(t=>t.bookedSeats<t.totalSeats);
+        if(fallback){price=fallback.price; selTypeName=fallback.category; urlCat=fallback.category;}
+      }
+
+      // Set hidden input
+      document.getElementById('hiddenTicketType').value=selTypeName;
+
+      // Display selected ticket info (no grid — just a summary box)
+      const CAT_COLORS_JS={platinum:'#9D4EDD',gold:'#f5c842',silver:'#c0c8d8',fanfit:'#00FF88',family:'#FF6B6B'};
+      const c=CAT_COLORS_JS[selTypeName]||'#6A0DAD';
+      const displayEl=document.getElementById('selTicketDisplay');
+      if(displayEl){displayEl.style.borderColor=c+'44';}
+      const colorEl=document.getElementById('selTicketColor');
+      if(colorEl){colorEl.style.background=c+'22';colorEl.style.border='1px solid '+c+'44';colorEl.textContent='🎟️';}
+      const catEl=document.getElementById('selTicketCat');
+      if(catEl){catEl.textContent=(selZone?selZone+' · ':'')+selTypeName.toUpperCase();catEl.style.color=c;}
+      const priceEl=document.getElementById('selTicketPrice');
+      if(priceEl){priceEl.textContent='₹'+price.toLocaleString('en-IN')+' per person';}
+
+      qty=Math.min(urlQty,10);
+
+      // Update zone banner
+      document.getElementById('zbZone').textContent=selZone?(selZone+' Zone'):selTypeName.toUpperCase()+' ZONE';
+      document.getElementById('zbMeta').textContent=selTypeName.toUpperCase()+' · ₹'+price.toLocaleString('en-IN')+' per person';
+      document.getElementById('sumZone').textContent=selZone||selTypeName.toUpperCase();
+
+    }catch(e){console.warn('Init error:',e);}
+    setQtyDisplay(); updateChips(); updateAttendeeForms(); updateSummary();
+  })();
+
+  // (Ticket type is locked from step 1 — no tier selection needed here)
+
+  // ─── QTY ─────────────────────────────────────────────────────────
+  function changeQty(d){
+    const n=qty+d;if(n<1||n>10)return;qty=n;
+    setQtyDisplay(); updateChips(); updateAttendeeForms(); updateSummary();
+  }
+  function setQtyDisplay(){
+    document.getElementById('qtyDisplay').textContent=qty;
+    document.getElementById('qtyMinus').disabled=qty<=1;
+    document.getElementById('qtyPlus').disabled=qty>=10;
+  }
+  function updateChips(){
+    const c=document.getElementById('qtyChips');c.innerHTML='';
+    for(let i=1;i<=qty;i++)c.innerHTML+=`<div class="tix-chip"><i class="bi bi-ticket-perforated-fill"></i> TICKET #${i}</div>`;
+  }
+
+  // ─── ATTENDEE FORMS ──────────────────────────────────────────────
+  function updateAttendeeForms(){
+    const con=document.getElementById('attendeeForms');
+    while(con.children.length>qty)con.removeChild(con.lastChild);
+    for(let i=con.children.length+1;i<=qty;i++)con.appendChild(mkAtt(i));
+  }
+  function mkAtt(n){
+    const isFirst=n===1,el=document.createElement('div');
+    el.className='att-card';el.id='att-'+n;
+    el.innerHTML=`
+      <div class="att-hd">
+        <div class="att-badge-wrap"><div class="att-num">${n}</div><div class="att-lbl">Attendee ${n}</div></div>
+        ${isFirst?'<span class="you-chip">YOU</span>':''}
+      </div>
+      <div class="att-fields">
+        <div>
+          <label class="form-label">Full Name *</label>
+          <input type="text" class="form-inp" id="n-${n}" placeholder="Full name" value="${isFirst?USER.name.trim():''}" autocomplete="${isFirst?'name':'off'}"/>
+          <div class="field-err" id="ne-${n}"><i class="bi bi-exclamation-circle"></i> Name required</div>
+        </div>
+        <div>
+          <label class="form-label">Age *</label>
+          <input type="number" class="form-inp" id="a-${n}" placeholder="25" min="18" max="75" inputmode="numeric"/>
+          <div class="field-err" id="ae-${n}"><i class="bi bi-exclamation-circle"></i> Must be 18+</div>
+        </div>
+        ${isFirst?`
+        <div>
+          <label class="form-label">Phone</label>
+          <input type="tel" class="form-inp" value="${USER.phone}" readonly/>
+        </div>
+        <div>
+          <label class="form-label">Email</label>
+          <input type="email" class="form-inp" id="em-1" placeholder="email@example.com" value="${USER.email}"/>
+        </div>`:''}
+      </div>
+      <div class="special-toggle" onclick="document.getElementById('sp-${n}').classList.toggle('show')">
+        <i class="bi bi-chat-left-text"></i> Add special request
+      </div>
+      <textarea class="special-inp" id="sp-${n}" rows="2" placeholder="E.g. wheelchair access..."></textarea>`;
+    return el;
+  }
+
+  // ─── SUMMARY ─────────────────────────────────────────────────────
+  function updateSummary(){
+    const sub=qty*price, disc=couponApplied?discAmt:0, total=sub-disc+CONV_FEE;
+    document.getElementById('sumType').textContent=selTypeName||'—';
+    document.getElementById('sumPrice').textContent=price?'₹'+price.toLocaleString('en-IN'):'—';
+    document.getElementById('sumQty').textContent='× '+qty;
+    document.getElementById('sumSub').textContent=price?'₹'+sub.toLocaleString('en-IN'):'—';
+    document.getElementById('sumTotal').textContent=price?'₹'+total.toLocaleString('en-IN'):'—';
+    document.getElementById('qtyTotalAmt').textContent=price?'₹'+sub.toLocaleString('en-IN'):'—';
+    document.getElementById('mobTotal').textContent=price?'₹'+total.toLocaleString('en-IN'):'—';
+    if(couponApplied){document.getElementById('discRow').classList.add('show');document.getElementById('discVal').textContent='-₹'+disc.toLocaleString('en-IN');}
+    else document.getElementById('discRow').classList.remove('show');
+    return total;
+  }
+
+  // ─── COUPON ───────────────────────────────────────────────────────
+  const COUPONS={'PARTY10':100,'NIGHT20':200,'FIRST50':50};
+  function applyCoupon(){
+    const code=document.getElementById('couponInp').value.trim().toUpperCase();
+    const msgEl=document.getElementById('couponMsg');
+    if(COUPONS[code]){couponApplied=true;discAmt=COUPONS[code];couponCode=code;
+      msgEl.innerHTML=`<i class="bi bi-check-circle-fill" style="color:#00FF88;"></i><span style="color:#00FF88;">${code} applied — ₹${COUPONS[code]} off!</span>`;
+      msgEl.classList.add('show');document.getElementById('couponInp').style.borderColor='#00FF88';
+    }else{couponApplied=false;discAmt=0;couponCode=null;
+      msgEl.innerHTML=`<i class="bi bi-x-circle-fill" style="color:#FF4444;"></i><span style="color:#FF4444;">Invalid coupon code</span>`;
+      msgEl.classList.add('show');document.getElementById('couponInp').style.borderColor='#FF4444';
+      setTimeout(()=>{msgEl.classList.remove('show');document.getElementById('couponInp').style.borderColor='';},3000);
+    }
+    updateSummary();
+  }
+  document.getElementById('couponInp').addEventListener('keydown',e=>{if(e.key==='Enter')applyCoupon();});
+
+  // ─── VALIDATE ─────────────────────────────────────────────────────
+  function validate(){
+    let ok=true;
+    for(let i=1;i<=qty;i++){
+      const n=document.getElementById('n-'+i),a=document.getElementById('a-'+i);
+      document.getElementById('ne-'+i).classList.remove('show');n.classList.remove('err');
+      document.getElementById('ae-'+i).classList.remove('show');a.classList.remove('err');
+      if(!n.value.trim()||n.value.trim().length<2){n.classList.add('err');document.getElementById('ne-'+i).classList.add('show');n.scrollIntoView({behavior:'smooth',block:'center'});ok=false;}
+      const age=parseInt(a.value);
+      if(!a.value||isNaN(age)||age<18){a.classList.add('err');document.getElementById('ae-'+i).classList.add('show');ok=false;}
+    }
+    return ok;
+  }
+
+  // ─── PAYMENT ──────────────────────────────────────────────────────
+  async function doPayment(){
+    if(!selTypeName){alert('Please select a ticket type.');return;}
+    if(!validate())return;
+    const attendees=[];
+    for(let i=1;i<=qty;i++){
+      attendees.push({name:document.getElementById('n-'+i).value.trim(),age:document.getElementById('a-'+i).value,special:document.getElementById('sp-'+i)?.value||''});
+    }
+    setLoading(true);
+    try{
+      const res=await fetch('/booking/create-order',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',
+        body:JSON.stringify({eventId:EVENT_DATA._id,ticketType:selTypeName,quantity:qty,couponCode,attendees,zone:selZone})});
+      const data=await res.json();
+      if(!data.success){alert(data.message);setLoading(false);return;}
+      const rzp=new Razorpay({
+        key:data.key,amount:data.amount,currency:data.currency,
+        name:'NightPass',description:selTypeName.toUpperCase()+' × '+qty,
+        order_id:data.orderId,prefill:data.prefill,
+        theme:{color:'#6A0DAD',backdrop_color:'#0B0B0F'},
+        modal:{ondismiss:async()=>{
+          // Save pending booking on dismiss
+          await fetch('/booking/save-pending',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify({orderId:data.orderId})});
+          setLoading(false);
+        }},
+        handler:async function(response){
+          const vres=await fetch('/booking/verify-payment',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',
+            body:JSON.stringify({razorpay_payment_id:response.razorpay_payment_id,razorpay_order_id:response.razorpay_order_id,razorpay_signature:response.razorpay_signature})});
+          const vdata=await vres.json();
+          if(vdata.success){sessionStorage.removeItem('np_sel');window.location.href='/booking/success/'+vdata.bookingId;}
+          else{alert('Payment verified but booking failed. Payment ID: '+response.razorpay_payment_id);setLoading(false);}
+        }
+      });
+      rzp.on('payment.failed',async(r)=>{
+        await fetch('/booking/save-failed',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify({orderId:data.orderId,error:r.error?.description||'Failed'})});
+        alert('Payment failed: '+(r.error?.description||'Please try again'));setLoading(false);
+      });
+      rzp.open();
+    }catch(e){alert('Network error. Please try again.');setLoading(false);}
+  }
+
+  function setLoading(on){
+    document.getElementById('payBtn').disabled=on;
+    document.getElementById('payBtnTxt').style.display=on?'none':'flex';
+    document.getElementById('paySpinner').style.display=on?'block':'none';
+  }
+
+  if(window.innerWidth<=860)document.getElementById('mobBar').style.display='flex';
+  </script>
+</body>
+</html>

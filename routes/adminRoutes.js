@@ -57,4 +57,8 @@ router.post('/events/:id/delete',       adminController.deleteEvent);
 router.post('/events/:id/toggle',       adminController.toggleEvent);
 router.get('/bookings',                 adminController.getBookings);
 
+router.get('/seatmap/:eventId',          adminController.getSeatMap);
+router.post('/seatmap/:eventId',         adminController.postSeatMap);
+router.post('/seatmap/:eventId/toggle',  adminController.toggleSeatMap);
+
 module.exports = router;

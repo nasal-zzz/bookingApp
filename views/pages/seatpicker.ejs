@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Step 1 — Choose Zone · <%= event.name %></title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Poppins:wght@300;400;500;600;700&family=Space+Mono&display=swap" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet"/>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    :root{--accent:#6A0DAD;--accent2:#9D4EDD;--bg:#0B0B0F;--surface:#14141C;--border:rgba(255,255,255,0.08);--text:#fff;--muted:#B3B3B3;}
+    body{background:var(--bg);color:var(--text);font-family:'Poppins',sans-serif;min-height:100vh;display:flex;flex-direction:column;}
+
+    /* STEP BAR */
+    .step-bar{background:#0e0e18;border-bottom:1px solid var(--border);padding:0 1.5rem;height:52px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:1rem;}
+    .step-back{display:flex;align-items:center;gap:0.4rem;color:var(--muted);text-decoration:none;font-size:0.78rem;transition:color 0.2s;white-space:nowrap;}
+    .step-back:hover{color:#fff;}
+    .steps{display:flex;align-items:center;gap:0;flex:1;justify-content:center;}
+    .step-item{display:flex;align-items:center;gap:0.4rem;font-size:0.68rem;color:#444;white-space:nowrap;}
+    .step-item.active{color:var(--accent2);}
+    .step-item.done{color:#555;}
+    .step-num{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.58rem;font-weight:700;border:1.5px solid #333;background:#0e0e18;flex-shrink:0;}
+    .step-item.active .step-num{border-color:var(--accent2);background:rgba(157,78,221,0.15);color:var(--accent2);}
+    .step-item.done .step-num{border-color:#555;background:#555;color:#0e0e18;}
+    .step-line{width:24px;height:1px;background:#333;margin:0 0.25rem;flex-shrink:0;}
+    .event-lbl{font-family:'Space Mono',monospace;font-size:0.6rem;color:#444;letter-spacing:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px;}
+
+    /* LAYOUT */
+    .layout{display:flex;flex:1;overflow:hidden;height:calc(100vh - 52px);}
+
+    /* MAP */
+    .map-area{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--bg);min-width:0;}
+    .map-tabs{display:flex;border-bottom:1px solid var(--border);background:#0e0e18;flex-shrink:0;}
+    .map-tab{padding:0.5rem 1rem;font-size:0.7rem;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;color:#555;transition:all 0.2s;display:flex;align-items:center;gap:0.3rem;}
+    .map-tab.active{color:var(--accent2);border-bottom-color:var(--accent);}
+    .map-legend{padding:0.5rem 1.2rem;background:#0e0e18;border-bottom:1px solid rgba(255,255,255,0.04);display:flex;align-items:center;gap:0.7rem;flex-wrap:wrap;flex-shrink:0;}
+    .leg-lbl{font-family:'Space Mono',monospace;font-size:0.5rem;letter-spacing:2px;color:#333;}
+    .leg-item{display:flex;align-items:center;gap:0.32rem;font-size:0.68rem;cursor:pointer;padding:0.22rem 0.5rem;border-radius:20px;border:1px solid transparent;transition:all 0.18s;}
+    .leg-item:hover,.leg-item.active{border-color:var(--zc);background:rgba(255,255,255,0.03);}
+    .leg-dot{width:9px;height:9px;border-radius:2px;border:1.5px solid var(--zc);transition:background 0.18s;}
+    .leg-item.active .leg-dot{background:var(--zc);}
+    .map-scroll{flex:1;overflow:auto;padding:1rem;display:flex;align-items:flex-start;justify-content:center;}
+    canvas{cursor:pointer;background:#0d0d16;border-radius:12px;border:1px solid rgba(255,255,255,0.05);display:block;max-width:100%;}
+    .preview-wrap{display:none;flex:1;overflow:auto;padding:1rem;align-items:flex-start;justify-content:center;}
+    .preview-wrap.show{display:flex;}
+    .preview-wrap img{max-width:100%;border-radius:12px;border:1px solid var(--border);}
+
+    /* SIDEBAR */
+    .sidebar{width:295px;background:var(--surface);border-left:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow:hidden;}
+    .sb-head{padding:1rem 1.2rem 0.8rem;border-bottom:1px solid var(--border);}
+    .sb-title{font-family:'Montserrat',sans-serif;font-size:0.85rem;font-weight:800;letter-spacing:2px;color:#fff;margin-bottom:0.12rem;}
+    .sb-sub{font-size:0.65rem;color:#555;}
+    .zone-list{flex:1;overflow-y:auto;padding:0.65rem;}
+
+    /* Zone cards */
+    .zc{background:var(--bg);border:1.5px solid rgba(255,255,255,0.05);border-radius:10px;padding:0.7rem 0.85rem;margin-bottom:0.45rem;cursor:pointer;transition:border-color 0.18s,transform 0.1s;display:flex;align-items:center;gap:0.7rem;position:relative;overflow:hidden;}
+    .zc::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--zc);border-radius:2px 0 0 2px;}
+    .zc:hover:not(.so){border-color:rgba(255,255,255,0.12);transform:translateX(2px);}
+    .zc.sel{border-color:var(--zc);background:rgba(255,255,255,0.02);}
+    .zc.lit:not(.sel){border-color:var(--zc);box-shadow:0 0 0 1px var(--zc) inset;}
+    .zc.so{opacity:0.38;pointer-events:none;}
+    .zc-ico{width:36px;height:36px;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+    .zc-ico svg{width:32px;height:32px;}
+    .zc-info{flex:1;min-width:0;}
+    .zc-name{font-family:'Montserrat',sans-serif;font-weight:700;font-size:0.8rem;color:#fff;margin-bottom:0.06rem;}
+    .zc-cat{font-size:0.62rem;font-weight:700;letter-spacing:0.5px;margin-bottom:0.06rem;}
+    .zc-price{font-family:'Space Mono',monospace;font-size:0.65rem;color:var(--muted);}
+    .zc-avail{font-size:0.58rem;color:#555;margin-top:0.04rem;}
+    .zc-ck{position:absolute;top:0.42rem;right:0.65rem;font-size:0.7rem;font-weight:800;display:none;}
+    .zc.sel .zc-ck{display:block;}
+
+    /* Qty */
+    .qty-strip{padding:0.65rem 1.2rem;border-top:1px solid var(--border);display:none;}
+    .qty-strip.show{display:block;}
+    .qs-lbl{font-family:'Space Mono',monospace;font-size:0.5rem;letter-spacing:1.5px;color:#444;text-transform:uppercase;margin-bottom:0.38rem;}
+    .qs-row{display:flex;align-items:center;gap:0.45rem;}
+    .qs-btn{width:34px;height:34px;border-radius:8px;background:rgba(106,13,173,0.1);border:1px solid rgba(106,13,173,0.22);color:var(--accent2);font-size:1.05rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.18s;font-weight:700;}
+    .qs-btn:hover:not(:disabled){background:rgba(106,13,173,0.25);}
+    .qs-btn:disabled{opacity:0.22;cursor:not-allowed;}
+    .qs-num{font-family:'Montserrat',sans-serif;font-weight:800;font-size:1.2rem;color:#fff;min-width:30px;text-align:center;}
+    .qs-total{flex:1;padding-left:0.4rem;}
+    .qs-total-lbl{font-size:0.65rem;color:var(--muted);}
+    .qs-total-val{font-family:'Montserrat',sans-serif;font-size:1.05rem;font-weight:800;color:var(--accent);}
+    .qs-max{font-size:0.58rem;color:#444;margin-top:0.18rem;}
+
+    /* Footer */
+    .sb-footer{padding:0.75rem 1.2rem;border-top:1px solid rgba(255,255,255,0.05);}
+    .sf-row{display:flex;justify-content:space-between;font-size:0.72rem;color:var(--muted);margin-bottom:0.2rem;}
+    .sf-total{display:flex;justify-content:space-between;padding-top:0.4rem;border-top:1px solid rgba(255,255,255,0.05);margin-bottom:0.8rem;}
+    .sf-tlbl{font-size:0.72rem;color:var(--muted);}
+    .sf-tval{font-family:'Montserrat',sans-serif;font-weight:800;font-size:1.18rem;color:var(--accent);}
+    .btn-next{width:100%;padding:0.78rem;background:var(--accent);color:#fff;border:none;border-radius:9px;font-family:'Poppins',sans-serif;font-weight:700;font-size:0.86rem;cursor:pointer;transition:box-shadow 0.2s,transform 0.12s;display:flex;align-items:center;justify-content:center;gap:0.4rem;box-shadow:0 0 20px rgba(106,13,173,0.18);}
+    .btn-next:hover:not(:disabled){box-shadow:0 0 40px rgba(106,13,173,0.48);transform:translateY(-1px);}
+    .btn-next:disabled{opacity:0.32;cursor:not-allowed;box-shadow:none;transform:none;}
+    .trust-row{display:flex;justify-content:center;gap:0.9rem;margin-top:0.45rem;}
+    .trust-item{display:flex;align-items:center;gap:0.22rem;font-size:0.57rem;color:#333;}
+    .trust-item i{color:#00FF88;font-size:0.6rem;}
+
+    @media(max-width:768px){
+      .layout{flex-direction:column;height:auto;}
+      .map-area{height:56vw;min-height:260px;}
+      .sidebar{width:100%;border-left:none;border-top:1px solid var(--border);}
+      .zone-list{max-height:310px;}
+      .event-lbl{display:none;}
+    }
+  </style>
+</head>
+<body>
+
+<!-- STEP BAR -->
+<div class="step-bar">
+  <a href="/event/<%= event._id %>" class="step-back"><i class="bi bi-arrow-left"></i> Back</a>
+  <div class="steps">
+    <div class="step-item active"><div class="step-num">1</div><span>Zone</span></div>
+    <div class="step-line"></div>
+    <div class="step-item"><div class="step-num">2</div><span>Details</span></div>
+    <div class="step-line"></div>
+    <div class="step-item"><div class="step-num">3</div><span>Payment</span></div>
+    <div class="step-line"></div>
+    <div class="step-item"><div class="step-num"><i class="bi bi-check" style="font-size:0.6rem;"></i></div><span>Done</span></div>
+  </div>
+  <div class="event-lbl"><%= event.name.toUpperCase() %></div>
+</div>
+
+<div class="layout">
+  <!-- MAP -->
+  <div class="map-area">
+    <% if(seatMap.previewImage){ %>
+    <div class="map-tabs">
+      <div class="map-tab active" id="tab-live" onclick="switchTab('live')"><i class="bi bi-grid-3x3-gap"></i> Interactive</div>
+      <div class="map-tab" id="tab-preview" onclick="switchTab('preview')"><i class="bi bi-image"></i> Preview</div>
+    </div>
+    <% } %>
+    <div class="map-legend">
+      <span class="leg-lbl">Legend</span>
+      <% event.ticketTypes.filter(t=>t.isActive).forEach(t=>{
+           const cc={platinum:'#9D4EDD',gold:'#f5c842',silver:'#c0c8d8',fanfit:'#00FF88',family:'#FF6B6B'}[t.category]||'#6A0DAD'; %>
+      <div class="leg-item" id="leg-<%= t.category %>" style="--zc:<%=cc%>" onclick="highlightCat('<%= t.category %>')">
+        <div class="leg-dot"></div>
+        <span style="color:<%=cc%>;font-weight:700;font-size:0.66rem;"><%= t.category.toUpperCase() %></span>
+        <span style="color:var(--muted);">₹<%= t.price.toLocaleString('en-IN') %></span>
+      </div>
+      <% }); %>
+    </div>
+    <div class="map-scroll" id="liveView"><canvas id="vc" width="<%= seatMap.canvasWidth||960 %>" height="<%= seatMap.canvasHeight||760 %>"></canvas></div>
+    <div class="preview-wrap" id="previewView"><% if(seatMap.previewImage){ %><img src="<%= seatMap.previewImage %>" alt="Venue"/><% } %></div>
+  </div>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sb-head">
+      <div class="sb-title">PICK YOUR ZONE</div>
+      <div class="sb-sub">Tap the map or click below to select</div>
+    </div>
+    <div class="zone-list" id="zoneList"></div>
+    <div class="qty-strip" id="qtyStrip">
+      <div class="qs-lbl">Tickets</div>
+      <div class="qs-row">
+        <button class="qs-btn" id="qMin" onclick="chQty(-1)" disabled>−</button>
+        <div class="qs-num" id="qNum">1</div>
+        <button class="qs-btn" id="qMax" onclick="chQty(1)">+</button>
+        <div class="qs-total">
+          <div class="qs-total-lbl">Subtotal</div>
+          <div class="qs-total-val" id="qTotal">—</div>
+        </div>
+      </div>
+      <div class="qs-max" id="qMaxLbl"></div>
+    </div>
+    <div class="sb-footer">
+      <div class="sf-row"><span>Zone</span><span id="sfZone">—</span></div>
+      <div class="sf-row"><span>Price / ticket</span><span id="sfPrice">—</span></div>
+      <div class="sf-row"><span>Qty</span><span id="sfQty">0</span></div>
+      <div class="sf-row"><span>Convenience fee</span><span>₹<%= event.convenienceFee||20 %></span></div>
+      <div class="sf-total">
+        <div class="sf-tlbl">Total</div>
+        <div class="sf-tval" id="sfTotal">₹<%= event.convenienceFee||20 %></div>
+      </div>
+      <button class="btn-next" id="btnNext" disabled onclick="goNext()">
+        <span>Next — Attendee Details</span><i class="bi bi-arrow-right"></i>
+      </button>
+      <div class="trust-row">
+        <div class="trust-item"><i class="bi bi-shield-check-fill"></i> Secure</div>
+        <div class="trust-item"><i class="bi bi-qr-code"></i> Instant QR</div>
+        <div class="trust-item"><i class="bi bi-arrow-counterclockwise"></i> Refundable</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const EVENT_ID  = '<%= event._id %>';
+const CONV_FEE  = <%= event.convenienceFee||20 %>;
+const SEAT_MAP  = <%- JSON.stringify(seatMap) %>;
+const TT        = <%- JSON.stringify(event.ticketTypes) %>;
+const CAT_C     = {platinum:'#9D4EDD',gold:'#f5c842',silver:'#c0c8d8',fanfit:'#00FF88',family:'#FF6B6B'};
+const PM        = Object.fromEntries(TT.map(t=>[t.category,t.price]));
+
+const canvas = document.getElementById('vc');
+const ctx    = canvas.getContext('2d');
+
+function d2r(d){ return d*Math.PI/180; }
+
+const zones = (SEAT_MAP.sections||[]).map(s=>({
+  name:s.name, category:s.category,
+  shape:s.zoneShape||'rect',
+  x:s.x??80, y:s.y??200,
+  w:s.zoneW>0?s.zoneW:200, h:s.zoneH>0?s.zoneH:100,
+  rot:s.zoneRot!=null?Number(s.zoneRot):0,
+  totalSeats:s.totalSeats||0, bookedSeats:s.bookedSeats||0,
+}));
+
+let selIdx = null, litCat = null, qty = 1;
+const MAXQ = 10;
+
+function switchTab(t){
+  document.querySelectorAll('.map-tab').forEach(e=>e.classList.remove('active'));
+  document.getElementById('tab-'+t)?.classList.add('active');
+  document.getElementById('liveView').style.display=t==='live'?'flex':'none';
+  document.getElementById('previewView').classList.toggle('show',t==='preview');
+}
+
+/* ── DRAW ── */
+function draw(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  drawGrid(); drawStage(SEAT_MAP.stage);
+  zones.forEach((z,i)=>drawZone(z,i===selIdx,litCat===z.category&&i!==selIdx));
+}
+function drawGrid(){
+  ctx.save();ctx.strokeStyle='rgba(255,255,255,0.025)';ctx.lineWidth=1;
+  for(let x=0;x<canvas.width;x+=40){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,canvas.height);ctx.stroke();}
+  for(let y=0;y<canvas.height;y+=40){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(canvas.width,y);ctx.stroke();}
+  ctx.restore();
+}
+function drawStage(s){
+  if(!s)return;
+  const bx=s.x||80,by=s.y||30,bw=s.width||500,bh=s.height||100;
+  ctx.save();
+  ctx.fillStyle='rgba(106,13,173,0.13)';ctx.strokeStyle='#6A0DAD';ctx.lineWidth=2;
+  ctx.beginPath();ctx.roundRect(bx,by,bw,bh,10);ctx.fill();ctx.stroke();
+  ctx.fillStyle='#bf80ff';ctx.font='bold 14px "Space Mono",monospace';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText(s.label||'STAGE',bx+bw/2,by+bh/2);ctx.restore();
+}
+function drawZone(z,isSel,isLit){
+  const {x,y,w,h,name,category,shape,totalSeats,bookedSeats}=z;
+  const rot=d2r(z.rot||0),color=CAT_C[category]||'#6A0DAD',price=PM[category]||0;
+  const cx=x+w/2,cy=y+h/2,avail=totalSeats-(bookedSeats||0),isSO=totalSeats>0&&avail<=0;
+  ctx.save();ctx.translate(cx,cy);ctx.rotate(rot);
+  if(isSel){ctx.shadowColor=color;ctx.shadowBlur=30;}
+  else if(isLit){ctx.shadowColor=color;ctx.shadowBlur=16;}
+  ctx.fillStyle=isSO?'rgba(50,50,60,0.32)':(isSel?color+'55':(isLit?color+'38':color+'1A'));
+  ctx.strokeStyle=isSO?'rgba(100,100,110,0.38)':(isSel?color:(isLit?color:color+'55'));
+  ctx.lineWidth=isSel?3:(isLit?2:1.5);
+  ctx.beginPath();
+  if(shape==='round')ctx.ellipse(0,0,w/2,h/2,0,0,Math.PI*2);
+  else if(shape==='triangle'){ctx.moveTo(0,-h/2);ctx.lineTo(w/2,h/2);ctx.lineTo(-w/2,h/2);ctx.closePath();}
+  else ctx.roundRect(-w/2,-h/2,w,h,10);
+  ctx.fill();ctx.shadowBlur=0;ctx.stroke();
+  const fs=Math.max(9,Math.min(14,w/(name.length*0.78)));
+  const lY=shape==='triangle'?h*0.06:-10;
+  ctx.fillStyle=isSO?'#444':'#fff';ctx.font=`bold ${fs}px "Montserrat",sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(name,0,lY);
+  ctx.fillStyle=isSO?'#444':color;ctx.font='600 9.5px "Poppins",sans-serif';ctx.fillText(category.toUpperCase(),0,lY+13);
+  ctx.fillStyle=isSO?'#333':'rgba(255,255,255,0.72)';ctx.font='bold 11px "Space Mono",monospace';ctx.fillText('₹'+price.toLocaleString('en-IN'),0,lY+26);
+  if(totalSeats>0){ctx.fillStyle=isSO?'#FF4444':(avail<20?'#f5c842':'rgba(0,255,136,0.6)');ctx.font='9px "Space Mono",monospace';ctx.fillText(isSO?'SOLD OUT':`${avail} left`,0,lY+39);}
+  if(isSel){
+    ctx.rotate(-rot);ctx.fillStyle=color;ctx.strokeStyle='#0f0f18';ctx.lineWidth=2;
+    ctx.beginPath();ctx.arc(w/2-12,-h/2+12,11,0,Math.PI*2);ctx.fill();ctx.stroke();
+    ctx.fillStyle='#fff';ctx.font='bold 13px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('✓',w/2-12,-h/2+13);
+  }
+  ctx.restore();
+}
+
+/* ── HIT TEST ── */
+function ptIn(px,py,z){
+  const cx=z.x+z.w/2,cy=z.y+z.h/2,rot=-d2r(z.rot||0);
+  const c=Math.cos(rot),s=Math.sin(rot);
+  const lx=(px-cx)*c-(py-cy)*s,ly=(px-cx)*s+(py-cy)*c;
+  const hw=z.w/2,hh=z.h/2;
+  if(z.shape==='round') return (lx/hw)**2+(ly/hh)**2<=1;
+  if(z.shape==='triangle'){function sgn(ax,ay,bx,by,qx,qy){return(ax-qx)*(by-ay)-(bx-ax)*(ay-qy);}const d1=sgn(0,-hh,hw,hh,lx,ly),d2=sgn(hw,hh,-hw,hh,lx,ly),d3=sgn(-hw,hh,0,-hh,lx,ly);return !((d1<0||d2<0||d3<0)&&(d1>0||d2>0||d3>0));}
+  return lx>=-hw&&lx<=hw&&ly>=-hh&&ly<=hh;
+}
+function zoneAt(px,py){for(let i=zones.length-1;i>=0;i--)if(ptIn(px,py,zones[i]))return i;return -1;}
+
+canvas.addEventListener('click',e=>{
+  const r=canvas.getBoundingClientRect(),sx=canvas.width/r.width;
+  const px=(e.clientX-r.left)*sx,py=(e.clientY-r.top)*sx;
+  const hit=zoneAt(px,py);
+  if(hit!==-1){
+    const z=zones[hit];if(z.totalSeats>0&&(z.totalSeats-z.bookedSeats)<=0)return;
+    selIdx=(selIdx===hit)?null:hit;if(selIdx!==null)litCat=null;qty=1;
+  } else selIdx=null;
+  refresh();
+});
+canvas.addEventListener('mousemove',e=>{
+  const r=canvas.getBoundingClientRect(),sx=canvas.width/r.width;
+  const px=(e.clientX-r.left)*sx,py=(e.clientY-r.top)*sx;
+  const zi=zoneAt(px,py);
+  if(zi!==-1){const z=zones[zi];canvas.style.cursor=(z.totalSeats>0&&(z.totalSeats-z.bookedSeats)<=0)?'not-allowed':'pointer';}
+  else canvas.style.cursor='default';
+});
+
+function highlightCat(cat){
+  litCat=(litCat===cat)?null:cat;if(litCat)selIdx=null;qty=1;syncLegend();refresh();
+}
+function syncLegend(){
+  document.querySelectorAll('.leg-item').forEach(e=>e.classList.toggle('active',e.id==='leg-'+litCat));
+}
+
+/* ── SIDEBAR CARDS ── */
+function renderCards(){
+  const wrap=document.getElementById('zoneList');
+  wrap.innerHTML=zones.map((z,i)=>{
+    const c=CAT_C[z.category]||'#6A0DAD',p=PM[z.category]||0;
+    const isSel=i===selIdx,isLit=z.category===litCat&&!isSel;
+    const avail=(z.totalSeats||0)-(z.bookedSeats||0),isSO=z.totalSeats>0&&avail<=0;
+    let sh='';
+    if(z.shape==='triangle') sh=`<polygon points="16,2 30,30 2,30" fill="${c}1F" stroke="${c}" stroke-width="1.6"/>`;
+    else if(z.shape==='round') sh=`<ellipse cx="16" cy="16" rx="14" ry="9" fill="${c}1F" stroke="${c}" stroke-width="1.6"/>`;
+    else sh=`<rect x="2" y="6" width="28" height="20" rx="4" fill="${c}1F" stroke="${c}" stroke-width="1.6"/>`;
+    return `<div class="zc${isSel?' sel':''}${isSO?' so':''}${isLit?' lit':''}" style="--zc:${c}" onclick="selCard(${i})">
+      <div class="zc-ico"><svg viewBox="0 0 32 32">${sh}</svg></div>
+      <div class="zc-info">
+        <div class="zc-name">${z.name}</div>
+        <div class="zc-cat" style="color:${c}">${z.category.toUpperCase()}</div>
+        <div class="zc-price">₹${p.toLocaleString('en-IN')}<span style="font-size:0.57rem;color:#444;"> / person</span></div>
+        ${z.totalSeats>0?`<div class="zc-avail" style="color:${isSO?'#FF4444':avail<20?'#f5c842':'#555'}">${isSO?'SOLD OUT':`${avail}/${z.totalSeats} avail`}</div>`:''}
+      </div>
+      <span class="zc-ck" style="color:${c}">✓</span>
+    </div>`;
+  }).join('');
+  document.getElementById('qtyStrip').className='qty-strip'+(selIdx!==null?' show':'');
+}
+
+function selCard(i){
+  const z=zones[i];if(z.totalSeats>0&&(z.totalSeats-z.bookedSeats)<=0)return;
+  selIdx=(selIdx===i)?null:i;if(selIdx!==null)litCat=null;qty=1;refresh();
+}
+
+/* ── QTY ── */
+function chQty(d){
+  if(selIdx===null)return;
+  const z=zones[selIdx],maxQ=z.totalSeats>0?Math.min(MAXQ,z.totalSeats-(z.bookedSeats||0)):MAXQ;
+  qty=Math.max(1,Math.min(maxQ,qty+d));
+  document.getElementById('qNum').textContent=qty;
+  document.getElementById('qMin').disabled=qty<=1;
+  document.getElementById('qMax').disabled=qty>=maxQ;
+  document.getElementById('qMaxLbl').textContent=`Max ${maxQ} tickets`;
+  document.getElementById('qTotal').textContent='₹'+((PM[z.category]||0)*qty+CONV_FEE).toLocaleString('en-IN');
+  updFooter();
+}
+
+function updFooter(){
+  const btn=document.getElementById('btnNext');
+  if(selIdx===null){
+    document.getElementById('sfZone').textContent='—';document.getElementById('sfPrice').textContent='—';
+    document.getElementById('sfQty').textContent='0';document.getElementById('sfTotal').textContent='₹'+CONV_FEE.toLocaleString('en-IN');
+    btn.disabled=true;return;
+  }
+  const z=zones[selIdx],p=PM[z.category]||0;
+  document.getElementById('sfZone').textContent=z.name;document.getElementById('sfPrice').textContent='₹'+p.toLocaleString('en-IN');
+  document.getElementById('sfQty').textContent=qty;document.getElementById('sfTotal').textContent='₹'+(p*qty+CONV_FEE).toLocaleString('en-IN');
+  document.getElementById('qTotal').textContent='₹'+(p*qty+CONV_FEE).toLocaleString('en-IN');
+  btn.disabled=false;
+  const maxQ=z.totalSeats>0?Math.min(MAXQ,z.totalSeats-(z.bookedSeats||0)):MAXQ;
+  document.getElementById('qMin').disabled=qty<=1;document.getElementById('qMax').disabled=qty>=maxQ;
+  document.getElementById('qMaxLbl').textContent=`Max ${maxQ} tickets`;
+}
+
+function refresh(){ syncLegend();draw();renderCards();updFooter(); }
+
+function goNext(){
+  if(selIdx===null)return;
+  const z=zones[selIdx];
+  sessionStorage.setItem('np_sel',JSON.stringify({eventId:EVENT_ID,zone:z.name,category:z.category,price:PM[z.category]||0,qty,convFee:CONV_FEE}));
+  window.location.href=`/booking/details/${EVENT_ID}?cat=${z.category}&qty=${qty}`;
+}
+
+renderCards();updFooter();draw();
+</script>
+</body>
+</html>

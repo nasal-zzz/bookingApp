@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Complete Payment — <%= event.name %></title>
+  <%- include('../partials/head') %>
+  <style>
+    .pay-wrap{max-width:520px;margin:3rem auto;padding:0 1.5rem 5rem;}
+    .pay-card{background:var(--card,#14141C);border:1px solid rgba(255,255,255,0.07);border-radius:12px;overflow:hidden;}
+    .pay-top{height:3px;background:linear-gradient(90deg,transparent,var(--accent),transparent);}
+    .pay-body{padding:2rem;}
+    .pay-title{font-family:var(--font-display);font-size:1.5rem;letter-spacing:2px;color:#fff;margin-bottom:0.5rem;}
+    .pay-sub{font-size:0.82rem;color:var(--muted);margin-bottom:2rem;line-height:1.6;}
+    .info-row{display:flex;justify-content:space-between;padding:0.55rem 0;border-bottom:1px solid rgba(255,255,255,0.06);font-size:0.82rem;}
+    .info-row .lbl{color:var(--muted);}.info-row .val{color:#fff;font-weight:500;}
+    .total-row{display:flex;justify-content:space-between;padding:0.9rem 0;margin-top:0.5rem;}
+    .total-lbl{font-family:var(--font-display);font-size:0.95rem;letter-spacing:1px;color:#fff;}
+    .total-val{font-family:var(--font-display);font-size:2rem;color:var(--accent);letter-spacing:2px;}
+    .attendees-list{margin:1.2rem 0;padding:1rem;background:rgba(255,255,255,0.025);border-radius:8px;border:1px solid rgba(255,255,255,0.06);}
+    .att-item{display:flex;align-items:center;gap:0.55rem;font-size:0.8rem;color:var(--muted);margin-bottom:0.4rem;}
+    .att-item:last-child{margin-bottom:0;}
+    .att-item i{color:var(--accent);}
+    .btn-pay{width:100%;padding:1.05rem;background:var(--accent);color:#fff;font-family:var(--font-body);font-weight:700;font-size:0.95rem;letter-spacing:1px;border:none;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:0.55rem;transition:0.18s;box-shadow:0 0 26px rgba(106,13,173,0.22);margin-top:1.2rem;}
+    .btn-pay:hover{transform:translateY(-2px);box-shadow:0 0 48px rgba(106,13,173,0.48);}
+    .btn-pay:disabled{opacity:0.38;cursor:not-allowed;transform:none;box-shadow:none;}
+    .btn-cancel{display:block;text-align:center;margin-top:1rem;color:var(--muted);font-size:0.8rem;text-decoration:none;}
+    .btn-cancel:hover{color:#fff;}
+    .spin{width:18px;height:18px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:sp 0.7s linear infinite;display:none;}
+    @keyframes sp{to{transform:rotate(360deg)}}
+  </style>
+</head>
+<body>
+  <%- include('../partials/navbar') %>
+  <div class="pay-wrap">
+    <div class="pay-card">
+      <div class="pay-top"></div>
+      <div class="pay-body">
+        <div class="pay-title">COMPLETE PAYMENT</div>
+        <div class="pay-sub">Your previous payment was incomplete. Resume to confirm your booking for <%= event.name %>.</div>
+        <div class="info-row"><span class="lbl">Event</span><span class="val"><%= event.name.toUpperCase() %></span></div>
+        <div class="info-row"><span class="lbl">Date</span><span class="val"><%= new Date(event.date).toDateString() %></span></div>
+        <div class="info-row"><span class="lbl">Ticket Type</span><span class="val"><%= booking.ticketType.toUpperCase() %></span></div>
+        <div class="info-row"><span class="lbl">Quantity</span><span class="val"><%= booking.quantity %> ticket<%= booking.quantity>1?'s':'' %></span></div>
+        <div class="info-row"><span class="lbl">Ref</span><span class="val" style="font-family:var(--font-mono);font-size:0.75rem;"><%= booking.bookingRef %></span></div>
+        <!-- Attendees -->
+        <div class="attendees-list">
+          <% booking.tickets.forEach(function(t,i){ %>
+          <div class="att-item"><i class="bi bi-person-fill"></i> <%= t.attendee.name %><span style="font-size:0.72rem;margin-left:0.3rem;color:#555;">· Age <%= t.attendee.age %></span></div>
+          <% }); %>
+        </div>
+        <div class="total-row">
+          <div class="total-lbl">TOTAL</div>
+          <div class="total-val">₹<%= booking.totalAmount.toLocaleString('en-IN') %></div>
+        </div>
+        <button class="btn-pay" id="payBtn" onclick="doPay()">
+          <i class="bi bi-lock-fill"></i>
+          <span id="payTxt">Pay ₹<%= booking.totalAmount.toLocaleString('en-IN') %></span>
+          <div class="spin" id="spin"></div>
+        </button>
+        <a href="/booking/my-bookings" class="btn-cancel">← Back to My Tickets</a>
+      </div>
+    </div>
+  </div>
+
+  <%- include('../partials/scripts') %>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <script>
+  const ORDER  = <%- JSON.stringify({id: order.id, amount: booking.totalAmount*100, currency:'INR'}) %>;
+  const RZP_KEY = '<%= rzpKey %>';
+  const USER    = <%- JSON.stringify({name:(user.firstName||'')+' '+(user.lastName||''),email:user.email||'',phone:user.phone||''}) %>;
+
+  async function doPay(){
+    document.getElementById('payBtn').disabled=true;
+    document.getElementById('payTxt').style.display='none';
+    document.getElementById('spin').style.display='block';
+    const rzp = new Razorpay({
+      key:ORDER.id?RZP_KEY:RZP_KEY, amount:ORDER.amount, currency:ORDER.currency,
+      name:'NightPass', description:'Complete payment',
+      order_id:ORDER.id, prefill:USER,
+      theme:{color:'#6A0DAD',backdrop_color:'#0B0B0F'},
+      modal:{ondismiss:()=>{document.getElementById('payBtn').disabled=false;document.getElementById('payTxt').style.display='flex';document.getElementById('spin').style.display='none';}},
+      handler:async function(response){
+        const vres=await fetch('/booking/verify-payment',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',
+          body:JSON.stringify({razorpay_payment_id:response.razorpay_payment_id,razorpay_order_id:response.razorpay_order_id,razorpay_signature:response.razorpay_signature})});
+        const vdata=await vres.json();
+        if(vdata.success) window.location.href='/booking/success/'+vdata.bookingId;
+        else{alert('Payment verified but failed to update. Payment ID: '+response.razorpay_payment_id);document.getElementById('payBtn').disabled=false;document.getElementById('payTxt').style.display='flex';document.getElementById('spin').style.display='none';}
+      }
+    });
+    rzp.on('payment.failed',r=>{alert('Payment failed: '+(r.error?.description||'Please try again'));document.getElementById('payBtn').disabled=false;document.getElementById('payTxt').style.display='flex';document.getElementById('spin').style.display='none';});
+    rzp.open();
+  }
+  </script>
+</body>
+</html>

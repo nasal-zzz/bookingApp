@@ -7,7 +7,7 @@ const attendeeSchema = new mongoose.Schema({
 });
 
 const ticketSchema = new mongoose.Schema({
-  ticketId:     { type: String, required: true },  // removed unique:true — handled at booking level
+  ticketId:     { type: String, required: true },
   attendee:     attendeeSchema,
   qrCode:       { type: String, default: '' },
   qrData:       { type: String, default: '' },
@@ -15,6 +15,9 @@ const ticketSchema = new mongoose.Schema({
   usedAt:       { type: Date, default: null },
   usedByDevice: { type: String, default: null },
   scannedBy:    { type: String, default: null },
+  // Seat assignment (if event has seat map)
+  seatId:       { type: String, default: null },   // e.g. "A-3"
+  sectionName:  { type: String, default: null },   // e.g. "CENTER"
 });
 
 // Generate booking ref — called before schema so it's available at creation time
