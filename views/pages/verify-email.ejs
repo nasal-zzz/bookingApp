@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Verify Email — NightPass</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&family=Poppins:wght@400;500;600&family=Space+Mono&display=swap" rel="stylesheet"/>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:#08080E;color:#fff;font-family:'Poppins',sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1rem;}
+    .card{background:#14141C;border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:2.5rem;width:100%;max-width:420px;}
+    .logo{font-family:'Montserrat',sans-serif;font-size:1.3rem;letter-spacing:4px;color:#fff;text-align:center;margin-bottom:0.4rem;}
+    .logo span{color:#6A0DAD;}
+    .sub{font-family:'Space Mono',monospace;font-size:0.6rem;letter-spacing:2px;color:#555;text-align:center;margin-bottom:2rem;}
+    .title{font-family:'Montserrat',sans-serif;font-size:1.4rem;letter-spacing:2px;text-align:center;margin-bottom:0.4rem;}
+    .desc{font-size:0.82rem;color:#B3B3B3;text-align:center;margin-bottom:2rem;line-height:1.5;}
+    .email-chip{display:inline-block;background:rgba(106,13,173,0.15);border:1px solid rgba(106,13,173,0.4);border-radius:20px;padding:0.2rem 0.9rem;font-family:'Space Mono',monospace;font-size:0.75rem;color:#bf80ff;margin-bottom:1.5rem;}
+    .otp-row{display:flex;gap:0.5rem;justify-content:center;margin-bottom:1.5rem;}
+    .otp-box{width:48px;height:56px;background:#0B0B0F;border:2px solid rgba(255,255,255,0.1);border-radius:8px;text-align:center;font-size:1.4rem;font-family:'Space Mono',monospace;color:#fff;outline:none;transition:border-color 0.2s;}
+    .otp-box:focus{border-color:#6A0DAD;}
+    .btn{width:100%;padding:1rem;background:#6A0DAD;color:#fff;border:none;border-radius:8px;font-family:'Poppins',sans-serif;font-weight:700;font-size:0.95rem;cursor:pointer;letter-spacing:1px;transition:0.2s;margin-bottom:1rem;}
+    .btn:hover{box-shadow:0 0 30px rgba(106,13,173,0.5);}
+    .btn:disabled{opacity:0.4;cursor:not-allowed;}
+    .btn-skip{width:100%;padding:0.8rem;background:transparent;color:#555;border:1px solid rgba(255,255,255,0.08);border-radius:8px;font-family:'Poppins',sans-serif;font-size:0.85rem;cursor:pointer;transition:0.2s;}
+    .btn-skip:hover{color:#B3B3B3;border-color:rgba(255,255,255,0.15);}
+    .msg{font-size:0.82rem;text-align:center;padding:0.6rem;border-radius:6px;margin-bottom:1rem;display:none;}
+    .msg.err{background:rgba(255,68,68,0.1);border:1px solid rgba(255,68,68,0.3);color:#FF4444;}
+    .msg.ok{background:rgba(0,255,136,0.08);border:1px solid rgba(0,255,136,0.25);color:#00FF88;}
+    .resend{text-align:center;font-size:0.78rem;color:#555;margin-top:1rem;}
+    .resend a{color:#6A0DAD;cursor:pointer;text-decoration:none;}
+  </style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">NIGHT<span>PASS</span></div>
+  <div class="sub">// verify your email</div>
+  <div class="title">CHECK YOUR INBOX</div>
+  <p class="desc">We sent a 6-digit code to</p>
+  <div style="text-align:center;margin-bottom:1.5rem;"><span class="email-chip"><%= email %></span></div>
+  <div id="msg" class="msg"></div>
+  <div class="otp-row" id="otpRow">
+    <input class="otp-box" maxlength="1" inputmode="numeric" id="o1"/>
+    <input class="otp-box" maxlength="1" inputmode="numeric" id="o2"/>
+    <input class="otp-box" maxlength="1" inputmode="numeric" id="o3"/>
+    <input class="otp-box" maxlength="1" inputmode="numeric" id="o4"/>
+    <input class="otp-box" maxlength="1" inputmode="numeric" id="o5"/>
+    <input class="otp-box" maxlength="1" inputmode="numeric" id="o6"/>
+  </div>
+  <button class="btn" id="verifyBtn" onclick="verifyEmail()">Verify Email</button>
+  <button class="btn-skip" onclick="skipEmail()">Skip for now →</button>
+  <div class="resend">Didn't receive it? <a onclick="resend()">Resend OTP</a></div>
+</div>
+<script>
+  // OTP box auto-advance
+  const boxes=[...document.querySelectorAll('.otp-box')];
+  boxes.forEach((b,i)=>{
+    b.addEventListener('input',()=>{if(b.value.length===1&&boxes[i+1])boxes[i+1].focus();});
+    b.addEventListener('keydown',e=>{if(e.key==='Backspace'&&!b.value&&boxes[i-1]){boxes[i-1].focus();}});
+    b.addEventListener('paste',e=>{e.preventDefault();const txt=(e.clipboardData||window.clipboardData).getData('text').replace(/\D/g,'');txt.split('').forEach((c,j)=>{if(boxes[i+j])boxes[i+j].value=c;});if(boxes[Math.min(i+txt.length,5)])boxes[Math.min(i+txt.length,5)].focus();});
+  });
+  function getOTP(){return boxes.map(b=>b.value).join('');}
+  function showMsg(txt,type){const m=document.getElementById('msg');m.textContent=txt;m.className='msg '+type;m.style.display='block';}
+
+  async function verifyEmail(){
+    const otp=getOTP();
+    if(otp.length!==6){showMsg('Enter the 6-digit code from your email','err');return;}
+    document.getElementById('verifyBtn').disabled=true;
+    const res=await fetch('/auth/verify-email-otp',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({otp})});
+    const d=await res.json();
+    if(d.success){showMsg('Email verified! Redirecting…','ok');setTimeout(()=>window.location.href=d.redirect||'/',1000);}
+    else{showMsg(d.message||'Invalid OTP','err');document.getElementById('verifyBtn').disabled=false;}
+  }
+
+  async function resend(){
+    showMsg('Sending…','ok');
+    const res=await fetch('/auth/resend-email-otp',{method:'POST'});
+    const d=await res.json();
+    showMsg(d.message||'OTP resent!', d.success?'ok':'err');
+  }
+
+  function skipEmail(){window.location.href='/';}
+</script>
+</body>
+</html>

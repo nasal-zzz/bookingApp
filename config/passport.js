@@ -1,3 +1,5 @@
+
+
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const User = require('../models/User');
@@ -8,61 +10,50 @@ passport.use(new GoogleStrategy({
   callbackURL:  process.env.GOOGLE_CALLBACK_URL,
 }, async (accessToken, refreshToken, profile, done) => {
   try {
-    const email    = profile.emails?.[0]?.value || '';
-    const googleId = profile.id;
+    const email     = profile.emails?.[0]?.value || '';
+    const googleId  = profile.id;
     const firstName = profile.name?.givenName  || profile.displayName || 'User';
     const lastName  = profile.name?.familyName || '';
     const avatar    = profile.photos?.[0]?.value || '';
 
-    // 1 — Check if user exists by googleId
+    // 1 — Existing Google user
     let user = await User.findOne({ googleId });
-
     if (user) {
-      // Already signed up with Google — update avatar just in case
-      user.avatar = avatar;
-      await user.save();
+      if (!user.avatar && avatar) { user.avatar = avatar; await user.save(); }
       return done(null, user);
     }
 
-    // 2 — Check if user exists by email (phone signup before)
+    // 2 — Existing phone-signup user with same email → link Google
     if (email) {
       user = await User.findOne({ email });
       if (user) {
-        // Link Google to existing account
-        user.googleId = googleId;
-        user.avatar   = avatar;
-        user.isVerified = true;
+        user.googleId      = googleId;
+        user.emailVerified = true;
+        if (!user.avatar && avatar) user.avatar = avatar;
         await user.save();
         return done(null, user);
       }
     }
 
-    // 3 — Brand new user — create account
-    // Phone is required in our schema, use a placeholder for Google users
+    // 3 — Brand new user — create WITHOUT phone (will be added on verify-phone page)
     user = await User.create({
-      firstName,
-      lastName,
-      email,
-      googleId,
-      avatar,
-      phone: 'GOOGLE_' + googleId, // placeholder — can update later
-      isVerified: true,
+      firstName, lastName, email, googleId, avatar,
+      phone:         '',     // empty — filled after phone verify
+      isVerified:    false,  // phone not verified
+      emailVerified: true,   // Google email is trusted
+      gender:        '',
     });
 
     return done(null, user);
 
   } catch (err) {
-    console.error('Google OAuth error:', err);
+    console.error('Google OAuth error:', err.message);
     return done(err, null);
   }
 }));
 
-// Serialize — store user id in session
-passport.serializeUser((user, done) => {
-  done(null, user._id);
-});
+passport.serializeUser((user, done) => done(null, user._id));
 
-// Deserialize — fetch user from DB on each request
 passport.deserializeUser(async (id, done) => {
   try {
     const user = await User.findById(id).select('-__v');

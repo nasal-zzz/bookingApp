@@ -353,11 +353,19 @@ exports.verifyPayment = async (req, res) => {
         existingBooking.signature     = razorpay_signature;
         await existingBooking.save();
 
-        // Update seat count
+        // Update Event seat count
         await Event.updateOne(
           { _id: pending.eventId, 'ticketTypes.category': pending.ticketType },
           { $inc: { 'ticketTypes.$.bookedSeats': pending.quantity } }
         ).catch(() => {});
+
+        // Update SeatMap zone bookedSeats (zone linked by category)
+        if (pending.zone) {
+          await SeatMap.updateOne(
+            { event: pending.eventId, 'sections.name': pending.zone },
+            { $inc: { 'sections.$.bookedSeats': pending.quantity } }
+          ).catch(() => {});
+        }
 
         delete req.session.pendingBooking;
         req.session.save(() => {});
@@ -398,11 +406,19 @@ exports.verifyPayment = async (req, res) => {
       contactEmail:   req.user.email || '',
     });
 
-    // Update seat count
+    // Update Event seat count
     await Event.updateOne(
       { _id: pending.eventId, 'ticketTypes.category': pending.ticketType },
       { $inc: { 'ticketTypes.$.bookedSeats': pending.quantity } }
     ).catch(() => {});
+
+    // Update SeatMap zone bookedSeats
+    if (pending.zone) {
+      await SeatMap.updateOne(
+        { event: pending.eventId, 'sections.name': pending.zone },
+        { $inc: { 'sections.$.bookedSeats': pending.quantity } }
+      ).catch(() => {});
+    }
 
     // Link to user
     await User.findByIdAndUpdate(req.user._id, { $push: { bookings: booking._id } }).catch(() => {});

@@ -335,9 +335,9 @@
           <% if (evSoldOut) { %>
             <span class="btn-book-now" style="opacity:0.5;cursor:not-allowed;">Sold Out</span>
           <% } else if (locals.user && user) { %>
-            <a href="/booking/<%= ev._id %>" class="btn-book-now"><i class="bi bi-ticket-perforated-fill"></i> Book Now</a>
+            <a href="/booking/seatmap/<%= ev._id %>" class="btn-book-now"><i class="bi bi-ticket-perforated-fill"></i> Book Now</a>
           <% } else { %>
-            <a href="/auth/login?next=/booking/<%= ev._id %>" class="btn-book-now"><i class="bi bi-ticket-perforated-fill"></i> Book Now</a>
+            <a href="/auth/login?next=/booking/seatmap/<%= ev._id %>" class="btn-book-now"><i class="bi bi-ticket-perforated-fill"></i> Book Now</a>
           <% } %>
           <a href="/event/<%= ev._id %>" class="btn-view-details">View Details <i class="bi bi-arrow-right"></i></a>
         </div>
@@ -436,9 +436,11 @@
             <% if(isSoldOut){ %>
               <span class="btn-ev-book disabled"><i class="bi bi-x-circle"></i> Sold Out</span>
             <% } else if(locals.user && user){ %>
-              <a href="/booking/<%= ev._id %>" class="btn-ev-book"><i class="bi bi-ticket-perforated-fill"></i> Book Now</a>
+              <a href="/booking/seatmap/<%= ev._id %>" class="btn-ev-book me-2"><i class="bi bi-ticket-perforated-fill"></i> Book Now</a>
+              <a href="/event/<%= ev._id %>" class="btn-view-details"><i class="bi bi-arrow-right">View Details</i></a>
+
             <% } else { %>
-              <a href="/auth/login?next=/booking/<%= ev._id %>" class="btn-ev-book"><i class="bi bi-ticket-perforated-fill"></i> Book Now</a>
+              <a href="/auth/login?next=/booking/seatmap/<%= ev._id %>" class="btn-ev-book"><i class="bi bi-ticket-perforated-fill"></i> Book Now</a>
             <% } %>
           </div>
         </div>
@@ -484,121 +486,93 @@
     </div>
   </div>
 
-  <!-- ═══════════════ CONTACT SECTION ═══════════════ -->
-  <div class="section" id="contact" style="padding-top:1rem;">
-    <span class="section-tag">// get in touch</span>
-    <div class="section-title">CONTACT US</div>
 
-    <div class="contact-grid">
-      <div class="contact-info">
-        <div class="contact-item">
-          <div class="contact-icon"><i class="bi bi-geo-alt-fill"></i></div>
-          <div>
-            <div class="contact-label">Address</div>
-            <div class="contact-val">Kochi, Kerala, India</div>
+  <!-- ═══════════════ PREVIOUS PROGRAMS ═══════════════ -->
+  <div class="section" id="previous" style="padding-top:2rem;">
+    <span class="section-tag">// memories we made</span>
+    <div class="section-title">PREVIOUS PROGRAMS</div>
+    <% const pastEventsArr = typeof pastEvents !== 'undefined' ? pastEvents : []; %>
+    <% if(pastEventsArr.length === 0){ %>
+    <div style="text-align:center;padding:3rem 1rem;color:var(--muted);">
+      <div style="font-size:2.5rem;margin-bottom:0.7rem;">🎶</div>
+      <p style="font-size:0.88rem;">Past events will appear here.</p>
+    </div>
+    <% } else { %>
+    <div class="prev-grid">
+      <% pastEventsArr.forEach(function(ev){ %>
+      <%
+        const activeTiers = ev.ticketTypes.filter(t => t.isActive);
+        const minPrice = activeTiers.length ? Math.min(...activeTiers.map(t => t.price)) : 0;
+      %>
+      <div class="prev-card">
+        <div class="prev-poster">
+          <% if(ev.bannerDesktop || ev.bannerMobile){ %>
+            <img src="<%= ev.bannerDesktop||ev.bannerMobile %>" alt="<%= ev.name %>" loading="lazy"/>
+          <% } else { %>
+            <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:2rem;background:linear-gradient(135deg,#1a0030,#3d0070);">🎶</div>
+          <% } %>
+          <div class="prev-overlay">
+            <div class="prev-date-badge"><i class="bi bi-calendar3"></i> <%= new Date(ev.date).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) %></div>
           </div>
         </div>
-        <div class="contact-item">
-          <div class="contact-icon"><i class="bi bi-envelope-fill"></i></div>
-          <div>
-            <div class="contact-label">Email</div>
-            <div class="contact-val">info@nightpass.in</div>
-          </div>
-        </div>
-        <div class="contact-item">
-          <div class="contact-icon"><i class="bi bi-telephone-fill"></i></div>
-          <div>
-            <div class="contact-label">Phone</div>
-            <div class="contact-val">+91 98765 43210</div>
-          </div>
-        </div>
-        <div class="contact-socials">
-          <a href="#" class="c-soc"><i class="bi bi-facebook"></i></a>
-          <a href="#" class="c-soc"><i class="bi bi-instagram"></i></a>
-          <a href="#" class="c-soc"><i class="bi bi-twitter-x"></i></a>
-          <a href="#" class="c-soc"><i class="bi bi-youtube"></i></a>
+        <div class="prev-body">
+          <div class="prev-name"><%= ev.name.toUpperCase() %></div>
+          <div class="prev-venue"><i class="bi bi-geo-alt-fill"></i> <%= ev.venue %></div>
+          <a href="/event/<%= ev._id %>" class="prev-link">View Details <i class="bi bi-arrow-right"></i></a>
         </div>
       </div>
+      <% }); %>
+    </div>
+    <% } %>
+  </div>
 
-      <form class="contact-form" onsubmit="handleContactForm(event)">
-        <div class="cf-row">
-          <div class="cf-group">
-            <label class="cf-label">Your Name</label>
-            <input class="cf-input" type="text" placeholder="John Doe" required />
+  <!-- ═══════════════ REVIEWS SECTION ═══════════════ -->
+  <div class="section" id="reviews" style="padding-top:2rem;">
+    <span class="section-tag">// what people say</span>
+    <div class="section-title">AUDIENCE <span style="color:var(--muted);">REVIEWS</span></div>
+    <div class="reviews-grid">
+      <% [
+        {name:'Arjun Menon',     stars:5, loc:'Kozhikode',  text:'Absolutely insane event! The energy was electric from the moment we walked in. NightPass made the booking so smooth — QR scan at gate was instant.'},
+        {name:'Fathima Nizar',   stars:5, loc:'Malappuram', text:'Best night of 2025! The zone layout was perfect, we had a clear view from our section. Will definitely book again for the next one.'},
+        {name:'Sreejith Kumar',  stars:4, loc:'Thrissur',   text:'Great experience overall. The app was easy to use and tickets arrived on WhatsApp within minutes. Venue management was excellent.'},
+        {name:'Amina Rashid',    stars:5, loc:'Manjeri',    text:'First time attending a Melattur Pattu event and Im already planning for the next. The traditional performances with modern staging was breathtaking.'},
+        {name:'Vishnu Prasad',   stars:4, loc:'Palakkad',   text:'Smooth booking process, no queues at entry. The QR code system was really efficient. Sound quality at the venue was outstanding.'},
+        {name:'Rahmath Beevi',   stars:5, loc:'Tirur',      text:'Incredible experience! The atmosphere was magical. Highly recommend buying Gold tier — the view is perfect and worth every rupee.'},
+      ].forEach(function(r){ %>
+      <div class="review-card">
+        <div class="review-top">
+          <div class="review-avatar"><%= r.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2) %></div>
+          <div>
+            <div class="review-name"><%= r.name %></div>
+            <div class="review-loc"><i class="bi bi-geo-alt-fill"></i> <%= r.loc %></div>
           </div>
-          <div class="cf-group">
-            <label class="cf-label">Email</label>
-            <input class="cf-input" type="email" placeholder="you@email.com" required />
+          <div class="review-stars">
+            <% for(let s=0;s<5;s++){ %><i class="bi bi-star-fill" style="color:<%= s < r.stars ? '#f5c842' : '#333' %>;"></i><% } %>
           </div>
         </div>
-        <div class="cf-group">
-          <label class="cf-label">Subject</label>
-          <input class="cf-input" type="text" placeholder="Event enquiry, partnership..." required />
-        </div>
-        <div class="cf-group">
-          <label class="cf-label">Message</label>
-          <textarea class="cf-input cf-textarea" placeholder="Tell us more..." required></textarea>
-        </div>
-        <button type="submit" class="cf-submit">
-          <i class="bi bi-send-fill"></i> Send Message
-        </button>
-        <div class="cf-success" id="cfSuccess" style="display:none;">
-          <i class="bi bi-check-circle-fill"></i> Message sent! We'll get back to you soon.
-        </div>
-      </form>
+        <p class="review-text">"<%= r.text %>"</p>
+      </div>
+      <% }); %>
     </div>
   </div>
 
+
   <!-- ═══════════════ RICH FOOTER ═══════════════ -->
   <footer class="site-footer" id="footer">
-    <div class="site-footer-inner">
-      <!-- Brand col -->
-      <div class="footer-brand">
-        <div class="footer-logo">
-          <i class="bi bi-music-note-beamed"></i>
-          <span><%= locals.appName || 'NightPass' %></span>
-        </div>
-        <p class="footer-tagline">A premium collective dedicated to scaling the musical heritage of Kerala through grand cinematic live events.</p>
-        <div class="footer-socials">
-          <a href="#" class="f-soc"><i class="bi bi-facebook"></i></a>
-          <a href="#" class="f-soc"><i class="bi bi-instagram"></i></a>
-          <a href="#" class="f-soc"><i class="bi bi-twitter-x"></i></a>
-          <a href="#" class="f-soc"><i class="bi bi-youtube"></i></a>
-        </div>
+    <div class="footer-center">
+      <div class="footer-logo">
+        <i class="bi bi-music-note-beamed"></i>
+        <span>MELATTUR PATTU</span>
       </div>
-
-      <!-- Quick Links -->
-      <div class="footer-col">
-        <div class="footer-col-title">Quick Links</div>
-        <div class="footer-col-line"></div>
-        <a href="/" class="footer-link">Home</a>
-        <a href="/#events" class="footer-link">Browse Events</a>
-        <a href="/#about" class="footer-link">About Us</a>
-        <a href="/#contact" class="footer-link">Contact Us</a>
+      <div class="footer-socials">
+        <a href="#" class="f-soc" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
+        <a href="#" class="f-soc" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
+        <a href="#" class="f-soc" aria-label="YouTube"><i class="bi bi-youtube"></i></a>
+        <a href="https://wa.me/919995843003" class="f-soc" aria-label="WhatsApp" target="_blank"><i class="bi bi-whatsapp"></i></a>
       </div>
-
-      <!-- Support -->
-      <div class="footer-col">
-        <div class="footer-col-title">Support</div>
-        <div class="footer-col-line"></div>
-        <a href="#" class="footer-link">FAQ</a>
-        <a href="#" class="footer-link">Terms & Conditions</a>
-        <a href="#" class="footer-link">Privacy Policy</a>
-        <a href="#" class="footer-link">Cancellation Policy</a>
+      <div class="footer-bottom">
+        © 2026 Melattur Entertainment Events. All rights reserved.
       </div>
-
-      <!-- Contact Us -->
-      <div class="footer-col">
-        <div class="footer-col-title">Contact Us</div>
-        <div class="footer-col-line"></div>
-        <div class="footer-contact-item"><i class="bi bi-geo-alt-fill"></i> Kochi, Kerala, India — 682001</div>
-        <div class="footer-contact-item"><i class="bi bi-envelope-fill"></i> info@nightpass.in</div>
-        <div class="footer-contact-item"><i class="bi bi-telephone-fill"></i> +91 98765 43210</div>
-      </div>
-    </div>
-
-    <div class="footer-bottom">
-      © 2026 <%= locals.appName || 'NightPass' %>. All rights reserved.
     </div>
   </footer>
 
@@ -640,6 +614,37 @@
       font-size: var(--desc-max); color: #ccc;
     }
     .about-checklist li i { color: var(--accent); font-size: 0.85rem; flex-shrink: 0; }
+
+    /* Previous programs grid */
+    .prev-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1.2rem;}
+    .prev-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:transform 0.18s,border-color 0.18s;}
+    .prev-card:hover{transform:translateY(-3px);border-color:rgba(106,13,173,0.3);}
+    .prev-poster{position:relative;width:100%;padding-top:56%;overflow:hidden;}
+    .prev-poster img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(0.75);transition:filter 0.3s;}
+    .prev-card:hover .prev-poster img{filter:brightness(0.9);}
+    .prev-overlay{position:absolute;inset:0;display:flex;align-items:flex-end;padding:0.7rem;background:linear-gradient(0deg,rgba(0,0,0,0.6) 0%,transparent 60%);}
+    .prev-date-badge{display:inline-flex;align-items:center;gap:0.35rem;background:rgba(106,13,173,0.85);border-radius:4px;padding:0.2rem 0.6rem;font-family:var(--font-mono);font-size:0.58rem;letter-spacing:1px;color:#fff;}
+    .prev-body{padding:0.9rem 1rem;}
+    .prev-name{font-family:var(--font-display);font-size:0.9rem;letter-spacing:1.5px;color:#fff;margin-bottom:0.3rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .prev-venue{font-size:0.72rem;color:var(--muted);margin-bottom:0.6rem;display:flex;align-items:center;gap:0.3rem;}
+    .prev-venue i{color:var(--accent);font-size:0.65rem;}
+    .prev-link{display:inline-flex;align-items:center;gap:0.3rem;font-size:0.72rem;color:var(--accent);text-decoration:none;transition:gap 0.15s;}
+    .prev-link:hover{gap:0.5rem;}
+
+    /* Reviews */
+    .reviews-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:1.2rem;}
+    .review-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.3rem;transition:border-color 0.18s;}
+    .review-card:hover{border-color:rgba(245,200,66,0.2);}
+    .review-top{display:flex;align-items:center;gap:0.8rem;margin-bottom:0.9rem;}
+    .review-avatar{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#3a0870,#6A0DAD);border:2px solid rgba(106,13,173,0.4);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:0.78rem;color:#fff;flex-shrink:0;}
+    .review-name{font-weight:700;font-size:0.85rem;color:#fff;margin-bottom:0.08rem;}
+    .review-loc{font-size:0.65rem;color:var(--muted);display:flex;align-items:center;gap:0.25rem;}
+    .review-loc i{color:var(--accent);font-size:0.6rem;}
+    .review-stars{margin-left:auto;display:flex;gap:0.1rem;font-size:0.72rem;}
+    .review-text{font-size:0.78rem;color:#B3B3B3;line-height:1.7;font-style:italic;}
+
+    /* Footer overrides */
+
 
     /* Contact */
     .contact-grid { display:grid; grid-template-columns:1fr 1.4fr; gap:2rem; }
@@ -700,53 +705,32 @@
       background:#0a0a10;
       border-top:1px solid var(--border);
       position:relative; z-index:1;
+      padding:2.5rem 1.5rem 1.5rem;
     }
-    .site-footer-inner {
-      max-width:1100px; margin:0 auto;
-      padding:3rem 2rem 2rem;
-      display:grid;
-      grid-template-columns:1.6fr 1fr 1fr 1.2fr;
-      gap:2.5rem;
+    .footer-center {
+      display:flex; flex-direction:column; align-items:center; gap:1.2rem;
+      text-align:center;
     }
-    @media(max-width:900px){ .site-footer-inner{ grid-template-columns:1fr 1fr; } }
-    @media(max-width:520px){ .site-footer-inner{ grid-template-columns:1fr; gap:1.8rem; } }
-
     .footer-logo {
-      display:flex; align-items:center; gap:0.5rem;
+      display:flex; align-items:center; justify-content:center; gap:0.5rem;
       font-family:var(--font-body); font-weight:700;
-      font-size:var(--body-max); color:#fff; margin-bottom:0.8rem;
+      font-size:var(--body-max); color:#fff;
     }
     .footer-logo i { color:var(--accent); font-size:1.1rem; }
-    .footer-tagline { font-size:var(--desc-max); color:var(--muted); line-height:1.7; margin-bottom:1.1rem; }
-    .footer-socials { display:flex; gap:0.55rem; }
+    .footer-socials { display:flex; gap:0.6rem; justify-content:center; }
     .f-soc {
-      width:36px; height:36px; border-radius:50%;
+      width:38px; height:38px; border-radius:50%;
       background:rgba(255,255,255,0.06); border:1px solid var(--border);
       display:flex; align-items:center; justify-content:center;
-      color:var(--muted); font-size:0.85rem; text-decoration:none;
-      transition:background 0.2s, color 0.2s;
+      color:var(--muted); font-size:0.88rem; text-decoration:none;
+      transition:background 0.2s, color 0.2s, border-color 0.2s;
     }
-    .f-soc:hover { background:rgba(106,13,173,0.25); color:#fff; }
-
-    .footer-col { display:flex; flex-direction:column; gap:0.1rem; }
-    .footer-col-title { font-family:var(--font-body); font-weight:700; font-size:var(--body-max); color:#fff; margin-bottom:0.5rem; }
-    .footer-col-line { height:2px; width:32px; background:var(--accent); border-radius:2px; margin-bottom:0.8rem; }
-    .footer-link {
-      color:var(--muted); text-decoration:none; font-size:var(--desc-max);
-      padding:0.3rem 0; transition:color 0.2s;
-    }
-    .footer-link:hover { color:#fff; }
-    .footer-contact-item {
-      display:flex; align-items:flex-start; gap:0.6rem;
-      font-size:var(--desc-max); color:var(--muted);
-      padding:0.3rem 0; line-height:1.5;
-    }
-    .footer-contact-item i { color:var(--accent); margin-top:2px; flex-shrink:0; }
-
+    .f-soc:hover { background:rgba(106,13,173,0.25); color:#fff; border-color:rgba(106,13,173,0.4); }
     .footer-bottom {
-      border-top:1px solid var(--border);
-      text-align:center; padding:1rem 2rem;
       font-size:var(--desc-max); color:#555;
+      padding-top:1.2rem;
+      border-top:1px solid rgba(255,255,255,0.06);
+      width:100%; text-align:center;
     }
   </style>
 

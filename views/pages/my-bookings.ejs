@@ -30,9 +30,9 @@
            // Check if event still has tickets (for pay now)
            const evtActive   = booking.event && booking.event.isActive;
            const evtHasSeats = booking.event && booking.event.ticketTypes && booking.event.ticketTypes.some(t=>t.bookedSeats<t.totalSeats);
-           const canRetryPay = (isPend || isFail) && evtActive && evtHasSeats;
+           const canRetryPay = isPend && evtActive && evtHasSeats;  // Only pending gets Pay Now (not failed)
       %>
-      <div style="background:var(--card);border:1px solid rgba(255,255,255,0.07);border-radius:12px;overflow:hidden;">
+      <div data-booking="<%= booking._id %>" style="background:var(--card);border:1px solid rgba(255,255,255,0.07);border-radius:12px;overflow:hidden;">
         <!-- Status accent bar -->
         <div style="height:3px;background:linear-gradient(90deg,transparent,<%= statusColor %>,transparent);"></div>
 
@@ -73,6 +73,11 @@
                 <% } else if(isPend||isFail){ %>
                   <span style="font-size:0.72rem;color:#555;font-family:var(--font-mono);">Tickets unavailable</span>
                 <% } %>
+                <% if(isFail||isPend){ %>
+                  <button onclick="deleteBooking('<%= booking._id %>')" style="display:flex;align-items:center;gap:0.4rem;background:rgba(255,68,68,0.08);border:1px solid rgba(255,68,68,0.25);color:#FF4444;padding:0.55rem 0.9rem;border-radius:6px;font-weight:700;font-size:0.78rem;white-space:nowrap;cursor:pointer;" title="Delete this failed booking">
+                    <i class="bi bi-trash3-fill"></i> Delete
+                  </button>
+                <% } %>
               </div>
             </div>
           </div>
@@ -101,6 +106,20 @@
   function dlTicket(bookingId){
     window.location.href='/booking/success/'+bookingId+'?autodownload=1';
   }
+
+  async function deleteBooking(bookingId){
+    if(!confirm('Delete this booking record? This cannot be undone.')) return;
+    try{
+      const res=await fetch('/user/delete-booking/'+bookingId,{method:'DELETE',headers:{'Content-Type':'application/json'},credentials:'include'});
+      const d=await res.json();
+      if(d.success){
+        const card=document.querySelector(`[data-booking="${bookingId}"]`);
+        if(card){card.style.opacity='0';card.style.transition='opacity 0.3s';setTimeout(()=>card.remove(),300);}
+        else window.location.reload();
+      } else alert(d.message||'Could not delete booking.');
+    }catch(e){alert('Network error.');}
+  }
+
   if(window.history&&window.history.replaceState)window.history.replaceState(null,'',window.location.href);
   </script>
 </body>

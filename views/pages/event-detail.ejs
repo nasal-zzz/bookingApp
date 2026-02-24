@@ -103,13 +103,22 @@
     }
     @media(max-width:900px) {
       .event-layout { grid-template-columns:1fr; }
-      .event-sidebar { order:-1; }
+      .event-sidebar { order:1; position:static; }  /* sidebar below content on mobile */
     }
     @media(max-width:600px){
       .event-layout { padding:1.2rem 1rem; gap:1.5rem; }
     }
 
     /* ── CONTENT BLOCKS ── */
+
+    /* ── ARTIST SECTION ── */
+    .artists-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); gap:1rem; margin-top:0.8rem; }
+    .artist-card { text-align:center; }
+    .artist-photo { width:80px; height:80px; border-radius:50%; object-fit:cover; border:2px solid rgba(106,13,173,0.5); margin:0 auto 0.5rem; display:block; background:#14141C; }
+    .artist-photo-placeholder { width:80px; height:80px; border-radius:50%; background:linear-gradient(135deg,#1a0030,#2a0050); display:flex; align-items:center; justify-content:center; font-size:1.8rem; margin:0 auto 0.5rem; border:2px solid rgba(106,13,173,0.4); }
+    .artist-name { font-family:var(--font-display); font-size:0.82rem; letter-spacing:1px; color:#fff; margin-bottom:0.2rem; }
+    .artist-designation { font-family:var(--font-mono); font-size:0.6rem; color:var(--accent); letter-spacing:1px; }
+
     .content-block {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -419,6 +428,26 @@
     <div class="event-main">
 
       <!-- About -->
+      <!-- Artists / Performers -->
+      <% if(event.artists && event.artists.length > 0){ %>
+      <div class="content-block">
+        <div class="block-title"><i class="bi bi-mic-fill"></i> Performers</div>
+        <div class="artists-grid">
+          <% event.artists.forEach(function(artist){ %>
+          <div class="artist-card">
+            <% if(artist.photo){ %>
+              <img class="artist-photo" src="<%= artist.photo %>" alt="<%= artist.name %>"/>
+            <% } else { %>
+              <div class="artist-photo-placeholder">🎤</div>
+            <% } %>
+            <div class="artist-name"><%= artist.name %></div>
+            <% if(artist.designation){ %><div class="artist-designation"><%= artist.designation %></div><% } %>
+          </div>
+          <% }); %>
+        </div>
+      </div>
+      <% } %>
+
       <div class="content-block">
         <div class="block-title"><i class="bi bi-info-circle-fill"></i> About This Event</div>
         <p class="event-description">
@@ -464,7 +493,7 @@
       </div>
 
       <!-- Ticket Tiers -->
-      <% if(activeTiers.length > 0){ %>
+      <!-- <% if(activeTiers.length > 0){ %>
       <div class="content-block">
         <div class="block-title"><i class="bi bi-ticket-perforated-fill"></i> Ticket Tiers</div>
         <div class="tier-list">
@@ -491,7 +520,7 @@
           <% }); %>
         </div>
       </div>
-      <% } %>
+      <% } %> -->
 
       <!-- Other Events -->
       <% if(otherEvents.length > 0){ %>
@@ -551,58 +580,20 @@
           </div>
           <% } else if(activeTiers.length > 0){ %>
 
-          <!-- Tier selector -->
-          <div style="font-family:var(--font-mono);font-size:0.6rem;letter-spacing:1.5px;color:var(--muted);margin-bottom:0.6rem;text-transform:uppercase;">Select Ticket Type</div>
-          <div class="tier-selector" id="tierSelector">
-            <% activeTiers.forEach(function(t, idx){ %>
-            <%
-              const avail = t.totalSeats - t.bookedSeats;
-              const isOut = avail <= 0;
-            %>
-            <div class="tier-opt <%= idx===0&&!isOut?'selected':'' %> <%= isOut?'disabled':'' %>"
-              data-price="<%= t.price %>"
-              data-name="<%= t.name %>"
-              data-id="<%= t._id %>"
-              <% if(!isOut){ %>onclick="selectTier(this)"<% } %>
-              style="<%= isOut?'opacity:0.45;cursor:not-allowed;':'cursor:pointer;' %>"
-            >
-              <div class="tier-opt-left">
-                <div class="tier-opt-radio"></div>
-                <div class="tier-opt-name"><%= t.name %></div>
+          <!-- Ticket price list (qty selection is in step 2) -->
+          <div style="font-family:var(--font-mono);font-size:0.6rem;letter-spacing:1.5px;color:var(--muted);margin-bottom:0.6rem;text-transform:uppercase;">Ticket Categories</div>
+          <div style="display:flex;flex-direction:column;gap:0.4rem;margin-bottom:1.2rem;">
+            <% activeTiers.forEach(function(t){ %>
+            <% const avail=t.totalSeats-t.bookedSeats,isOut=avail<=0,tc=tierColors[t.category]||'#6A0DAD'; %>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:0.55rem 0.8rem;border-radius:7px;background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.06);<%= isOut?'opacity:0.45;':''%>">
+              <div style="display:flex;align-items:center;gap:0.5rem;">
+                <div style="width:8px;height:8px;border-radius:50%;background:<%= tc %>;flex-shrink:0;"></div>
+                <span style="font-size:0.82rem;color:#fff;"><%= t.name||t.category.toUpperCase() %></span>
               </div>
-              <% if(isOut){ %>
-                <span class="tier-opt-sold">SOLD OUT</span>
-              <% } else { %>
-                <span class="tier-opt-price">₹<%= t.price.toLocaleString('en-IN') %></span>
-              <% } %>
+              <% if(isOut){ %><span style="font-family:var(--font-mono);font-size:0.6rem;color:#FF4444;letter-spacing:1px;">SOLD OUT</span>
+              <% } else { %><span style="font-family:var(--font-mono);font-size:0.85rem;color:<%= tc %>;font-weight:700;">₹<%= t.price.toLocaleString('en-IN') %></span><% } %>
             </div>
             <% }); %>
-          </div>
-
-          <!-- Qty -->
-          <div class="qty-row">
-            <div class="qty-lbl">Quantity</div>
-            <div class="qty-control">
-              <button class="qty-btn" id="qtyMinus" onclick="changeQty(-1)">−</button>
-              <div class="qty-num" id="qtyNum">1</div>
-              <button class="qty-btn" id="qtyPlus" onclick="changeQty(1)">+</button>
-            </div>
-          </div>
-
-          <!-- Summary -->
-          <div>
-            <div class="summary-line">
-              <span>Ticket price</span>
-              <span id="sumPrice">₹<%= availTiers.length ? availTiers[0].price.toLocaleString('en-IN') : '—' %></span>
-            </div>
-            <div class="summary-line">
-              <span>Quantity</span>
-              <span id="sumQty">1</span>
-            </div>
-            <div class="summary-total">
-              <div class="summary-total-lbl">Total</div>
-              <div class="summary-total-val" id="sumTotal">₹<%= availTiers.length ? availTiers[0].price.toLocaleString('en-IN') : '—' %></div>
-            </div>
           </div>
 
           <% } %>
@@ -611,18 +602,18 @@
           <% if(isSoldOut){ %>
             <button class="btn-book-cta sold-out" disabled><i class="bi bi-x-circle"></i> Sold Out</button>
           <% } else if(!locals.user || !user){ %>
-            <a href="/auth/login?next=/booking/<%= event._id %>" class="btn-book-cta">
+            <a href="/auth/login?next=/booking/seatmap/<%= event._id %>" class="btn-book-cta">
               <i class="bi bi-ticket-perforated-fill"></i> Login to Book
             </a>
           <% } else { %>
-            <a href="/booking/<%= event._id %>" class="btn-book-cta" id="bookBtn">
+            <a href="/booking/seatmap/<%= event._id %>" class="btn-book-cta" id="bookBtn">
               <i class="bi bi-ticket-perforated-fill"></i> Book Now
             </a>
           <% } %>
 
           <div class="sidebar-trust">
             <div class="trust-item"><i class="bi bi-shield-check-fill"></i> Secure</div>
-            <div class="trust-item"><i class="bi bi-arrow-counterclockwise"></i> Refundable</div>
+            <div class="trust-item"><i class="bi bi-x-circle-fill"></i> Non-Refundable</div>
             <div class="trust-item"><i class="bi bi-qr-code"></i> Instant QR</div>
           </div>
 
@@ -653,44 +644,6 @@
   </div><!-- /event-layout -->
 
   <script>
-  // ── Tier selection ──
-  const availTiers = <%- JSON.stringify(activeTiers.map(t=>({id:t._id,name:t.name,price:t.price,avail:t.totalSeats-t.bookedSeats}))) %>;
-  let selectedPrice = availTiers.find(t=>t.avail>0)?.price || 0;
-  let qty = 1;
-  const MAX_QTY = 5;
-
-  function selectTier(el) {
-    document.querySelectorAll('.tier-opt').forEach(o => o.classList.remove('selected'));
-    el.classList.add('selected');
-    selectedPrice = parseInt(el.dataset.price);
-    updateSummary();
-  }
-
-  function changeQty(delta) {
-    const avail = availTiers.find(t=>t.avail>0)?.avail || 5;
-    qty = Math.max(1, Math.min(qty + delta, Math.min(MAX_QTY, avail)));
-    document.getElementById('qtyNum').textContent = qty;
-    document.getElementById('qtyMinus').disabled = qty <= 1;
-    document.getElementById('qtyPlus').disabled = qty >= Math.min(MAX_QTY, avail);
-    updateSummary();
-  }
-
-  function updateSummary() {
-    const fmt = n => '₹' + n.toLocaleString('en-IN');
-    const el = id => document.getElementById(id);
-    if(el('sumPrice')) el('sumPrice').textContent = fmt(selectedPrice);
-    if(el('sumQty'))   el('sumQty').textContent   = qty;
-    if(el('sumTotal')) el('sumTotal').textContent  = fmt(selectedPrice * qty);
-    // Update book btn to carry tier info
-    const btn = document.getElementById('bookBtn');
-    if(btn) {
-      const selected = document.querySelector('.tier-opt.selected');
-      if(selected) {
-        btn.href = '/booking/<%= event._id %>?tier=' + selected.dataset.id + '&qty=' + qty;
-      }
-    }
-  }
-
   // Copy link
   function copyLink() {
     navigator.clipboard.writeText(window.location.href).then(function(){
@@ -699,9 +652,6 @@
       setTimeout(()=>btn.innerHTML='<i class="bi bi-link-45deg"></i> Copy', 2000);
     });
   }
-
-  // Init
-  updateSummary();
   </script>
 
 </body>

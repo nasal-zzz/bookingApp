@@ -2,90 +2,88 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>Sign Up — NightPass</title>
   <link href="https://fonts.googleapis.com/css2?family=Anton&family=Outfit:wght@400;500;600;700&family=Space+Mono&display=swap" rel="stylesheet"/>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet"/>
   <style>
-    :root{--bg:#0B0B0F;--surface:#14141C;--card:#14141C;--border:rgba(255,255,255,0.08);--accent:#6A0DAD;--accent-dim:rgba(106,13,173,0.09);--text:#FFFFFF;--muted:#B3B3B3;--error:#FF4444;--success:#00FF88;}
+    :root{--bg:#0B0B0F;--surface:#14141C;--card:#1A1A24;--border:rgba(255,255,255,0.08);--accent:#6A0DAD;--text:#fff;--muted:#B3B3B3;--error:#FF4444;--success:#00FF88;}
     *{box-sizing:border-box;margin:0;padding:0;}
     body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-height:100vh;display:flex;flex-direction:column;}
     body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(255,255,255,0.012) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.012) 1px,transparent 1px);background-size:50px 50px;pointer-events:none;}
-    .orb1{position:fixed;top:-150px;left:-100px;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(106,13,173,0.05) 0%,transparent 65%);pointer-events:none;}
-    .orb2{position:fixed;bottom:-150px;right:-100px;width:450px;height:450px;border-radius:50%;background:radial-gradient(circle,rgba(100,50,220,0.06) 0%,transparent 65%);pointer-events:none;}
-    nav{position:relative;z-index:1;padding:1.1rem 2rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);}
+    .orb{position:fixed;border-radius:50%;pointer-events:none;}
+    .orb1{top:-150px;left:-100px;width:500px;height:500px;background:radial-gradient(circle,rgba(106,13,173,0.06) 0%,transparent 65%);}
+    .orb2{bottom:-150px;right:-100px;width:450px;height:450px;background:radial-gradient(circle,rgba(100,50,220,0.07) 0%,transparent 65%);}
+    nav{position:relative;z-index:10;padding:1rem 2rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);}
     .logo{font-family:'Anton',sans-serif;font-size:1.5rem;letter-spacing:4px;color:#fff;text-decoration:none;}
     .logo span{color:var(--accent);}
-    .back-link{display:flex;align-items:center;gap:0.4rem;color:var(--muted);text-decoration:none;font-size:0.8rem;letter-spacing:1px;text-transform:uppercase;transition:color 0.2s;}
+    .back-link{display:flex;align-items:center;gap:0.4rem;color:var(--muted);text-decoration:none;font-size:0.8rem;letter-spacing:1px;transition:color 0.2s;}
     .back-link:hover{color:#fff;}
-    .auth-wrapper{flex:1;display:flex;align-items:center;justify-content:center;padding:2rem 1rem;position:relative;z-index:1;}
-    .auth-card{background:var(--card);border:1px solid var(--border);border-radius:14px;width:100%;max-width:460px;overflow:hidden;box-shadow:0 40px 80px rgba(0,0,0,0.5);}
-    .card-top-bar{height:3px;background:linear-gradient(90deg,transparent,#6A0DAD,transparent);}
+    .auth-wrapper{flex:1;display:flex;align-items:flex-start;justify-content:center;padding:2rem 1rem 4rem;position:relative;z-index:1;}
+    .auth-card{background:var(--card);border:1px solid var(--border);border-radius:16px;width:100%;max-width:500px;overflow:hidden;box-shadow:0 40px 80px rgba(0,0,0,0.5);}
+    .card-bar{height:3px;background:linear-gradient(90deg,transparent,#6A0DAD,transparent);}
     .card-inner{padding:2.2rem;}
-    .event-badge{display:flex;align-items:center;gap:0.8rem;background:var(--accent-dim);border:1px solid rgba(106,13,173,0.18);border-radius:8px;padding:0.8rem 1rem;margin-bottom:1.8rem;}
-    .event-badge-icon{font-size:1.4rem;}
-    .event-badge-name{font-family:'Anton',sans-serif;font-size:1rem;letter-spacing:2px;color:#fff;}
-    .event-badge-sub{font-size:0.72rem;color:var(--muted);margin-top:2px;}
-    .eyebrow{font-family:'Space Mono',monospace;font-size:0.62rem;letter-spacing:3px;color:var(--accent);display:block;margin-bottom:0.4rem;}
-    h1{font-family:'Anton',sans-serif;font-size:2.4rem;letter-spacing:2px;color:#fff;line-height:1;margin-bottom:0.5rem;}
-    .subtitle{font-size:0.88rem;color:var(--muted);line-height:1.6;margin-bottom:1.5rem;}
+    .eyebrow{font-family:'Space Mono',monospace;font-size:0.6rem;letter-spacing:3px;color:var(--accent);display:block;margin-bottom:0.4rem;}
+    h1{font-family:'Anton',sans-serif;font-size:2.2rem;letter-spacing:2px;color:#fff;line-height:1;margin-bottom:0.4rem;}
+    .subtitle{font-size:0.86rem;color:var(--muted);margin-bottom:1.5rem;}
     .subtitle a{color:var(--accent);text-decoration:none;font-weight:600;}
-    .btn-google{width:100%;padding:0.85rem 1.2rem;background:var(--surface);border:2px solid var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;gap:0.8rem;color:var(--text);font-size:0.9rem;font-weight:500;cursor:pointer;transition:all 0.2s;text-decoration:none;font-family:'Outfit',sans-serif;margin-bottom:0.5rem;}
-    .btn-google:hover{border-color:rgba(255,255,255,0.2);background:rgba(255,255,255,0.04);color:#fff;}
+    /* Google */
+    .btn-google{width:100%;padding:0.85rem 1.2rem;background:var(--surface);border:2px solid var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;gap:0.8rem;color:var(--text);font-size:0.9rem;font-weight:500;cursor:pointer;transition:all 0.2s;text-decoration:none;font-family:'Outfit',sans-serif;}
+    .btn-google:hover{border-color:rgba(255,255,255,0.2);background:rgba(255,255,255,0.04);}
     .google-icon{width:20px;height:20px;flex-shrink:0;}
     .divider{display:flex;align-items:center;gap:0.8rem;margin:1.2rem 0;}
     .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border);}
-    .divider-text{font-family:'Space Mono',monospace;font-size:0.58rem;letter-spacing:2px;color:var(--muted);white-space:nowrap;}
+    .divider span{font-family:'Space Mono',monospace;font-size:0.58rem;letter-spacing:2px;color:#555;white-space:nowrap;}
+    /* Section label */
+    .sec-lbl{font-family:'Space Mono',monospace;font-size:0.58rem;letter-spacing:2px;color:#555;text-transform:uppercase;margin:1.2rem 0 0.7rem;padding-bottom:0.4rem;border-bottom:1px solid rgba(255,255,255,0.04);}
+    /* Fields */
     .row-2{display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;}
-    .field-group{margin-bottom:1rem;}
-    .field-label{font-family:'Space Mono',monospace;font-size:0.6rem;letter-spacing:2px;color:var(--muted);text-transform:uppercase;display:block;margin-bottom:0.5rem;}
-    .field-input{width:100%;background:var(--surface);border:2px solid var(--border);border-radius:8px;color:var(--text);font-size:0.95rem;padding:0.85rem 1rem;font-family:'Outfit',sans-serif;outline:none;transition:border-color 0.2s,box-shadow 0.2s;}
-    .field-input::placeholder{color:var(--muted);}
+    .field-group{margin-bottom:0.2rem;}
+    label.lbl{font-family:'Space Mono',monospace;font-size:0.58rem;letter-spacing:2px;color:var(--muted);text-transform:uppercase;display:block;margin-bottom:0.4rem;}
+    .req{color:var(--error);margin-left:1px;}
+    .field-input{width:100%;background:var(--surface);border:2px solid var(--border);border-radius:8px;color:var(--text);font-size:0.92rem;padding:0.78rem 1rem;font-family:'Outfit',sans-serif;outline:none;transition:border-color 0.2s;appearance:none;}
+    .field-input::placeholder{color:#3a3a4a;}
     .field-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(106,13,173,0.08);}
-    .field-input.has-error{border-color:var(--error);}
-    .field-error{display:none;font-size:0.74rem;color:var(--error);margin-top:0.4rem;align-items:center;gap:0.3rem;}
-    .field-error.visible{display:flex;}
-    .phone-wrap{display:flex;border:2px solid var(--border);border-radius:8px;overflow:hidden;background:var(--surface);transition:border-color 0.2s,box-shadow 0.2s;}
+    .field-input.has-err{border-color:var(--error) !important;box-shadow:0 0 0 3px rgba(255,68,68,0.08);}
+    select.field-input{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23666' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 1rem center;padding-right:2.5rem;}
+    select.field-input option{background:#14141C;}
+    .ferr{font-size:0.72rem;color:var(--error);margin-top:0.3rem;display:none;align-items:center;gap:0.3rem;}
+    .ferr.show{display:flex;}
+    .ferr i{font-size:0.68rem;}
+    /* Phone wrap */
+    .phone-wrap{display:flex;border:2px solid var(--border);border-radius:8px;overflow:hidden;background:var(--surface);transition:border-color 0.2s;}
     .phone-wrap:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px rgba(106,13,173,0.08);}
-    .phone-wrap.has-error{border-color:var(--error);}
-    .country-code{display:flex;align-items:center;padding:0 1rem;border-right:1px solid var(--border);font-size:0.9rem;color:var(--text);white-space:nowrap;flex-shrink:0;background:rgba(255,255,255,0.03);}
-    .phone-input{flex:1;background:transparent;border:none;outline:none;color:var(--text);font-size:1rem;padding:0.88rem 1rem;font-family:'Outfit',sans-serif;letter-spacing:1px;}
-    .phone-input::placeholder{color:var(--muted);font-size:0.9rem;letter-spacing:0;}
-    .global-error{display:none;align-items:center;gap:0.5rem;background:rgba(255,92,92,0.1);border:1px solid rgba(255,92,92,0.3);border-radius:6px;padding:0.7rem 1rem;font-size:0.82rem;color:var(--error);margin-bottom:0.8rem;}
-    .global-error.visible{display:flex;}
-    .btn-submit{width:100%;padding:1rem;background:var(--accent);color:#000;font-family:'Outfit',sans-serif;font-weight:700;font-size:0.95rem;border:none;border-radius:8px;cursor:pointer;margin-top:0.5rem;display:flex;align-items:center;justify-content:center;gap:0.6rem;transition:transform 0.15s,box-shadow 0.15s;box-shadow:0 0 25px rgba(106,13,173,0.25);}
-    .btn-submit:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 0 45px rgba(106,13,173,0.5);}
-    .btn-submit:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
-    .spinner{width:18px;height:18px;border:2px solid rgba(0,0,0,0.25);border-top-color:#000;border-radius:50%;animation:spin 0.7s linear infinite;display:none;}
+    .phone-wrap.has-err{border-color:var(--error) !important;box-shadow:0 0 0 3px rgba(255,68,68,0.08);}
+    .cc{display:flex;align-items:center;padding:0 0.9rem;border-right:1px solid var(--border);font-size:0.85rem;white-space:nowrap;flex-shrink:0;background:rgba(255,255,255,0.02);color:#888;}
+    .ph-inp{flex:1;background:transparent;border:none;outline:none;color:var(--text);font-size:0.95rem;padding:0.78rem 0.9rem;font-family:'Outfit',sans-serif;letter-spacing:1px;}
+    .ph-inp::placeholder{color:#3a3a4a;letter-spacing:0;font-size:0.88rem;}
+    /* Submit */
+    .btn-submit{width:100%;padding:1rem;background:var(--accent);color:#fff;font-family:'Outfit',sans-serif;font-weight:700;font-size:0.95rem;border:none;border-radius:8px;cursor:pointer;margin-top:1rem;display:flex;align-items:center;justify-content:center;gap:0.6rem;transition:all 0.2s;box-shadow:0 0 25px rgba(106,13,173,0.2);}
+    .btn-submit:hover:not(:disabled){box-shadow:0 0 45px rgba(106,13,173,0.45);transform:translateY(-1px);}
+    .btn-submit:disabled{opacity:0.45;cursor:not-allowed;transform:none;}
+    .spinner{width:18px;height:18px;border:2px solid rgba(255,255,255,0.2);border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite;display:none;}
     @keyframes spin{to{transform:rotate(360deg)}}
-    .footer-links{margin-top:1.5rem;text-align:center;font-size:0.84rem;color:var(--muted);}
-    .footer-links a{color:var(--accent);text-decoration:none;font-weight:600;}
-    .terms{margin-top:1rem;font-size:0.7rem;color:var(--muted);text-align:center;line-height:1.6;}
-    .terms a{color:var(--muted);text-decoration:underline;}
-    @media(max-width:480px){.card-inner{padding:1.5rem 1.1rem;}h1{font-size:2rem;}.row-2{grid-template-columns:1fr;}}
+    .footer-note{text-align:center;font-size:0.78rem;color:#555;margin-top:1.2rem;}
+    .footer-note a{color:var(--accent);text-decoration:none;font-weight:600;}
+    .terms{margin-top:0.8rem;font-size:0.68rem;color:#444;text-align:center;line-height:1.6;}
+    .terms a{color:#555;text-decoration:underline;}
+    /* Global error */
+    .global-err{display:none;align-items:center;gap:0.5rem;background:rgba(255,68,68,0.08);border:1px solid rgba(255,68,68,0.25);border-radius:8px;padding:0.8rem 1rem;font-size:0.82rem;color:var(--error);margin-bottom:1rem;}
+    .global-err.show{display:flex;}
+    @media(max-width:480px){.card-inner{padding:1.5rem 1.1rem;}h1{font-size:1.9rem;}.row-2{grid-template-columns:1fr;}}
   </style>
 </head>
 <body>
-  <div class="orb1"></div>
-  <div class="orb2"></div>
-
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
   <nav>
     <a href="/" class="logo">NIGHT<span>PASS</span></a>
     <a href="/" class="back-link"><i class="bi bi-arrow-left"></i> Back</a>
   </nav>
-
   <div class="auth-wrapper">
     <div class="auth-card">
-      <div class="card-top-bar"></div>
+      <div class="card-bar"></div>
       <div class="card-inner">
-
-        <div class="event-badge">
-          <div class="event-badge-icon">🎉</div>
-          <div>
-            <div class="event-badge-name">ECLIPSE DARK NIGHT</div>
-            <div class="event-badge-sub">15 March 2026 · Club Axis, Kochi</div>
-          </div>
-        </div>
 
         <span class="eyebrow">// create account</span>
         <h1>JOIN THE<br/>NIGHT</h1>
@@ -98,45 +96,90 @@
             <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
             <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
           </svg>
-          Sign up with Google
+          Continue with Google
         </a>
 
-        <div class="divider"><span class="divider-text">OR SIGN UP WITH PHONE</span></div>
-
-        <!-- Name Row -->
-        <div class="row-2">
-          <div class="field-group">
-            <label class="field-label">First Name *</label>
-            <input type="text" class="field-input" id="firstName" placeholder="Arjun" autocomplete="given-name"/>
-            <div class="field-error" id="firstNameErr"><i class="bi bi-exclamation-circle"></i> First name is required</div>
-          </div>
-          <div class="field-group">
-            <label class="field-label">Last Name</label>
-            <input type="text" class="field-input" id="lastName" placeholder="Menon" autocomplete="family-name"/>
-          </div>
-        </div>
-
-        <!-- Email -->
-        <div class="field-group">
-          <label class="field-label">Email Address</label>
-          <input type="email" class="field-input" id="emailInput" placeholder="you@example.com" autocomplete="email"/>
-          <div class="field-error" id="emailErr"><i class="bi bi-exclamation-circle"></i> Enter a valid email address</div>
-        </div>
-
-        <!-- Phone -->
-        <div class="field-group">
-          <label class="field-label">Phone Number *</label>
-          <div class="phone-wrap" id="phoneWrap">
-            <div class="country-code">🇮🇳 +91</div>
-            <input type="tel" class="phone-input" id="phoneInput" placeholder="98765 43210" maxlength="10" inputmode="numeric" autocomplete="tel"/>
-          </div>
-          <div class="field-error" id="phoneErr"><i class="bi bi-exclamation-circle"></i> Enter a valid 10-digit Indian mobile number</div>
-        </div>
+        <div class="divider"><span>OR SIGN UP WITH PHONE</span></div>
 
         <!-- Global error -->
-        <div class="global-error" id="globalError">
+        <div class="global-err" id="globalErr">
           <i class="bi bi-exclamation-circle-fill"></i>
-          <span id="globalErrorText"></span>
+          <span id="globalErrTxt"></span>
+        </div>
+
+        <!-- ── PERSONAL INFO ── -->
+        <div class="sec-lbl">Personal Info</div>
+
+        <div class="row-2">
+          <div class="field-group">
+            <label class="lbl">First Name <span class="req">*</span></label>
+            <input type="text" class="field-input" id="firstName" placeholder="Arjun" autocomplete="given-name"/>
+            <div class="ferr" id="err-firstName"><i class="bi bi-exclamation-circle"></i> First name is required</div>
+          </div>
+          <div class="field-group">
+            <label class="lbl">Last Name <span class="req">*</span></label>
+            <input type="text" class="field-input" id="lastName" placeholder="Menon" autocomplete="family-name"/>
+            <div class="ferr" id="err-lastName"><i class="bi bi-exclamation-circle"></i> Last name is required</div>
+          </div>
+        </div>
+
+        <div class="row-2">
+          <div class="field-group">
+            <label class="lbl">Gender <span class="req">*</span></label>
+            <select class="field-input" id="gender">
+              <option value="">Select gender</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+              <option value="other">Other</option>
+              <option value="prefer_not">Prefer not to say</option>
+            </select>
+            <div class="ferr" id="err-gender"><i class="bi bi-exclamation-circle"></i> Please select gender</div>
+          </div>
+          <div class="field-group">
+            <label class="lbl">Place / City <span class="req">*</span></label>
+            <input type="text" class="field-input" id="place" placeholder="Kozhikode"/>
+            <div class="ferr" id="err-place"><i class="bi bi-exclamation-circle"></i> Place is required</div>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label class="lbl">District <span class="req">*</span></label>
+          <select class="field-input" id="district">
+            <option value="">Select district</option>
+            <option>Thiruvananthapuram</option><option>Kollam</option><option>Pathanamthitta</option>
+            <option>Alappuzha</option><option>Kottayam</option><option>Idukki</option>
+            <option>Ernakulam</option><option>Thrissur</option><option>Palakkad</option>
+            <option>Malappuram</option><option>Kozhikode</option><option>Wayanad</option>
+            <option>Kannur</option><option>Kasaragod</option>
+            <option value="Other State">Other State</option>
+          </select>
+          <div class="ferr" id="err-district"><i class="bi bi-exclamation-circle"></i> Please select district</div>
+        </div>
+
+        <!-- ── CONTACT ── -->
+        <div class="sec-lbl">Contact Details</div>
+
+        <div class="field-group">
+          <label class="lbl">Email Address <span class="req">*</span></label>
+          <input type="email" class="field-input" id="emailInput" placeholder="you@example.com" autocomplete="email"/>
+          <div class="ferr" id="err-email"><i class="bi bi-exclamation-circle"></i> Enter a valid email address</div>
+        </div>
+
+        <div class="field-group">
+          <label class="lbl">Phone Number <span class="req">*</span></label>
+          <div class="phone-wrap" id="pw-phone">
+            <div class="cc">🇮🇳 +91</div>
+            <input type="tel" class="ph-inp" id="phoneInput" placeholder="98765 43210" maxlength="10" inputmode="numeric" autocomplete="tel"/>
+          </div>
+          <div class="ferr" id="err-phone"><i class="bi bi-exclamation-circle"></i> Enter a valid 10-digit Indian number</div>
+        </div>
+
+        <div class="field-group">
+          <label class="lbl">WhatsApp Number <span style="font-size:0.55rem;color:#555;letter-spacing:1px;">(leave blank if same as phone)</span></label>
+          <div class="phone-wrap" id="pw-wa">
+            <div class="cc">🇮🇳 +91</div>
+            <input type="tel" class="ph-inp" id="waInput" placeholder="Same as phone" maxlength="10" inputmode="numeric"/>
+          </div>
         </div>
 
         <button class="btn-submit" id="submitBtn" onclick="handleSignup()">
@@ -145,115 +188,127 @@
           <div class="spinner" id="spinner"></div>
         </button>
 
-        <div class="footer-links">Already have an account? <a href="/auth/login">Log in</a></div>
-        <div class="terms">By signing up, you agree to our <a href="#">Terms</a> and <a href="#">Privacy Policy</a></div>
+        <div class="footer-note">Already have an account? <a href="/auth/login">Log in</a></div>
+        <div class="terms">By signing up you agree to our <a href="#">Terms</a> &amp; <a href="#">Privacy Policy</a>.</div>
       </div>
     </div>
   </div>
 
   <script>
-    // Only allow digits in phone
-    document.getElementById('phoneInput').addEventListener('input', function() {
-      this.value = this.value.replace(/\D/g, '').slice(0, 10);
-      clearFieldError('phoneWrap', 'phoneErr');
+    // Digits only for phone fields
+    ['phoneInput','waInput'].forEach(id => {
+      document.getElementById(id).addEventListener('input', function(){
+        this.value = this.value.replace(/\D/g,'').slice(0,10);
+      });
     });
 
-    // Clear errors on typing
-    document.getElementById('firstName').addEventListener('input', () => clearFieldError('firstName', 'firstNameErr'));
-    document.getElementById('emailInput').addEventListener('input', () => clearFieldError('emailInput', 'emailErr'));
+    // Clear error on input
+    ['firstName','lastName','emailInput','gender','place','district'].forEach(id => {
+      const el = document.getElementById(id);
+      if(el) el.addEventListener('input', () => clearErr(id));
+      if(el) el.addEventListener('change', () => clearErr(id));
+    });
+    document.getElementById('phoneInput').addEventListener('input', () => {
+      document.getElementById('pw-phone').classList.remove('has-err');
+      document.getElementById('err-phone').classList.remove('show');
+    });
 
-    function clearFieldError(inputId, errId) {
-      const inp = document.getElementById(inputId);
-      const err = document.getElementById(errId);
-      if (inp) inp.classList.remove('has-error');
-      if (err) err.classList.remove('visible');
-      document.getElementById('globalError').classList.remove('visible');
+    function clearErr(id){
+      const el = document.getElementById(id);
+      if(el) el.classList.remove('has-err');
+      const err = document.getElementById('err-'+id) || document.getElementById('err-email');
+      if(err && id === 'emailInput') err.classList.remove('show');
+      else if(err) err.classList.remove('show');
+      document.getElementById('globalErr').classList.remove('show');
     }
-
-    function showFieldError(inputId, errId) {
-      const inp = document.getElementById(inputId);
-      const err = document.getElementById(errId);
-      if (inp) inp.classList.add('has-error');
-      if (err) err.classList.add('visible');
+    function showErr(id, msg){
+      const el = document.getElementById(id);
+      if(el) el.classList.add('has-err');
+      const errEl = id === 'emailInput' ? document.getElementById('err-email') :
+                    id === 'phone' ? null : document.getElementById('err-'+id);
+      if(errEl){ if(msg) errEl.querySelector('span') && (errEl.innerHTML = `<i class="bi bi-exclamation-circle"></i> ${msg}`); errEl.classList.add('show'); }
     }
-
-    function showGlobalError(msg) {
-      document.getElementById('globalErrorText').textContent = msg;
-      document.getElementById('globalError').classList.add('visible');
+    function showPhoneErr(msg){
+      document.getElementById('pw-phone').classList.add('has-err');
+      const e = document.getElementById('err-phone');
+      if(msg) e.innerHTML = `<i class="bi bi-exclamation-circle"></i> ${msg}`;
+      e.classList.add('show');
     }
-
-    function setLoading(on) {
+    function showGlobalErr(msg){
+      document.getElementById('globalErrTxt').textContent = msg;
+      document.getElementById('globalErr').classList.add('show');
+      document.getElementById('globalErr').scrollIntoView({behavior:'smooth',block:'nearest'});
+    }
+    function setLoading(on){
       document.getElementById('submitBtn').disabled = on;
-      document.getElementById('btnIcon').style.display = on ? 'none' : 'inline';
-      document.getElementById('btnText').textContent = on ? 'Sending OTP...' : 'Create Account & Send OTP';
-      document.getElementById('spinner').style.display = on ? 'block' : 'none';
+      document.getElementById('btnIcon').style.display = on?'none':'inline';
+      document.getElementById('btnText').textContent = on?'Sending OTP…':'Create Account & Send OTP';
+      document.getElementById('spinner').style.display = on?'block':'none';
     }
 
-    async function handleSignup() {
+    async function handleSignup(){
+      // Clear all errors
+      ['firstName','lastName','gender','place','district','emailInput'].forEach(id => {
+        const el = document.getElementById(id); if(el) el.classList.remove('has-err');
+      });
+      document.querySelectorAll('.ferr').forEach(e => e.classList.remove('show'));
+      document.getElementById('pw-phone').classList.remove('has-err');
+      document.getElementById('globalErr').classList.remove('show');
+
       const firstName = document.getElementById('firstName').value.trim();
       const lastName  = document.getElementById('lastName').value.trim();
       const email     = document.getElementById('emailInput').value.trim();
       const phone     = document.getElementById('phoneInput').value.trim();
+      const whatsapp  = document.getElementById('waInput').value.trim();
+      const gender    = document.getElementById('gender').value;
+      const place     = document.getElementById('place').value.trim();
+      const district  = document.getElementById('district').value;
 
-      // Clear all errors
-      ['firstName','emailInput'].forEach(id => document.getElementById(id).classList.remove('has-error'));
-      document.getElementById('phoneWrap').classList.remove('has-error');
-      ['firstNameErr','emailErr','phoneErr'].forEach(id => document.getElementById(id).classList.remove('visible'));
-      document.getElementById('globalError').classList.remove('visible');
+      let hasErr = false;
 
-      // Validate
-      let hasError = false;
-
-      if (!firstName) {
-        showFieldError('firstName', 'firstNameErr');
-        hasError = true;
+      if(!firstName){       showErr('firstName', 'First name is required');       hasErr=true; }
+      if(!lastName){        showErr('lastName',  'Last name is required');         hasErr=true; }
+      if(!gender){          showErr('gender',    'Please select your gender');     hasErr=true; }
+      if(!place){           showErr('place',     'Please enter your place/city');  hasErr=true; }
+      if(!district){        showErr('district',  'Please select your district');   hasErr=true; }
+      if(!email){           showErr('emailInput','Email address is required');     hasErr=true; }
+      else if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ showErr('emailInput','Enter a valid email address'); hasErr=true; }
+      if(!phone || phone.length!==10 || !/^[6-9]\d{9}$/.test(phone)){
+        showPhoneErr('Enter a valid 10-digit Indian mobile number');
+        hasErr=true;
       }
 
-      if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        showFieldError('emailInput', 'emailErr');
-        hasError = true;
+      if(hasErr){
+        // Scroll to first error
+        const firstErr = document.querySelector('.has-err, .phone-wrap.has-err');
+        if(firstErr) firstErr.scrollIntoView({behavior:'smooth', block:'center'});
+        return;
       }
-
-      if (!phone || phone.length !== 10 || !/^[6-9]\d{9}$/.test(phone)) {
-        showFieldError('phoneWrap', 'phoneErr');
-        hasError = true;
-      }
-
-      if (hasError) return;
 
       setLoading(true);
-
-      try {
-        const res = await fetch('/auth/signup', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ firstName, lastName, email, phone }),
+      try{
+        const res = await fetch('/auth/signup',{
+          credentials:'include', method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ firstName, lastName, email, phone, whatsapp, gender, place, district,
+            next: new URLSearchParams(window.location.search).get('next')||'' }),
         });
-
-        const data = await res.json();
-
-        if (data.success) {
-          window.location.replace(data.redirect || '/auth/otp');
+        const d = await res.json();
+        if(d.success){
+          window.location.replace(d.redirect||'/auth/otp');
         } else {
-          showGlobalError(data.message || 'Something went wrong. Please try again.');
+          showGlobalErr(d.message||'Something went wrong. Please try again.');
           setLoading(false);
-          if (data.redirect) setTimeout(() => window.location.replace(data.redirect), 2000);
+          if(d.redirect) setTimeout(()=>window.location.replace(d.redirect),2000);
         }
-      } catch(e) {
-        showGlobalError('Network error. Please check your connection and try again.');
+      }catch(e){
+        showGlobalErr('Network error. Check your connection and try again.');
         setLoading(false);
       }
     }
-  </script>
 
-  <script>
-    // Back-button guard — if session token exists, go forward not back
-    (function() {
-      // Replace current history entry so back button skips this page
-      if (window.history && window.history.replaceState) {
-        window.history.replaceState(null, '', window.location.href);
-      }
-    })();
+    if(window.history&&window.history.replaceState)
+      window.history.replaceState(null,'',window.location.href);
   </script>
 </body>
 </html>

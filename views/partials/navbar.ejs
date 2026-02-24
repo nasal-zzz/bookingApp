@@ -208,14 +208,17 @@
 
 <nav class="np-nav">
   <a href="/" class="np-logo">
-    <i class="bi bi-music-note-beamed"></i>
-    <span class="np-logo-text"><%= locals.appName || 'NightPass' %></span>
+    <!-- <i class="bi bi-music-note-beamed"></i> -->
+    <img src="" alt="logo" style="width:24px;height:24px;border-radius:6px;object-fit:cover;">
+    <!-- <span class="np-logo-text"><%= locals.appName || 'Melattur Entertinement Events' %></span> -->
+    <span class="np-logo-text">MELATTTUR PATTU</span>
+
   </a>
 
-  <div class="np-search">
+  <!-- <div class="np-search">
     <i class="bi bi-search np-search-icon"></i>
     <input type="text" placeholder="Search for events, artists, or venues..." />
-  </div>
+  </div> -->
 
   <div class="np-right">
     <% if (locals.user && user) { %>
@@ -238,6 +241,7 @@
           </div>
           <a href="/user/profile"         class="np-dd-link"><i class="bi bi-person-fill"></i> View Profile</a>
           <a href="/booking/my-bookings"  class="np-dd-link"><i class="bi bi-ticket-perforated-fill"></i> My Tickets</a>
+          <a href="/support"               class="np-dd-link"><i class="bi bi-headset"></i> Help & Support</a>
           <div class="np-dd-div"></div>
           <a href="/auth/logout" class="np-dd-link danger"><i class="bi bi-box-arrow-right"></i> Log Out</a>
         </div>
@@ -268,9 +272,13 @@
   <div class="np-drawer-links">
     <a href="/"                    class="np-drawer-link" onclick="npToggleDrawer()"><i class="bi bi-house-fill"></i> Home</a>
     <a href="/#events"             class="np-drawer-link" onclick="npToggleDrawer()"><i class="bi bi-calendar-event-fill"></i> Events</a>
+    <% if(locals.user && user){ %>
     <a href="/booking/my-bookings" class="np-drawer-link" onclick="npToggleDrawer()"><i class="bi bi-ticket-perforated-fill"></i> My Tickets</a>
+    <% } else { %>
+    <a href="/auth/login?next=/booking/my-bookings" class="np-drawer-link" onclick="npToggleDrawer()"><i class="bi bi-ticket-perforated-fill"></i> My Tickets</a>
+    <% } %>
     <a href="/#about"              class="np-drawer-link" onclick="npToggleDrawer()"><i class="bi bi-info-circle-fill"></i> About Us</a>
-    <a href="/#contact"            class="np-drawer-link" onclick="npToggleDrawer()"><i class="bi bi-envelope-fill"></i> Contact</a>
+    <a href="/support"             class="np-drawer-link" onclick="npToggleDrawer()"><i class="bi bi-headset"></i> Help & Support</a>
   </div>
 
   <div class="np-drawer-social">

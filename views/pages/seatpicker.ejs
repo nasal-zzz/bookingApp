@@ -259,7 +259,7 @@ function drawZone(z,isSel,isLit){
   ctx.fillStyle=isSO?'#444':'#fff';ctx.font=`bold ${fs}px "Montserrat",sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(name,0,lY);
   ctx.fillStyle=isSO?'#444':color;ctx.font='600 9.5px "Poppins",sans-serif';ctx.fillText(category.toUpperCase(),0,lY+13);
   ctx.fillStyle=isSO?'#333':'rgba(255,255,255,0.72)';ctx.font='bold 11px "Space Mono",monospace';ctx.fillText('₹'+price.toLocaleString('en-IN'),0,lY+26);
-  if(totalSeats>0){ctx.fillStyle=isSO?'#FF4444':(avail<20?'#f5c842':'rgba(0,255,136,0.6)');ctx.font='9px "Space Mono",monospace';ctx.fillText(isSO?'SOLD OUT':`${avail} left`,0,lY+39);}
+  if(totalSeats>0&&(isSO||(avail>0&&avail<=10))){ctx.fillStyle=isSO?'#FF4444':'#f5c842';ctx.font='9px "Space Mono",monospace';ctx.fillText(isSO?'SOLD OUT':`Only ${avail} left!`,0,lY+39);}
   if(isSel){
     ctx.rotate(-rot);ctx.fillStyle=color;ctx.strokeStyle='#0f0f18';ctx.lineWidth=2;
     ctx.beginPath();ctx.arc(w/2-12,-h/2+12,11,0,Math.PI*2);ctx.fill();ctx.stroke();
@@ -322,7 +322,7 @@ function renderCards(){
         <div class="zc-name">${z.name}</div>
         <div class="zc-cat" style="color:${c}">${z.category.toUpperCase()}</div>
         <div class="zc-price">₹${p.toLocaleString('en-IN')}<span style="font-size:0.57rem;color:#444;"> / person</span></div>
-        ${z.totalSeats>0?`<div class="zc-avail" style="color:${isSO?'#FF4444':avail<20?'#f5c842':'#555'}">${isSO?'SOLD OUT':`${avail}/${z.totalSeats} avail`}</div>`:''}
+        ${(isSO||avail<=10)?`<div class="zc-avail" style="color:${isSO?'#FF4444':'#f5c842'}">${isSO?'SOLD OUT':`⚠ Only ${avail} left!`}</div>`:''}
       </div>
       <span class="zc-ck" style="color:${c}">✓</span>
     </div>`;

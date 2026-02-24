@@ -91,7 +91,7 @@
 
         <span class="eyebrow">// step 1 of 3</span>
         <h1>WELCOME<br/>BACK</h1>
-        <p class="subtitle">Log in to book your entry pass. New here? <a href="/auth/signup">Create an account</a></p>
+        <p class="subtitle">Log in to book your entry pass. New here? <a id="signupLink" href="/auth/signup">Create an account</a></p>
 
         <a href="/auth/google" class="btn-google">
           <svg class="google-icon" viewBox="0 0 24 24">
@@ -124,7 +124,7 @@
           <div class="spinner" id="spinner"></div>
         </button>
 
-        <div class="footer-links">Don't have an account? <a href="/auth/signup">Sign up for free</a></div>
+        <div class="footer-links">Don't have an account? <a id="signupLink2" href="/auth/signup">Sign up for free</a></div>
         <div class="terms">By continuing, you agree to our <a href="#">Terms</a> and <a href="#">Privacy Policy</a></div>
       </div>
     </div>
@@ -180,8 +180,9 @@
       try {
         const res = await fetch('/auth/send-otp', {
           method: 'POST',
+          credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ phone }),
+          body: JSON.stringify({ phone, next: new URLSearchParams(window.location.search).get('next') || '' }),
         });
         const data = await res.json();
         if (data.success) {
@@ -207,5 +208,17 @@
       }
     })();
   </script>
+<script>
+(function(){
+  const next = new URLSearchParams(window.location.search).get('next');
+  if(next){
+    const l1=document.getElementById('signupLink');
+    const l2=document.getElementById('signupLink2');
+    const url='/auth/signup?next='+encodeURIComponent(next);
+    if(l1) l1.href=url;
+    if(l2) l2.href=url;
+  }
+})();
+</script>
 </body>
 </html>

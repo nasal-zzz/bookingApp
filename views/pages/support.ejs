@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Help & Support — NightPass</title>
+  <%- include('../partials/head') %>
+  <style>
+    .pg-wrap{max-width:1060px;margin:0 auto;padding:3rem 1.5rem 5rem;position:relative;z-index:1;}
+    .pg-tag{font-family:var(--font-mono);font-size:0.62rem;letter-spacing:3px;color:var(--accent);margin-bottom:0.4rem;}
+    .pg-title{font-family:var(--font-display);font-size:clamp(2rem,5vw,3.2rem);letter-spacing:2px;color:#fff;line-height:1;margin-bottom:2.5rem;}
+    .pg-title span{color:var(--muted);}
+
+    .sup-grid{display:grid;grid-template-columns:1fr 1.5fr;gap:2.5rem;align-items:start;}
+    @media(max-width:800px){.sup-grid{grid-template-columns:1fr;}}
+
+    /* Company info card */
+    .company-card{background:var(--card,#14141C);border:1px solid rgba(255,255,255,0.07);border-radius:14px;overflow:hidden;position:sticky;top:80px;}
+    .company-card-top{height:4px;background:linear-gradient(90deg,#6A0DAD,#9D4EDD,#6A0DAD);}
+    .company-card-body{padding:1.8rem;}
+    .company-name{font-family:var(--font-display);font-size:1.05rem;letter-spacing:2px;color:#fff;margin-bottom:0.2rem;}
+    .company-tag{font-family:var(--font-mono);font-size:0.55rem;letter-spacing:2px;color:var(--accent);margin-bottom:1.5rem;}
+    .company-item{display:flex;align-items:flex-start;gap:0.85rem;padding:0.75rem 0;border-bottom:1px solid rgba(255,255,255,0.05);}
+    .company-item:last-child{border-bottom:none;}
+    .company-ico{width:34px;height:34px;border-radius:8px;background:rgba(106,13,173,0.12);border:1px solid rgba(106,13,173,0.22);display:flex;align-items:center;justify-content:center;color:var(--accent);font-size:0.85rem;flex-shrink:0;margin-top:1px;}
+    .company-lbl{font-family:var(--font-mono);font-size:0.52rem;letter-spacing:1px;color:#555;text-transform:uppercase;margin-bottom:0.2rem;}
+    .company-val{font-size:0.8rem;color:#ccc;line-height:1.6;}
+    .company-val a{color:var(--accent);text-decoration:none;}
+    .company-val a:hover{text-decoration:underline;}
+
+    .wa-btn{display:flex;align-items:center;justify-content:center;gap:0.6rem;width:100%;margin-top:1.2rem;padding:0.8rem;background:rgba(37,211,102,0.1);border:1px solid rgba(37,211,102,0.3);border-radius:8px;color:#25d366;font-weight:700;font-size:0.82rem;text-decoration:none;transition:all 0.18s;}
+    .wa-btn:hover{background:rgba(37,211,102,0.2);color:#25d366;}
+
+    /* Form card */
+    .form-card{background:var(--card,#14141C);border:1px solid rgba(255,255,255,0.07);border-radius:14px;overflow:hidden;}
+    .form-card-top{height:4px;background:linear-gradient(90deg,#6A0DAD,#9D4EDD,#6A0DAD);}
+    .form-card-body{padding:1.8rem;}
+    .form-head{margin-bottom:1.5rem;}
+    .form-head h2{font-family:var(--font-display);font-size:1.2rem;letter-spacing:2px;color:#fff;margin-bottom:0.3rem;}
+    .form-head p{font-size:0.78rem;color:var(--muted);}
+
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;}
+    @media(max-width:480px){.form-row{grid-template-columns:1fr;}}
+    .form-grp{display:flex;flex-direction:column;gap:0.3rem;margin-bottom:1rem;}
+    .form-lbl{font-family:var(--font-mono);font-size:0.55rem;letter-spacing:1.5px;color:#555;text-transform:uppercase;}
+    .form-inp{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:7px;color:#fff;font-family:var(--font-body,sans-serif);font-size:0.88rem;padding:0.7rem 1rem;outline:none;transition:border-color 0.18s;width:100%;}
+    .form-inp:focus{border-color:rgba(106,13,173,0.45);}
+    .form-inp.err{border-color:#FF4444;}
+    textarea.form-inp{min-height:130px;resize:vertical;}
+
+    .send-btn{width:100%;padding:0.95rem;background:var(--accent,#6A0DAD);color:#fff;border:none;border-radius:8px;font-family:var(--font-body,sans-serif);font-weight:700;font-size:0.95rem;cursor:pointer;letter-spacing:1px;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:0.5rem;}
+    .send-btn:hover:not(:disabled){box-shadow:0 0 30px rgba(106,13,173,0.45);transform:translateY(-1px);}
+    .send-btn:disabled{opacity:0.45;cursor:not-allowed;transform:none;}
+
+    .msg-box{padding:0.75rem 1rem;border-radius:7px;font-size:0.82rem;margin-top:0.8rem;display:none;align-items:center;gap:0.5rem;}
+    .msg-box.ok{background:rgba(0,255,136,0.08);border:1px solid rgba(0,255,136,0.25);color:#00FF88;display:flex;}
+    .msg-box.err{background:rgba(255,68,68,0.08);border:1px solid rgba(255,68,68,0.28);color:#FF4444;display:flex;}
+
+    /* FAQs */
+    .faq-section{margin-top:3rem;}
+    .faq-tag{font-family:var(--font-mono);font-size:0.6rem;letter-spacing:3px;color:var(--accent);margin-bottom:0.3rem;}
+    .faq-title{font-family:var(--font-display);font-size:1.5rem;letter-spacing:2px;color:#fff;margin-bottom:1.5rem;}
+    .faq-list{display:flex;flex-direction:column;gap:0.6rem;}
+    .faq-item{background:var(--card,#14141C);border:1px solid rgba(255,255,255,0.06);border-radius:10px;overflow:hidden;}
+    .faq-q{padding:1rem 1.2rem;display:flex;align-items:center;justify-content:space-between;cursor:pointer;font-weight:600;font-size:0.88rem;color:#fff;transition:background 0.15s;}
+    .faq-q:hover{background:rgba(255,255,255,0.02);}
+    .faq-q i{color:var(--accent);transition:transform 0.2s;flex-shrink:0;}
+    .faq-item.open .faq-q i{transform:rotate(180deg);}
+    .faq-a{font-size:0.82rem;color:var(--muted);line-height:1.7;padding:0 1.2rem;max-height:0;overflow:hidden;transition:max-height 0.3s ease,padding 0.3s;}
+    .faq-item.open .faq-a{max-height:300px;padding:0 1.2rem 1rem;}
+  </style>
+</head>
+<body>
+  <div class="orb-tl"></div>
+  <%- include('../partials/navbar') %>
+
+  <div class="pg-wrap">
+    <p class="pg-tag">// help & support</p>
+    <h1 class="pg-title">WE'RE HERE <span>TO HELP</span></h1>
+
+    <div class="sup-grid">
+      <!-- LEFT: Company info -->
+      <div class="company-card">
+        <div class="company-card-top"></div>
+        <div class="company-card-body">
+          <div class="company-name">MELATTUR ENTERTAINMENT EVENTS</div>
+          <div class="company-tag">// official organiser</div>
+
+          <div class="company-item">
+            <div class="company-ico"><i class="bi bi-geo-alt-fill"></i></div>
+            <div>
+              <div class="company-lbl">Address</div>
+              <div class="company-val">
+                Door no 7/128, Olakkara Building<br/>
+                Mannarkadu road, Chandhapadi<br/>
+                Melattur, Malappuram dt<br/>
+                Pin 679326
+              </div>
+            </div>
+          </div>
+
+          <div class="company-item">
+            <div class="company-ico"><i class="bi bi-telephone-fill"></i></div>
+            <div>
+              <div class="company-lbl">Mobile</div>
+              <div class="company-val"><a href="tel:+919995843003">+91 99958 43003</a></div>
+            </div>
+          </div>
+
+          <div class="company-item">
+            <div class="company-ico"><i class="bi bi-envelope-fill"></i></div>
+            <div>
+              <div class="company-lbl">Email</div>
+              <div class="company-val"><a href="mailto:meemelattur@gmail.com">meemelattur@gmail.com</a></div>
+            </div>
+          </div>
+
+          <div class="company-item">
+            <div class="company-ico"><i class="bi bi-clock-fill"></i></div>
+            <div>
+              <div class="company-lbl">Support Hours</div>
+              <div class="company-val">Mon – Sat · 9 AM to 7 PM</div>
+            </div>
+          </div>
+
+          <a href="https://wa.me/919995843003" target="_blank" class="wa-btn">
+            <i class="bi bi-whatsapp"></i> Chat on WhatsApp
+          </a>
+        </div>
+      </div>
+
+      <!-- RIGHT: Contact form -->
+      <div>
+        <div class="form-card">
+          <div class="form-card-top"></div>
+          <div class="form-card-body">
+            <div class="form-head">
+              <h2>SEND US A MESSAGE</h2>
+              <p>Fill in the form below and we'll get back to you within 24 hours.</p>
+            </div>
+
+            <div class="form-row">
+              <div class="form-grp" style="margin-bottom:0;">
+                <label class="form-lbl">Your Name *</label>
+                <input class="form-inp" id="supName" type="text" placeholder="Full name"
+                  value="<% if(locals.user && user){ %><%= (user.firstName+' '+(user.lastName||'')).trim() %><% } %>"/>
+              </div>
+              <div class="form-grp" style="margin-bottom:0;">
+                <label class="form-lbl">Phone Number</label>
+                <input class="form-inp" id="supPhone" type="tel" placeholder="+91 XXXXX XXXXX"
+                  value="<% if(locals.user && user && user.phone){ %><%= user.phone %><% } %>"/>
+              </div>
+            </div>
+            <div class="form-grp">
+              <label class="form-lbl">Email Address *</label>
+              <input class="form-inp" id="supEmail" type="email" placeholder="you@email.com"
+                value="<% if(locals.user && user && user.email){ %><%= user.email %><% } %>"/>
+            </div>
+            <div class="form-grp">
+              <label class="form-lbl">Subject *</label>
+              <input class="form-inp" id="supSubject" type="text" placeholder="Booking issue, refund request, event inquiry…"/>
+            </div>
+            <div class="form-grp">
+              <label class="form-lbl">Message *</label>
+              <textarea class="form-inp" id="supMessage" placeholder="Describe your issue or question in detail…"></textarea>
+            </div>
+
+            <button class="send-btn" id="sendBtn" onclick="sendSupport()">
+              <i class="bi bi-send-fill"></i> Send Message
+            </button>
+            <div class="msg-box" id="supOk"><i class="bi bi-check-circle-fill"></i> Message sent! We'll reply within 24 hours.</div>
+            <div class="msg-box" id="supErr"><i class="bi bi-exclamation-circle-fill"></i> <span id="supErrText">Something went wrong.</span></div>
+          </div>
+        </div>
+
+        <!-- FAQs -->
+        <div class="faq-section">
+          <p class="faq-tag">// frequently asked</p>
+          <h2 class="faq-title">QUICK ANSWERS</h2>
+          <div class="faq-list">
+            <% [
+              {q:'Can I cancel or get a refund for my ticket?', a:'Tickets are non-refundable once payment is confirmed. In case of event cancellation by the organiser, a full refund will be processed within 7 working days.'},
+              {q:'I paid but didn\'t receive my ticket. What do I do?', a:'Log in and check My Tickets. If payment was deducted but no ticket shows, please contact us via this form or WhatsApp with your payment ID and we\'ll resolve it immediately.'},
+              {q:'What is the minimum age for entry?', a:'Entry age varies by event and ticket category. The minimum age is clearly listed on each ticket tier. You must carry a valid government ID for verification at the gate.'},
+              {q:'Can I transfer my ticket to someone else?', a:'Tickets are non-transferable and linked to the attendee details you provided at the time of booking. Present the QR code along with a matching ID at entry.'},
+              {q:'What payment methods are accepted?', a:'We accept all major UPI apps (GPay, PhonePe, Paytm), net banking, debit cards, and credit cards via our Razorpay-powered secure checkout.'},
+              {q:'My payment failed but money was deducted. Help!', a:'In this case the amount will be automatically refunded to your source account within 5–7 business days. You can also retry payment from My Tickets. If you need help urgently, reach us on WhatsApp.'},
+            ].forEach(function(f){ %>
+            <div class="faq-item" onclick="toggleFaq(this)">
+              <div class="faq-q"><span><%= f.q %></span><i class="bi bi-chevron-down"></i></div>
+              <div class="faq-a"><%= f.a %></div>
+            </div>
+            <% }); %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <%- include('../partials/scripts') %>
+  <script>
+  async function sendSupport(){
+    const name    = document.getElementById('supName').value.trim();
+    const phone   = document.getElementById('supPhone').value.trim();
+    const email   = document.getElementById('supEmail').value.trim();
+    const subject = document.getElementById('supSubject').value.trim();
+    const message = document.getElementById('supMessage').value.trim();
+
+    const ok  = document.getElementById('supOk');
+    const err = document.getElementById('supErr');
+    const errTxt = document.getElementById('supErrText');
+    ok.className='msg-box'; err.className='msg-box';
+
+    if(!name){ errTxt.textContent='Please enter your name.'; err.className='msg-box err'; return; }
+    if(!email||!/\S+@\S+\.\S+/.test(email)){ errTxt.textContent='Please enter a valid email.'; err.className='msg-box err'; return; }
+    if(!subject){ errTxt.textContent='Please enter a subject.'; err.className='msg-box err'; return; }
+    if(!message){ errTxt.textContent='Please write your message.'; err.className='msg-box err'; return; }
+
+    const btn=document.getElementById('sendBtn');
+    btn.disabled=true;
+    btn.innerHTML='<span style="width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite;display:inline-block;"></span> Sending…';
+
+    try{
+      const res = await fetch('/support/send', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        credentials:'include',
+        body: JSON.stringify({name,phone,email,subject,message}),
+      });
+      const d = await res.json();
+      if(d.success){
+        ok.className='msg-box ok';
+        document.getElementById('supSubject').value='';
+        document.getElementById('supMessage').value='';
+      } else {
+        errTxt.textContent = d.message || 'Failed to send. Please try WhatsApp.';
+        err.className='msg-box err';
+      }
+    }catch(e){
+      errTxt.textContent='Network error. Please try WhatsApp or email us directly.';
+      err.className='msg-box err';
+    }
+    btn.disabled=false;
+    btn.innerHTML='<i class="bi bi-send-fill"></i> Send Message';
+  }
+
+  function toggleFaq(el){
+    el.classList.toggle('open');
+  }
+  </script>
+  <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+</body>
+</html>

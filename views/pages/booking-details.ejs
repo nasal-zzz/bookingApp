@@ -189,7 +189,7 @@
         <div class="sec-body">
           <div style="display:flex;align-items:flex-start;gap:0.55rem;background:rgba(106,13,173,0.06);border:1px solid rgba(106,13,173,0.14);border-radius:6px;padding:0.75rem;font-size:0.78rem;color:#B3B3B3;margin-bottom:1.3rem;">
             <i class="bi bi-info-circle-fill" style="color:var(--accent);flex-shrink:0;margin-top:2px;"></i>
-            Each ticket requires a name — printed on the QR pass and checked at entry. Must be 18+.
+            Each ticket requires a name — printed on the QR pass and checked at entry.
           </div>
           <div id="attendeeForms"></div>
         </div>
@@ -215,7 +215,7 @@
           <div class="sum-row"><span class="lbl">Quantity</span><span class="val" id="sumQty">× 1</span></div>
           <div class="sum-row"><span class="lbl">Subtotal</span><span class="val" id="sumSub">—</span></div>
           <div class="disc-row" id="discRow"><span class="lbl" style="color:#00FF88;">Discount</span><span class="val" id="discVal" style="color:#00FF88;">—</span></div>
-          <div class="sum-row"><span class="lbl">Convenience fee</span><span class="val" id="sumFee">₹<%= event.convenienceFee||20 %></span></div>
+          <div class="sum-row"><span class="lbl">Convenience fee</span><span class="val" id="sumFee">₹<%= event.convenienceFee||0 %></span></div>
           <div class="sum-total-row">
             <div class="sum-total-lbl">TOTAL</div>
             <div class="sum-total-val" id="sumTotal">—</div>
@@ -349,8 +349,8 @@
         </div>
         <div>
           <label class="form-label">Age *</label>
-          <input type="number" class="form-inp" id="a-${n}" placeholder="25" min="18" max="75" inputmode="numeric"/>
-          <div class="field-err" id="ae-${n}"><i class="bi bi-exclamation-circle"></i> Must be 18+</div>
+          <input type="number" class="form-inp" id="a-${n}" placeholder="25" min="0" max="99" inputmode="numeric"/>
+          <div class="field-err" id="ae-${n}"><i class="bi bi-exclamation-circle"></i>1</div>
         </div>
         ${isFirst?`
         <div>

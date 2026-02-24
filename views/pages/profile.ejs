@@ -159,12 +159,24 @@
             <div class="avatar-section">
               <div class="avatar">
                 <%= user.firstName.charAt(0).toUpperCase() %><% if(user.lastName) { %><%= user.lastName.charAt(0).toUpperCase() %><% } %>
-                <% if (user.isVerified) { %>
-                  <div class="avatar-verified"><i class="bi bi-check"></i></div>
-                <% } %>
+                <% if (user.isVerified) { %><div class="avatar-verified"><i class="bi bi-check"></i></div><% } %>
               </div>
               <div class="profile-name"><%= (user.firstName + ' ' + (user.lastName||'')).trim().toUpperCase() %></div>
-              <div class="profile-phone"><i class="bi bi-phone-fill" style="color:var(--accent);"></i> <%= user.phone %></div>
+              <!-- Verification badges -->
+              <div style="display:flex;gap:0.4rem;justify-content:center;flex-wrap:wrap;margin:0.4rem 0;">
+                <% if(user.isVerified){ %>
+                  <span style="font-family:'Space Mono',monospace;font-size:0.55rem;letter-spacing:1px;padding:0.2rem 0.6rem;border-radius:10px;background:rgba(0,255,136,0.08);border:1px solid rgba(0,255,136,0.3);color:#00FF88;"><i class="bi bi-phone-fill"></i> Phone Verified</span>
+                <% } else { %>
+                  <span style="font-family:'Space Mono',monospace;font-size:0.55rem;letter-spacing:1px;padding:0.2rem 0.6rem;border-radius:10px;background:rgba(255,68,68,0.08);border:1px solid rgba(255,68,68,0.3);color:#FF4444;"><i class="bi bi-phone"></i> Phone Unverified</span>
+                <% } %>
+                <% if(user.emailVerified){ %>
+                  <span style="font-family:'Space Mono',monospace;font-size:0.55rem;letter-spacing:1px;padding:0.2rem 0.6rem;border-radius:10px;background:rgba(0,255,136,0.08);border:1px solid rgba(0,255,136,0.3);color:#00FF88;"><i class="bi bi-envelope-check-fill"></i> Email Verified</span>
+                <% } else if(user.email){ %>
+                  <span style="font-family:'Space Mono',monospace;font-size:0.55rem;letter-spacing:1px;padding:0.2rem 0.6rem;border-radius:10px;background:rgba(255,200,0,0.08);border:1px solid rgba(255,200,0,0.3);color:#f5c842;"><i class="bi bi-envelope"></i> Email Unverified</span>
+                <% } %>
+              </div>
+              <div class="profile-phone"><i class="bi bi-phone-fill" style="color:var(--accent);"></i> <%= user.phone||'Not added' %></div>
+              <% if(user.email){ %><div class="profile-phone" style="margin-top:0.2rem;"><i class="bi bi-envelope-fill" style="color:var(--accent);"></i> <%= user.email %></div><% } %>
               <div class="profile-since">Member since <%= new Date(user.createdAt).toLocaleDateString('en-IN', {month:'long', year:'numeric'}) %></div>
             </div>
 
@@ -187,21 +199,52 @@
             <!-- Edit Profile -->
             <div class="edit-section-title">Edit Profile</div>
 
-            <div class="field-group">
-              <label class="field-label">First Name</label>
-              <input type="text" class="field-input" id="editFirstName" value="<%= user.firstName %>" placeholder="First name"/>
-            </div>
-            <div class="field-group">
-              <label class="field-label">Last Name</label>
-              <input type="text" class="field-input" id="editLastName" value="<%= user.lastName || '' %>" placeholder="Last name"/>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.7rem;">
+              <div class="field-group">
+                <label class="field-label">First Name</label>
+                <input type="text" class="field-input" id="editFirstName" value="<%= user.firstName %>" placeholder="First name"/>
+              </div>
+              <div class="field-group">
+                <label class="field-label">Last Name</label>
+                <input type="text" class="field-input" id="editLastName" value="<%= user.lastName || '' %>" placeholder="Last name"/>
+              </div>
             </div>
             <div class="field-group">
               <label class="field-label">Email Address</label>
               <input type="email" class="field-input" id="editEmail" value="<%= user.email || '' %>" placeholder="your@email.com"/>
             </div>
             <div class="field-group">
+              <label class="field-label">WhatsApp Number</label>
+              <input type="text" class="field-input" id="editWhatsapp" value="<%= user.whatsapp ? user.whatsapp.replace('+91','') : '' %>" placeholder="WhatsApp number" maxlength="10" inputmode="numeric"/>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.7rem;">
+              <div class="field-group">
+                <label class="field-label">Gender</label>
+                <select class="field-input" id="editGender" style="appearance:none;cursor:pointer;">
+                  <option value="">Select</option>
+                  <option value="male" <%= user.gender==='male'?'selected':'' %>>Male</option>
+                  <option value="female" <%= user.gender==='female'?'selected':'' %>>Female</option>
+                  <option value="other" <%= user.gender==='other'?'selected':'' %>>Other</option>
+                  <option value="prefer_not" <%= user.gender==='prefer_not'?'selected':'' %>>Prefer not to say</option>
+                </select>
+              </div>
+              <div class="field-group">
+                <label class="field-label">Place / City</label>
+                <input type="text" class="field-input" id="editPlace" value="<%= user.place || '' %>" placeholder="City / Town"/>
+              </div>
+            </div>
+            <div class="field-group">
+              <label class="field-label">District</label>
+              <select class="field-input" id="editDistrict" style="appearance:none;cursor:pointer;">
+                <option value="">Select district</option>
+                <% ['Thiruvananthapuram','Kollam','Pathanamthitta','Alappuzha','Kottayam','Idukki','Ernakulam','Thrissur','Palakkad','Malappuram','Kozhikode','Wayanad','Kannur','Kasaragod','Other State'].forEach(d=>{ %>
+                  <option value="<%= d %>" <%= user.district===d?'selected':'' %>><%= d %></option>
+                <% }); %>
+              </select>
+            </div>
+            <div class="field-group">
               <label class="field-label">Phone (cannot change)</label>
-              <input type="text" class="field-input" value="<%= user.phone %>" readonly/>
+              <input type="text" class="field-input" value="<%= user.phone||'Not added' %>" readonly style="opacity:0.5;cursor:not-allowed;"/>
             </div>
 
             <button class="btn-save" id="saveBtn" onclick="saveProfile()">
@@ -407,6 +450,10 @@
             firstName: document.getElementById('editFirstName').value.trim(),
             lastName:  document.getElementById('editLastName').value.trim(),
             email:     document.getElementById('editEmail').value.trim(),
+            whatsapp:  document.getElementById('editWhatsapp')?.value?.trim()||'',
+            gender:    document.getElementById('editGender')?.value||'',
+            place:     document.getElementById('editPlace')?.value?.trim()||'',
+            district:  document.getElementById('editDistrict')?.value||'',
           }),
         });
         const data = await res.json();
