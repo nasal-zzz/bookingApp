@@ -28,13 +28,30 @@ router.post('/verify-phone-otp', authController.verifyPhoneOTP);
 router.post('/resend-phone-otp', authController.resendPhoneOTP);
 
 // ── GOOGLE OAUTH ──
-router.get('/google',
-  passport.authenticate('google', { scope: ['profile', 'email'], prompt: 'select_account' })
-);
+router.get('/google', (req, res, next) => {
+  // Save ?next into OAuth state so it survives the Google redirect round-trip
+  const state = req.query.next ? encodeURIComponent(req.query.next) : '';
+  passport.authenticate('google', {
+    scope: ['profile', 'email'],
+    prompt: 'select_account',
+    state: state || undefined,
+  })(req, res, next);
+});
 router.get('/google/callback',
   passport.authenticate('google', { failureRedirect: '/auth/login?error=google_failed', session: true }),
   async (req, res) => {
     try {
+      // Recover the ?next= URL from OAuth state parameter
+      const rawState = req.query.state || '';
+      if (rawState) {
+        try {
+          const nextUrl = decodeURIComponent(rawState);
+          // Only allow internal paths (no protocol/host)
+          if (nextUrl.startsWith('/') && !req.session.redirectAfterLogin) {
+            req.session.redirectAfterLogin = nextUrl;
+          }
+        } catch(e) {}
+      }
       // Attach googleUser for controller
       req.googleUser = {
         googleId:  req.user.googleId || req.user.id,
