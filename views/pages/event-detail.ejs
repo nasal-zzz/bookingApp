@@ -4,7 +4,7 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <meta name="theme-color" content="#0B0B0F"/>
-  <title><%= event.name %> — NightPass</title>
+  <title><%= event.name %> — MEE</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Poppins:wght@300;400;500;600;700&family=Space+Mono&display=swap" rel="stylesheet"/>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet"/>
   <link rel="stylesheet" href="/css/main.css"/>
@@ -373,9 +373,12 @@
 
   <%
     const tierColors = {standard:'#a0a0a0',silver:'#c0c8d8',gold:'#f5c842',platinum:'#6A0DAD',vip:'#bf80ff',general:'#a0a0a0'};
-    const isSoldOut = event.ticketTypes.length > 0 && event.ticketTypes.every(t => t.bookedSeats >= t.totalSeats);
     const activeTiers = event.ticketTypes.filter(t => t.isActive);
     const availTiers  = activeTiers.filter(t => t.bookedSeats < t.totalSeats);
+    // House Full = all active categories are fully booked
+    const isHouseFull = activeTiers.length > 0 && activeTiers.every(t => t.bookedSeats >= t.totalSeats);
+    // Legacy alias
+    const isSoldOut = isHouseFull;
     const minPrice    = availTiers.length ? Math.min(...availTiers.map(t => t.price)) : 0;
     const eventDate   = new Date(event.date);
     const now         = new Date();
@@ -398,8 +401,8 @@
     <div class="event-hero-content">
       <a href="/" class="event-back-btn"><i class="bi bi-arrow-left"></i> Back to Events</a>
 
-      <% if(isSoldOut){ %>
-        <div class="event-status-badge soldout"><i class="bi bi-x-circle-fill"></i> Sold Out</div>
+      <% if(isHouseFull){ %>
+        <div class="event-status-badge soldout"><i class="bi bi-house-fill"></i> House Full</div>
       <% } else if(isPast){ %>
         <div class="event-status-badge soldout"><i class="bi bi-clock-history"></i> Event Ended</div>
       <% } else { %>
@@ -483,7 +486,7 @@
           </div>
           <div class="detail-item">
             <div class="detail-lbl">Dress Code</div>
-            <div class="detail-val"><i class="bi bi-suit-spade-fill"></i> <%= event.dressCode || 'Smart Casual' %></div>
+            
           </div>
           <div class="detail-item">
             <div class="detail-lbl">Genre</div>
@@ -564,7 +567,9 @@
       <div class="sidebar-card">
         <div class="sidebar-header">
           <div class="sidebar-price-label">Starting from</div>
-          <% if(isSoldOut || availTiers.length === 0){ %>
+          <% if(isHouseFull){ %>
+            <div class="sidebar-price" style="color:var(--error);">🏠 House Full</div>
+          <% } else if(availTiers.length === 0){ %>
             <div class="sidebar-price" style="color:var(--error);">Sold Out</div>
           <% } else { %>
             <div class="sidebar-price">₹<%= minPrice.toLocaleString('en-IN') %> <small>onwards</small></div>
@@ -573,10 +578,10 @@
 
         <div class="sidebar-body">
 
-          <% if(isSoldOut){ %>
-          <div class="sold-out-banner">
-            <i class="bi bi-exclamation-triangle-fill"></i>
-            All tickets for this event have been sold out.
+          <% if(isHouseFull){ %>
+          <div class="sold-out-banner" style="background:rgba(255,68,68,0.08);border:1px solid rgba(255,68,68,0.25);border-radius:8px;padding:1rem;text-align:center;">
+            <div style="font-family:'Space Mono',monospace;font-size:0.9rem;letter-spacing:3px;color:#FF4444;font-weight:700;">🏠 HOUSE FULL</div>
+            <div style="font-size:0.78rem;color:#B3B3B3;margin-top:0.3rem;">All ticket categories are sold out.</div>
           </div>
           <% } else if(activeTiers.length > 0){ %>
 
@@ -584,14 +589,27 @@
           <div style="font-family:var(--font-mono);font-size:0.6rem;letter-spacing:1.5px;color:var(--muted);margin-bottom:0.6rem;text-transform:uppercase;">Ticket Categories</div>
           <div style="display:flex;flex-direction:column;gap:0.4rem;margin-bottom:1.2rem;">
             <% activeTiers.forEach(function(t){ %>
-            <% const avail=t.totalSeats-t.bookedSeats,isOut=avail<=0,tc=tierColors[t.category]||'#6A0DAD'; %>
-            <div style="display:flex;align-items:center;justify-content:space-between;padding:0.55rem 0.8rem;border-radius:7px;background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.06);<%= isOut?'opacity:0.45;':''%>">
+            <% const avail=t.totalSeats-t.bookedSeats, isOut=avail<=0, tc=tierColors[t.category]||'#6A0DAD'; %>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:0.6rem 0.8rem;border-radius:8px;background:<%= isOut ? 'rgba(255,68,68,0.04)' : 'rgba(255,255,255,0.025)' %>;border:1px solid <%= isOut ? 'rgba(255,68,68,0.2)' : 'rgba(255,255,255,0.06)' %>;">
               <div style="display:flex;align-items:center;gap:0.5rem;">
-                <div style="width:8px;height:8px;border-radius:50%;background:<%= tc %>;flex-shrink:0;"></div>
-                <span style="font-size:0.82rem;color:#fff;"><%= t.name||t.category.toUpperCase() %></span>
+                <div style="width:8px;height:8px;border-radius:50%;background:<%= isOut ? '#555' : tc %>;flex-shrink:0;"></div>
+                <div>
+                  <span style="font-size:0.82rem;color:<%= isOut ? '#666' : '#fff' %>;<%= isOut ? 'text-decoration:line-through;' : '' %>"><%= t.name||t.category.toUpperCase() %></span>
+                  <% if(!isOut && t.comboOfferMinQty > 0 && t.comboOfferDiscount > 0){ %>
+                  <div style="font-size:0.58rem;color:#f5c842;font-family:var(--font-mono);margin-top:0.1rem;">🎯 Buy <%= t.comboOfferMinQty %>+ → ₹<%= t.comboOfferDiscount %> off</div>
+                  <% } %>
+                </div>
               </div>
-              <% if(isOut){ %><span style="font-family:var(--font-mono);font-size:0.6rem;color:#FF4444;letter-spacing:1px;">SOLD OUT</span>
-              <% } else { %><span style="font-family:var(--font-mono);font-size:0.85rem;color:<%= tc %>;font-weight:700;">₹<%= t.price.toLocaleString('en-IN') %></span><% } %>
+              <% if(isOut){ %>
+                <span style="font-family:var(--font-mono);font-size:0.58rem;color:#FF4444;letter-spacing:1px;background:rgba(255,68,68,0.1);padding:0.2rem 0.5rem;border-radius:5px;border:1px solid rgba(255,68,68,0.25);">SOLD OUT</span>
+              <% } else { %>
+                <div style="text-align:right;">
+                  <span style="font-family:var(--font-mono);font-size:0.85rem;color:<%= tc %>;font-weight:700;">₹<%= t.price.toLocaleString('en-IN') %></span>
+                  <% if(avail <= 10){ %>
+                  <div style="font-size:0.58rem;color:#f5c842;font-family:var(--font-mono);margin-top:0.1rem;"><%= avail %> left</div>
+                  <% } %>
+                </div>
+              <% } %>
             </div>
             <% }); %>
           </div>
@@ -599,12 +617,19 @@
           <% } %>
 
           <!-- CTA -->
-          <% if(isSoldOut){ %>
-            <button class="btn-book-cta sold-out" disabled><i class="bi bi-x-circle"></i> Sold Out</button>
+          <% if(isHouseFull){ %>
+            <button class="btn-book-cta sold-out" disabled style="background:rgba(255,68,68,0.1);border-color:rgba(255,68,68,0.3);cursor:not-allowed;"><i class="bi bi-house-fill"></i> House Full</button>
           <% } else if(!locals.user || !user){ %>
             <a href="/auth/login?next=/booking/seatmap/<%= event._id %>" class="btn-book-cta">
               <i class="bi bi-ticket-perforated-fill"></i> Login to Book
             </a>
+          <% } else if(locals.userHasMultipleEntry){ %>
+            <a href="/booking/seatmap/<%= event._id %>" class="btn-book-cta" id="bookBtn">
+              <i class="bi bi-plus-circle-fill"></i> Book Another Ticket
+            </a>
+            <div style="font-size:0.7rem;color:#f5c842;margin-top:0.5rem;text-align:center;font-family:'Space Mono',monospace;">
+              ✓ You already have a group entry. You can still book other categories.
+            </div>
           <% } else { %>
             <a href="/booking/seatmap/<%= event._id %>" class="btn-book-cta" id="bookBtn">
               <i class="bi bi-ticket-perforated-fill"></i> Book Now
@@ -625,7 +650,7 @@
         <div class="sidebar-body" style="padding:1.2rem 1.5rem;">
           <div style="font-family:var(--font-mono);font-size:0.6rem;letter-spacing:1.5px;color:var(--muted);margin-bottom:0.8rem;text-transform:uppercase;">Share Event</div>
           <div class="share-row">
-            <a href="https://wa.me/?text=Check+out+<%= encodeURIComponent(event.name) %>+on+NightPass!+<%= locals.appUrl || '' %>%2Fevent%2F<%= event._id %>"
+            <a href="https://wa.me/?text=Check+out+<%= encodeURIComponent(event.name) %>+on+Melattur Entertainment Events!+<%= locals.appUrl || '' %>%2Fevent%2F<%= event._id %>"
                target="_blank" class="share-btn">
               <i class="bi bi-whatsapp"></i> WhatsApp
             </a>

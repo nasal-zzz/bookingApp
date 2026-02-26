@@ -55,7 +55,10 @@
     .crop-modal-head{padding:1rem 1.2rem 0.6rem;display:flex;align-items:center;justify-content:space-between;}
     .crop-modal-head h3{font-family:'Anton',sans-serif;font-size:1rem;letter-spacing:2px;color:#fff;}
     .crop-modal-head button{background:none;border:none;color:#555;font-size:1.3rem;cursor:pointer;line-height:1;}
-    .crop-area-wrap{position:relative;margin:0 1.2rem;aspect-ratio:16/7;background:#08080e;border-radius:8px;overflow:hidden;touch-action:none;border:1px solid rgba(255,255,255,0.07);}
+    .crop-area-wrap{position:relative;margin:0 1.2rem;background:#08080e;border-radius:8px;overflow:hidden;touch-action:none;border:1px solid rgba(255,255,255,0.07);cursor:grab;}
+    .crop-area-wrap.landscape{aspect-ratio:16/6;max-height:280px;}
+    .crop-area-wrap.portrait{aspect-ratio:3/4;max-height:420px;}
+    #cropPreviewImg{position:absolute;top:50%;left:50%;transform-origin:center center;transform:translate(-50%,-50%) scale(1);cursor:grab;user-select:none;max-width:none;pointer-events:none;}
     #cropCanvas{display:block;width:100%;height:100%;}
     .crop-dashed{position:absolute;inset:0;border:2px dashed rgba(106,13,173,0.5);border-radius:8px;pointer-events:none;}
     .crop-ctrls{padding:0.9rem 1.2rem;display:flex;align-items:center;gap:0.8rem;flex-wrap:wrap;}
@@ -325,18 +328,18 @@
       <button onclick="closeBannerCrop()">×</button>
     </div>
     <div class="size-warn" id="cropSizeWarn">⚠ File exceeds 10 MB limit</div>
-    <div class="crop-area-wrap">
-      <canvas id="cropCanvas"></canvas>
+    <!-- Crop viewport: fixed aspect-ratio frame, image pans inside -->
+    <div id="cropViewport" class="crop-area-wrap landscape" style="overflow:hidden;position:relative;">
+      <img id="cropPreviewImg" src="" alt=""
+        style="position:absolute;top:50%;left:50%;transform-origin:center center;transform:translate(-50%,-50%) scale(1);cursor:grab;user-select:none;max-width:none;"/>
       <div class="crop-dashed"></div>
     </div>
     <div class="crop-ctrls">
       <label>Zoom</label>
-      <input type="range" id="cropZoom" min="0.1" max="5" step="0.01" value="1" oninput="drawBannerCrop()"/>
-      <label>X</label>
-      <input type="range" id="cropOffX" min="-2000" max="2000" step="1" value="0" oninput="drawBannerCrop()"/>
-      <label>Y</label>
-      <input type="range" id="cropOffY" min="-2000" max="2000" step="1" value="0" oninput="drawBannerCrop()"/>
+      <input type="range" id="cropZoom" min="1" max="5" step="0.02" value="1" oninput="updateCropTransform()"/>
+      <button type="button" onclick="resetCrop()" style="padding:0.3rem 0.7rem;border:1px solid rgba(245,200,66,0.3);background:rgba(245,200,66,0.07);color:#f5c842;border-radius:5px;font-size:0.72rem;cursor:pointer;font-family:inherit;white-space:nowrap;"><i class="bi bi-arrows-fullscreen"></i> Fit</button>
     </div>
+    <div style="font-size:0.6rem;color:#555;text-align:center;font-family:'Space Mono',monospace;margin-top:-0.2rem;">Drag to pan · scroll/pinch to zoom</div>
     <div class="crop-footer">
       <button class="crop-cancel-btn" onclick="closeBannerCrop()">Cancel</button>
       <button class="crop-save-btn" onclick="saveBannerCrop()"><i class="bi bi-crop"></i> Use This Crop</button>
@@ -356,7 +359,9 @@
     <div class="ac-ctrls">
       <label>Zoom</label>
       <input type="range" id="acZoom" min="0.1" max="5" step="0.01" value="1" oninput="drawArtistCrop()"/>
+      <button type="button" onclick="fitArtistCrop()" style="padding:0.3rem 0.7rem;border:1px solid rgba(106,13,173,0.4);background:rgba(106,13,173,0.1);color:#9D4EDD;border-radius:5px;font-size:0.72rem;cursor:pointer;white-space:nowrap;font-family:inherit;">⊡ Fit</button>
     </div>
+    <div style="font-size:0.62rem;color:#555;text-align:center;margin-top:0.2rem;font-family:'Space Mono',monospace;">Drag to pan · Pinch or scroll to zoom</div>
     <div class="ac-footer">
       <button class="crop-cancel-btn" onclick="closeArtistCrop()">Cancel</button>
       <button class="crop-save-btn" onclick="saveArtistCrop()"><i class="bi bi-person-circle"></i> Use Photo</button>
@@ -370,83 +375,87 @@
 // ── Existing event data for pre-population ──
 const EXISTING_ARTISTS = <%- JSON.stringify(event && event.artists ? event.artists : []) %>;
 
-// ── Banner preview ──
-// ── Banner Crop System ──
-const MAX_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
-let cropImg = null, cropFieldId = null, cropAspect = 16/7;
+// ── Banner Crop System (CSS-transform, pixel-perfect) ──
+const MAX_SIZE_BYTES = 10 * 1024 * 1024;
 
-// BANNER CONFIGS: [fieldId, aspectW, aspectH, outputW, outputH, label]
 const BANNER_CONFIGS = {
-  bannerDesktop: { aw:16, ah:6, ow:1920, oh:600, label:'DESKTOP BANNER' },
-  bannerMobile:  { aw:4,  ah:3, ow:800,  oh:600, label:'MOBILE BANNER'  },
-  bannerDetail:  { aw:3,  ah:1, ow:1200, oh:400, label:'DETAIL BANNER'  },
+  bannerDesktop: { ar:'landscape', ow:1920, oh:600,  label:'DESKTOP BANNER' },
+  bannerMobile:  { ar:'portrait',  ow:800,  oh:1067, label:'MOBILE BANNER'  },
+  bannerDetail:  { ar:'landscape', ow:1200, oh:400,  label:'DETAIL BANNER'  },
 };
+
+let cropFieldId = null, cropCfg = null;
+let cropScale = 1, cropX = 0, cropY = 0;
 
 function previewBanner(input, fieldId) {
   const file = input.files[0];
   if (!file) return;
   if (file.size > MAX_SIZE_BYTES) {
-    document.getElementById('cropSizeWarn').style.display = 'block';
     alert('Image exceeds 10 MB limit. Please choose a smaller file.');
     input.value = ''; return;
   }
   const reader = new FileReader();
-  reader.onload = e => {
+  reader.onload = ev => {
     const img = new Image();
     img.onload = () => {
-      cropImg = img;
       cropFieldId = fieldId;
-      const cfg = BANNER_CONFIGS[fieldId] || { aw:16, ah:7 };
-      cropAspect = cfg.aw / cfg.ah;
-      // reset controls
-      document.getElementById('cropZoom').value = 1;
-      document.getElementById('cropOffX').value = 0;
-      document.getElementById('cropOffY').value = 0;
-      document.getElementById('cropModalTitle').textContent = cfg.label || 'CROP BANNER';
-      document.getElementById('cropSizeWarn').style.display = 'none';
-      document.getElementById('cropModal').classList.add('open');
-      // give modal time to paint then draw
-      requestAnimationFrame(() => requestAnimationFrame(drawBannerCrop));
+      // Detect orientation and choose crop config
+      const isPortrait = img.height > img.width;
+      let cfg;
+      if (fieldId === 'bannerMobile' || isPortrait) {
+        cfg = { ar:'portrait', ow:800, oh:1067, label:'MOBILE / PORTRAIT BANNER' };
+      } else if (fieldId === 'bannerDetail') {
+        cfg = { ar:'landscape', ow:1200, oh:400, label:'DETAIL BANNER (3:1 wide)' };
+      } else {
+        cfg = BANNER_CONFIGS[fieldId];
+      }
+      cropCfg = cfg;
+      // Set viewport class for aspect ratio
+      const vp = document.getElementById('cropViewport');
+      vp.className = 'crop-area-wrap ' + cfg.ar;
+      // Load image into preview img tag
+      const pi = document.getElementById('cropPreviewImg');
+      pi.src = ev.target.result;
+      pi.onload = () => {
+        resetCrop();
+        document.getElementById('cropModalTitle').textContent = cfg.label;
+        document.getElementById('cropModal').classList.add('open');
+      };
     };
-    img.src = e.target.result;
+    img.src = ev.target.result;
   };
   reader.readAsDataURL(file);
 }
 
-function drawBannerCrop() {
-  if (!cropImg) return;
-  const canvas = document.getElementById('cropCanvas');
-  const wrap   = canvas.parentElement;
-  const W = wrap.clientWidth  || 500;
-  const H = wrap.clientHeight || Math.round(W / cropAspect);
-  canvas.width  = W;
-  canvas.height = H;
-  const ctx = canvas.getContext('2d');
-  ctx.clearRect(0,0,W,H);
-  const zoom = parseFloat(document.getElementById('cropZoom').value) || 1;
-  const offX = parseFloat(document.getElementById('cropOffX').value) || 0;
-  const offY = parseFloat(document.getElementById('cropOffY').value) || 0;
-  const scale = Math.max(W/cropImg.width, H/cropImg.height) * zoom;
-  const dx = (W - cropImg.width  * scale) / 2 + offX;
-  const dy = (H - cropImg.height * scale) / 2 + offY;
-  ctx.drawImage(cropImg, dx, dy, cropImg.width * scale, cropImg.height * scale);
+function resetCrop() {
+  cropScale = 1; cropX = 0; cropY = 0;
+  document.getElementById('cropZoom').value = 1;
+  updateCropTransform();
+}
+
+function updateCropTransform() {
+  cropScale = parseFloat(document.getElementById('cropZoom').value) || 1;
+  const pi = document.getElementById('cropPreviewImg');
+  pi.style.transform = `translate(calc(-50% + ${cropX}px), calc(-50% + ${cropY}px)) scale(${cropScale})`;
 }
 
 function saveBannerCrop() {
-  if (!cropImg || !cropFieldId) return;
-  const cfg = BANNER_CONFIGS[cropFieldId] || { ow:1200, oh:400 };
-  const out  = document.createElement('canvas');
-  out.width  = cfg.ow;
-  out.height = cfg.oh;
-  const ctx  = out.getContext('2d');
-  const zoom = parseFloat(document.getElementById('cropZoom').value) || 1;
-  const offX = parseFloat(document.getElementById('cropOffX').value) || 0;
-  const offY = parseFloat(document.getElementById('cropOffY').value) || 0;
-  const W = out.width, H = out.height;
-  const scale = Math.max(W/cropImg.width, H/cropImg.height) * zoom;
-  const dx = (W - cropImg.width * scale)/2 + (offX * W / (document.getElementById('cropCanvas').parentElement.clientWidth || W));
-  const dy = (H - cropImg.height * scale)/2 + (offY * H / (document.getElementById('cropCanvas').parentElement.clientHeight || H));
-  ctx.drawImage(cropImg, dx, dy, cropImg.width*scale, cropImg.height*scale);
+  if (!cropFieldId || !cropCfg) return;
+  const pi = document.getElementById('cropPreviewImg');
+  const vp = document.getElementById('cropViewport');
+  const vpRect = vp.getBoundingClientRect();
+  const piRect = pi.getBoundingClientRect();
+  // Map viewport crop region to source image coords
+  const scaleX = pi.naturalWidth  / piRect.width;
+  const scaleY = pi.naturalHeight / piRect.height;
+  const sx = Math.max(0, (vpRect.left - piRect.left) * scaleX);
+  const sy = Math.max(0, (vpRect.top  - piRect.top ) * scaleY);
+  const sw = Math.min(vpRect.width  * scaleX, pi.naturalWidth  - sx);
+  const sh = Math.min(vpRect.height * scaleY, pi.naturalHeight - sy);
+  const out = document.createElement('canvas');
+  out.width  = cropCfg.ow;
+  out.height = cropCfg.oh;
+  out.getContext('2d').drawImage(pi, sx, sy, sw, sh, 0, 0, cropCfg.ow, cropCfg.oh);
   const dataUrl = out.toDataURL('image/jpeg', 0.88);
   document.getElementById(cropFieldId).value = dataUrl;
   const prev = document.getElementById('prev-' + cropFieldId);
@@ -456,25 +465,28 @@ function saveBannerCrop() {
 
 function closeBannerCrop() {
   document.getElementById('cropModal').classList.remove('open');
-  cropImg = null; cropFieldId = null;
+  cropFieldId = null; cropCfg = null;
+  document.getElementById('cropPreviewImg').src = '';
 }
 
-// drag-to-pan on banner crop
+// Drag-to-pan + scroll-to-zoom on banner crop
 (function(){
-  let dragging=false, sx=0, sy=0, ox=0, oy=0;
-  const ca = document.getElementById('cropCanvas');
-  if (!ca) return;
-  function getXY(e){ return e.touches ? {x:e.touches[0].clientX,y:e.touches[0].clientY} : {x:e.clientX,y:e.clientY}; }
-  ca.addEventListener('mousedown',  e=>{dragging=true;const p=getXY(e);sx=p.x;sy=p.y;ox=parseFloat(document.getElementById('cropOffX').value)||0;oy=parseFloat(document.getElementById('cropOffY').value)||0;});
-  ca.addEventListener('touchstart', e=>{dragging=true;const p=getXY(e);sx=p.x;sy=p.y;ox=parseFloat(document.getElementById('cropOffX').value)||0;oy=parseFloat(document.getElementById('cropOffY').value)||0;},{passive:true});
-  window.addEventListener('mousemove',  e=>{if(!dragging)return;const p=getXY(e);document.getElementById('cropOffX').value=ox+(p.x-sx);document.getElementById('cropOffY').value=oy+(p.y-sy);drawBannerCrop();});
-  window.addEventListener('touchmove',  e=>{if(!dragging)return;const p=getXY(e);document.getElementById('cropOffX').value=ox+(p.x-sx);document.getElementById('cropOffY').value=oy+(p.y-sy);drawBannerCrop();},{passive:true});
-  window.addEventListener('mouseup',   ()=>dragging=false);
-  window.addEventListener('touchend',  ()=>dragging=false);
+  let drag=false,sx=0,sy=0,ox=0,oy=0;
+  const pi = ()=>document.getElementById('cropPreviewImg');
+  const xy = e => e.touches ? {x:e.touches[0].clientX,y:e.touches[0].clientY} : {x:e.clientX,y:e.clientY};
+  document.getElementById('cropViewport').addEventListener('mousedown',  e=>{e.preventDefault();drag=true;const p=xy(e);sx=p.x;sy=p.y;ox=cropX;oy=cropY;pi().style.cursor='grabbing';});
+  document.getElementById('cropViewport').addEventListener('touchstart', e=>{drag=true;const p=xy(e);sx=p.x;sy=p.y;ox=cropX;oy=cropY;},{passive:true});
+  window.addEventListener('mousemove', e=>{if(!drag)return;const p=xy(e);cropX=ox+(p.x-sx);cropY=oy+(p.y-sy);updateCropTransform();});
+  window.addEventListener('touchmove', e=>{if(!drag)return;const p=xy(e);cropX=ox+(p.x-sx);cropY=oy+(p.y-sy);updateCropTransform();},{passive:true});
+  window.addEventListener('mouseup',  ()=>{drag=false;const p=pi();if(p)p.style.cursor='grab';});
+  window.addEventListener('touchend', ()=>{drag=false;});
+  document.getElementById('cropViewport').addEventListener('wheel', e=>{
+    e.preventDefault();
+    cropScale = Math.min(5, Math.max(1, cropScale + (e.deltaY>0?-0.1:0.1)));
+    document.getElementById('cropZoom').value = cropScale;
+    updateCropTransform();
+  },{passive:false});
 })();
-
-// ── Artist Photo Crop System ──
-let acImg=null, acArtistIndex=-1;
 
 function openArtistCrop(file, idx) {
   if (!file) return;
@@ -485,7 +497,7 @@ function openArtistCrop(file, idx) {
   reader.onload=e=>{
     const img=new Image();
     img.onload=()=>{
-      acImg=img;
+      acImg=img; acOffX=0; acOffY=0;
       document.getElementById('acZoom').value=1;
       document.getElementById('artistCropModal').classList.add('open');
       requestAnimationFrame(()=>requestAnimationFrame(drawArtistCrop));
@@ -506,10 +518,16 @@ function drawArtistCrop(){
   ctx.save();ctx.beginPath();ctx.arc(S/2,S/2,S/2,0,Math.PI*2);ctx.clip();
   const zoom=parseFloat(document.getElementById('acZoom').value)||1;
   const scale=Math.max(S/acImg.width,S/acImg.height)*zoom;
-  const dx=(S-acImg.width*scale)/2;
-  const dy=(S-acImg.height*scale)/2;
+  const dx=(S-acImg.width*scale)/2+acOffX;
+  const dy=(S-acImg.height*scale)/2+acOffY;
   ctx.drawImage(acImg,dx,dy,acImg.width*scale,acImg.height*scale);
   ctx.restore();
+}
+
+function fitArtistCrop(){
+  acOffX=0;acOffY=0;
+  document.getElementById('acZoom').value=1;
+  drawArtistCrop();
 }
 
 function saveArtistCrop(){
@@ -519,9 +537,10 @@ function saveArtistCrop(){
   const ctx=out.getContext('2d');
   ctx.save();ctx.beginPath();ctx.arc(200,200,200,0,Math.PI*2);ctx.clip();
   const zoom=parseFloat(document.getElementById('acZoom').value)||1;
+  const scaleR=400/(document.getElementById('acArea').clientWidth||220);
   const scale=Math.max(400/acImg.width,400/acImg.height)*zoom;
-  const dx=(400-acImg.width*scale)/2;
-  const dy=(400-acImg.height*scale)/2;
+  const dx=(400-acImg.width*scale)/2+acOffX*scaleR;
+  const dy=(400-acImg.height*scale)/2+acOffY*scaleR;
   ctx.drawImage(acImg,dx,dy,acImg.width*scale,acImg.height*scale);
   ctx.restore();
   const dataUrl=out.toDataURL('image/jpeg',0.9);
@@ -537,15 +556,44 @@ function closeArtistCrop(){
 
 // drag to pan artist crop
 (function(){
-  let dr=false,sx=0,sy=0,base=1;
+  let dr=false,sx=0,sy=0;
+  let pinchDist=0,pinchBase=1;
   const ca=document.getElementById('acCanvas');
   if(!ca)return;
   function gp(e){return e.touches?{x:e.touches[0].clientX,y:e.touches[0].clientY}:{x:e.clientX,y:e.clientY};}
-  ca.addEventListener('mousedown', e=>{dr=true;const p=gp(e);sx=p.x;sy=p.y;base=parseFloat(document.getElementById('acZoom').value)||1;});
-  ca.addEventListener('touchstart',e=>{dr=true;const p=gp(e);sx=p.x;sy=p.y;base=parseFloat(document.getElementById('acZoom').value)||1;},{passive:true});
-  // Note: artist crop only supports zoom for simplicity on circular crop
-  window.addEventListener('mouseup',()=>dr=false);
-  window.addEventListener('touchend',()=>dr=false);
+  ca.style.cursor='grab';
+  ca.addEventListener('mousedown',e=>{dr=true;const p=gp(e);sx=p.x;sy=p.y;ca.style.cursor='grabbing';e.preventDefault();});
+  ca.addEventListener('touchstart',e=>{
+    if(e.touches.length===1){dr=true;const p=gp(e);sx=p.x;sy=p.y;}
+    else if(e.touches.length===2){
+      dr=false;
+      pinchDist=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
+      pinchBase=parseFloat(document.getElementById('acZoom').value)||1;
+    }
+    e.preventDefault();
+  },{passive:false});
+  window.addEventListener('mousemove',e=>{
+    if(!dr)return;
+    acOffX+=(e.clientX-sx);acOffY+=(e.clientY-sy);sx=e.clientX;sy=e.clientY;drawArtistCrop();
+  });
+  window.addEventListener('touchmove',e=>{
+    if(e.touches.length===1&&dr){acOffX+=(e.touches[0].clientX-sx);acOffY+=(e.touches[0].clientY-sy);sx=e.touches[0].clientX;sy=e.touches[0].clientY;drawArtistCrop();}
+    else if(e.touches.length===2){
+      const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
+      const nv=Math.min(5,Math.max(0.1,pinchBase*(d/pinchDist)));
+      document.getElementById('acZoom').value=nv;drawArtistCrop();
+    }
+    e.preventDefault();
+  },{passive:false});
+  window.addEventListener('mouseup',()=>{dr=false;ca.style.cursor='grab';});
+  window.addEventListener('touchend',()=>{dr=false;});
+  // Scroll to zoom
+  ca.addEventListener('wheel',e=>{
+    const cur=parseFloat(document.getElementById('acZoom').value)||1;
+    const nv=Math.min(5,Math.max(0.1,cur-(e.deltaY>0?0.1:-0.1)));
+    document.getElementById('acZoom').value=nv;drawArtistCrop();
+    e.preventDefault();
+  },{passive:false});
 })();
 
 // Show existing banner previews
@@ -669,7 +717,23 @@ function addTicketCat(existing) {
         <div class="field-group"><label class="field-label">Booked Seats</label>
           <input class="field-input" type="number" id="${id}_bookedSeats" value="${existing?.bookedSeats||0}" min="0"/></div>
       </div>
-      <div class="field-row">
+      <!-- ── Combo Offer ── -->
+      <div style="background:rgba(245,200,66,0.05);border:1px solid rgba(245,200,66,0.18);border-radius:8px;padding:0.9rem 1rem;margin-top:0.2rem;">
+        <div style="font-family:'Space Mono',monospace;font-size:0.56rem;letter-spacing:2px;color:#f5c842;margin-bottom:0.7rem;">🎯 COMBO OFFER (OPTIONAL)</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;">
+          <div class="field-group">
+            <label class="field-label">Min Tickets to Qualify</label>
+            <input class="field-input" type="number" id="${id}_comboOfferMinQty" min="0" placeholder="0 = off" value="${existing?.comboOfferMinQty||0}" style="border-color:rgba(245,200,66,0.25);"/>
+            <small style="color:#777;font-size:0.68rem;margin-top:0.2rem;display:block;">e.g. 4 = buy 4+ to get discount</small>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Discount Amount (₹)</label>
+            <input class="field-input" type="number" id="${id}_comboOfferDiscount" min="0" placeholder="0" value="${existing?.comboOfferDiscount||0}" style="border-color:rgba(245,200,66,0.25);"/>
+            <small style="color:#777;font-size:0.68rem;margin-top:0.2rem;display:block;">flat ₹ off total (shown to user)</small>
+          </div>
+        </div>
+      </div>
+      <div class="field-row" style="margin-top:0.8rem;">
         <div class="field-group"><label class="field-label">Terms & Conditions</label>
           <textarea class="field-input" id="${id}_terms" placeholder="Entry conditions, refund policy..." style="min-height:60px;">${existing?.terms||''}</textarea></div>
       </div>
@@ -748,6 +812,8 @@ function prepareSubmit() {
       name, color, price, ageLimit, ticketType,
       totalSeats, bookedSeats, terms,
       isActive, isCombo: ticketType === 'multiple', comboCount,
+      comboOfferMinQty:   parseInt(document.getElementById(id+'_comboOfferMinQty')?.value)  || 0,
+      comboOfferDiscount: parseInt(document.getElementById(id+'_comboOfferDiscount')?.value) || 0,
     });
   });
 

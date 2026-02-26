@@ -78,6 +78,22 @@ router.get('/events/:id/edit',          adminController.getEditEvent);
 router.post('/events/:id',              adminController.postUpdateEvent);
 router.post('/events/:id/delete',       adminController.deleteEvent);
 router.post('/events/:id/toggle',       adminController.toggleEvent);
+
+// ── Toggle individual ticket category on/off (stop selling) ──
+router.post('/events/:id/ticket-toggle', async (req, res) => {
+  try {
+    const { category } = req.body;
+    const event = await require('../models/Event').findById(req.params.id);
+    if (!event) return res.json({ success: false, message: 'Event not found' });
+    const tt = event.ticketTypes.find(t => t.category === category);
+    if (!tt) return res.json({ success: false, message: 'Category not found' });
+    tt.isActive = !tt.isActive;
+    await event.save();
+    res.json({ success: true, isActive: tt.isActive, category: tt.category, name: tt.name });
+  } catch(err) {
+    res.json({ success: false, message: err.message });
+  }
+});
 router.get('/bookings',                 adminController.getBookings);
 
 // POST /admin/bookings/send-reminders — bulk send pending/failed payment reminders
@@ -141,6 +157,42 @@ router.post('/bookings/send-reminders', async (req, res) => {
       } catch(e) { console.warn('Reminder error for', b.bookingRef, e.message); }
     }
     res.json({ success: true, sent24, sentImmediate, total: bookings.length });
+  } catch(err) {
+    res.json({ success: false, message: err.message });
+  }
+});
+
+// ── POST /admin/bookings/:id/send-message — send WhatsApp+email to single pending/failed booking ──
+router.post('/bookings/:id/send-message', async (req, res) => {
+  try {
+    const Booking = require('../models/Booking');
+    const Event   = require('../models/Event');
+    const { sendPendingPaymentReminder, sendFailedPaymentNotice } = require('../utils/emailHelper');
+    const { sendWhatsAppPending, sendWhatsAppPaymentFailed } = require('../utils/whatsappHelper');
+
+    const booking = await Booking.findById(req.params.id)
+      .populate('user', 'firstName email phone')
+      .populate('event', 'name date venue');
+
+    if (!booking) return res.json({ success: false, message: 'Booking not found.' });
+    if (booking.paymentStatus === 'paid') return res.json({ success: false, message: 'Booking is already paid.' });
+
+    const user  = booking.user;
+    const event = booking.event;
+    const name  = user?.firstName || 'Customer';
+    const email = user?.email || '';
+    const phone = user?.phone || '';
+
+    let sent = 0;
+    if (booking.paymentStatus === 'pending') {
+      if (email) { await sendPendingPaymentReminder({ to: email, name, booking, event: event||{} }).catch(()=>{}); sent++; }
+      if (phone) { await sendWhatsAppPending({ phone, name, booking, event: event||{} }).catch(()=>{}); sent++; }
+    } else if (booking.paymentStatus === 'failed') {
+      if (email) { await sendFailedPaymentNotice({ to: email, name, booking, event: event||{} }).catch(()=>{}); sent++; }
+      if (phone) { await sendWhatsAppPaymentFailed({ phone, name, booking, event: event||{} }).catch(()=>{}); sent++; }
+    }
+
+    res.json({ success: true, message: `Message sent via ${sent} channel${sent !== 1 ? 's' : ''}.`, sent });
   } catch(err) {
     res.json({ success: false, message: err.message });
   }
@@ -236,6 +288,59 @@ router.post('/reviews/:id/delete', async (req, res) => {
   if (!req.session.adminLoggedIn && !(req.session.staffLoggedIn && ['admin','superadmin'].includes(req.session.staffUser?.role))) return res.redirect('/admin/reviews');
   await Review.findByIdAndDelete(req.params.id).catch(()=>{});
   res.redirect('/admin/reviews');
+});
+
+// ── Admin: Staff management (admins can create/manage staff-role accounts) ──
+router.get('/staff', async (req, res) => {
+  try {
+    const staff = await Staff.find({ role: 'staff' }).sort({ createdAt: -1 });
+    const currentAdmin = getCurrentAdmin(req);
+    const isSuperAdmin = req.session.superAdminLoggedIn || (req.session.staffLoggedIn && req.session.staffUser?.role === 'superadmin');
+    res.render('admin/staff', { title: 'Staff Management — Admin', staff, currentAdmin, isSuperAdmin });
+  } catch(err) { res.redirect('/admin'); }
+});
+
+router.post('/staff', async (req, res) => {
+  try {
+    const { firstName, lastName, email, phone, manualUsername, manualPassword, canScanQR, canViewBookings, canManageEvents } = req.body;
+    let username, password;
+    if (manualUsername && manualUsername.trim()) {
+      username = manualUsername.trim().toLowerCase().replace(/\s+/g,'-');
+      if (!manualPassword || manualPassword.trim().length < 4) return res.json({ success:false, message:'Password must be at least 4 characters.' });
+      password = manualPassword.trim();
+      const taken = await Staff.findOne({ username });
+      if (taken) return res.json({ success:false, message:`Username "${username}" is already taken.` });
+    } else {
+      const base = `staff-${firstName.toLowerCase().replace(/[^a-z0-9]/g,'')}`;
+      const existing = await Staff.findOne({ username: base });
+      username = existing ? `${base}${Math.floor(Math.random()*900)+100}` : base;
+      password = `${username}-${(phone||'000').slice(-3)}`;
+    }
+    const member = await Staff.create({
+      firstName, lastName: lastName||'', email, phone: phone||'',
+      username, password, role: 'staff',
+      canScanQR: canScanQR==='on', canViewBookings: canViewBookings==='on', canManageEvents: canManageEvents==='on',
+      createdBy: req.session.staffUser?.id || null,
+    });
+    res.json({ success:true, username: member.username, password: member.password, id: member._id });
+  } catch(err) {
+    res.json({ success:false, message: err.code===11000 ? 'Email or username already exists.' : err.message });
+  }
+});
+
+router.post('/staff/:id/toggle', async (req, res) => {
+  try {
+    const member = await Staff.findOne({ _id: req.params.id, role: 'staff' });
+    if (!member) return res.json({ success:false, message:'Staff not found' });
+    member.isActive = !member.isActive;
+    await member.save();
+    res.json({ success:true, isActive: member.isActive });
+  } catch(err) { res.json({ success:false, message: err.message }); }
+});
+
+router.post('/staff/:id/delete', async (req, res) => {
+  await Staff.findOneAndDelete({ _id: req.params.id, role: 'staff' }).catch(()=>{});
+  res.redirect('/admin/staff');
 });
 
 // ── Admin error handler — keeps user inside admin context ──

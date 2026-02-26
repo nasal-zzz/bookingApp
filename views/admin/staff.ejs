@@ -6,56 +6,47 @@
   <link href="https://fonts.googleapis.com/css2?family=Anton&family=Outfit:wght@400;500;600;700&family=Space+Mono&display=swap" rel="stylesheet"/>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet"/>
   <style>
-    :root{--bg:#0B0B0F;--surface:#14141C;--border:rgba(255,255,255,0.08);--accent:#9D4EDD;--text:#fff;--muted:#B3B3B3;--error:#FF4444;--success:#00FF88;}
+    :root{--bg:#0B0B0F;--surface:#14141C;--border:rgba(255,255,255,0.08);--accent:#6A0DAD;--text:#fff;--muted:#B3B3B3;--success:#00FF88;--error:#FF4444;}
     *{box-sizing:border-box;margin:0;padding:0;}
     body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-height:100vh;}
-    .layout{display:grid;grid-template-columns:220px 1fr;min-height:100vh;}
-    .sidebar{background:var(--surface);border-right:1px solid var(--border);padding:1.5rem 1rem;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:0.3rem;overflow-y:auto;}
-    .s-logo{font-family:'Anton',sans-serif;font-size:1.3rem;letter-spacing:3px;color:#fff;text-decoration:none;display:block;padding:0 0.5rem 0.5rem;border-bottom:1px solid var(--border);margin-bottom:0.4rem;}
-    .s-logo span{color:var(--accent);}
-    .s-badge{font-family:'Space Mono',monospace;font-size:0.5rem;letter-spacing:2px;color:var(--accent);background:rgba(157,78,221,0.1);border:1px solid rgba(157,78,221,0.25);border-radius:10px;padding:0.15rem 0.6rem;margin-bottom:0.8rem;display:inline-block;}
+    body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(255,255,255,0.012) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.012) 1px,transparent 1px);background-size:50px 50px;pointer-events:none;}
+    .admin-layout{display:grid;grid-template-columns:220px 1fr;min-height:100vh;}
+    .sidebar{background:var(--surface);border-right:1px solid var(--border);padding:1.5rem 1rem;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:0.3rem;z-index:10;overflow-y:auto;}
+    .s-logo{display:block;padding:0 0.5rem 1.2rem;border-bottom:1px solid var(--border);margin-bottom:0.8rem;}
+    .s-section{font-family:'Space Mono',monospace;font-size:0.52rem;letter-spacing:2px;color:var(--muted);padding:0.5rem;margin-top:0.5rem;}
     .s-link{display:flex;align-items:center;gap:0.7rem;padding:0.7rem 0.8rem;color:var(--muted);text-decoration:none;border-radius:6px;font-size:0.85rem;transition:all 0.15s;border:1px solid transparent;}
-    .s-link:hover,.s-link.active{background:rgba(157,78,221,0.08);border-color:rgba(157,78,221,0.2);color:#fff;}
+    .s-link:hover,.s-link.active{background:rgba(106,13,173,0.07);border-color:rgba(106,13,173,0.15);color:#fff;}
     .s-link i{color:var(--accent);width:18px;}
-    .s-logout{margin-top:auto;display:flex;align-items:center;gap:0.7rem;padding:0.7rem 0.8rem;color:var(--error);text-decoration:none;border-radius:6px;font-size:0.85rem;border:1px solid transparent;transition:all 0.15s;}
-    .s-logout:hover{background:rgba(255,68,68,0.08);}
-    .main{padding:2rem;overflow-x:hidden;}
+    .s-logout{margin-top:auto;display:flex;align-items:center;gap:0.7rem;padding:0.7rem 0.8rem;color:var(--error);text-decoration:none;border-radius:6px;font-size:0.85rem;border:1px solid transparent;}
+    .s-logout:hover{background:rgba(255,92,92,0.08);}
+    .main{padding:2rem;position:relative;z-index:1;overflow-x:hidden;}
     .page-title{font-family:'Anton',sans-serif;font-size:1.8rem;letter-spacing:2px;margin-bottom:0.3rem;}
     .page-sub{font-size:0.78rem;color:var(--muted);margin-bottom:2rem;}
-
-    /* Add form card */
+    /* Card */
     .add-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:2rem;}
-    .card-bar{height:3px;background:linear-gradient(90deg,#9D4EDD,#6A0DAD);}
+    .card-bar{height:3px;background:linear-gradient(90deg,#6A0DAD,#9D4EDD);}
     .card-body{padding:1.5rem;}
     .card-head{font-family:'Anton',sans-serif;font-size:1rem;letter-spacing:2px;margin-bottom:1.2rem;}
     .f-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;}
     .f-grid.cols3{grid-template-columns:1fr 1fr 1fr;}
     .f-grp{display:flex;flex-direction:column;gap:0.3rem;}
     .f-lbl{font-family:'Space Mono',monospace;font-size:0.52rem;letter-spacing:1px;color:#555;text-transform:uppercase;}
-    .f-inp,.f-sel{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:7px;color:#fff;font-family:'Outfit',sans-serif;font-size:0.88rem;padding:0.62rem 0.85rem;outline:none;transition:border-color 0.18s;width:100%;}
-    .f-inp:focus,.f-sel:focus{border-color:rgba(157,78,221,0.45);}
-    .f-sel option{background:#1a1a2e;}
-    .perms-row{display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1rem;}
+    .f-inp{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:7px;color:#fff;font-family:'Outfit',sans-serif;font-size:0.88rem;padding:0.62rem 0.85rem;outline:none;width:100%;}
+    .f-inp:focus{border-color:rgba(106,13,173,0.45);}
     .perm-check{display:flex;align-items:center;gap:0.4rem;font-size:0.82rem;color:var(--muted);cursor:pointer;}
     .perm-check input{width:15px;height:15px;accent-color:var(--accent);}
+    .perms-row{display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1rem;}
     .submit-btn{display:flex;align-items:center;justify-content:center;gap:0.5rem;padding:0.8rem 2rem;background:var(--accent);color:#fff;border:none;border-radius:8px;font-weight:700;font-size:0.88rem;cursor:pointer;transition:all 0.18s;}
-    .submit-btn:hover{box-shadow:0 0 20px rgba(157,78,221,0.4);}
-
-    /* Result modal */
+    .submit-btn:hover{box-shadow:0 0 20px rgba(106,13,173,0.4);}
     .result-box{display:none;background:rgba(0,255,136,0.06);border:1px solid rgba(0,255,136,0.2);border-radius:8px;padding:1rem;margin-top:1rem;}
     .result-box.show{display:block;}
     .cred-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:0.4rem;font-family:'Space Mono',monospace;font-size:0.78rem;}
     .cred-key{color:#555;}
     .cred-val{color:#fff;font-weight:700;background:rgba(255,255,255,0.06);padding:0.2rem 0.6rem;border-radius:4px;}
-
-    /* Staff table */
+    /* Table */
     .staff-table{width:100%;border-collapse:collapse;}
     .staff-table th{font-family:'Space Mono',monospace;font-size:0.55rem;letter-spacing:2px;color:#555;text-transform:uppercase;padding:0.6rem 0.8rem;border-bottom:1px solid var(--border);text-align:left;}
     .staff-table td{padding:0.85rem 0.8rem;border-bottom:1px solid rgba(255,255,255,0.04);font-size:0.85rem;vertical-align:middle;}
-    .staff-table tr:hover td{background:rgba(255,255,255,0.02);}
-    .role-badge{font-family:'Space Mono',monospace;font-size:0.55rem;letter-spacing:1px;padding:0.2rem 0.55rem;border-radius:10px;}
-    .role-admin{background:rgba(157,78,221,0.12);border:1px solid rgba(157,78,221,0.3);color:#9D4EDD;}
-    .role-staff{background:rgba(0,255,136,0.08);border:1px solid rgba(0,255,136,0.25);color:#00FF88;}
     .badge-active{background:rgba(0,255,136,0.08);border:1px solid rgba(0,255,136,0.25);color:#00FF88;font-size:0.55rem;font-family:'Space Mono',monospace;padding:0.15rem 0.5rem;border-radius:10px;}
     .badge-blocked{background:rgba(255,68,68,0.08);border:1px solid rgba(255,68,68,0.25);color:#FF4444;font-size:0.55rem;font-family:'Space Mono',monospace;padding:0.15rem 0.5rem;border-radius:10px;}
     .btn-sm{display:inline-flex;align-items:center;gap:0.3rem;padding:0.32rem 0.65rem;border-radius:4px;font-size:0.72rem;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text);transition:all 0.15s;}
@@ -64,43 +55,38 @@
     .btn-del{color:var(--error);border-color:rgba(255,68,68,0.3);}
     .btn-del:hover{background:rgba(255,68,68,0.1);}
     .empty{text-align:center;padding:3rem;color:#555;}
-    @media(max-width:900px){.layout{grid-template-columns:1fr;}.sidebar{display:none;}.f-grid{grid-template-columns:1fr;}.f-grid.cols3{grid-template-columns:1fr 1fr;}}
+    @media(max-width:900px){.admin-layout{grid-template-columns:1fr;}.sidebar{display:none;}.f-grid{grid-template-columns:1fr;}.f-grid.cols3{grid-template-columns:1fr 1fr;}}
   </style>
 </head>
 <body>
-<div class="layout">
+<div class="admin-layout">
   <aside class="sidebar">
-    <a href="/superadmin" class="s-logo"><img src="/img/mee-logo.png" alt="MEE" style="height:28px;width:auto;object-fit:contain;"/></a>
-    <span class="s-badge">⬡ SUPER ADMIN</span>
-    <a href="/superadmin"                class="s-link"><i class="bi bi-speedometer2"></i> Dashboard</a>
-    <a href="/superadmin/staff"          class="s-link active"><i class="bi bi-people-fill"></i> Staff & Admins</a>
-    <a href="/superadmin/coupons"        class="s-link"><i class="bi bi-tag-fill"></i> Coupons</a>
-    <a href="/superadmin/users-by-event" class="s-link"><i class="bi bi-person-lines-fill"></i> Users by Event</a>
-    <a href="/admin"                     class="s-link"><i class="bi bi-grid-fill"></i> Admin Panel</a>
-        <div style="margin-top:auto;border-top:1px solid rgba(255,255,255,0.06);padding-top:0.7rem;">
-      <% if(locals.currentAdmin){ %>
-      <div style="display:flex;align-items:center;gap:0.6rem;padding:0.6rem 0.8rem;margin-bottom:0.3rem;">
-        <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#3a0870,#6A0DAD);display:flex;align-items:center;justify-content:center;font-family:'Anton',sans-serif;font-size:0.9rem;color:#fff;flex-shrink:0;">
-          <%= (currentAdmin.name||'S').charAt(0).toUpperCase() %>
-        </div>
-        <div>
-          <div style="font-size:0.78rem;font-weight:700;color:#fff;"><%= currentAdmin.name || currentAdmin.username %></div>
-          <div style="font-family:'Space Mono',monospace;font-size:0.52rem;color:#9D4EDD;letter-spacing:1px;">SUPERADMIN</div>
-        </div>
-      </div>
-      <% } %>
-        <a href="/superadmin/logout" class="s-logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
-    </div>
+    <a href="/admin" class="s-logo"><img src="/img/mee-logo.png" alt="MEE" style="height:28px;width:auto;object-fit:contain;"/></a>
+    <div class="s-section">Main</div>
+    <a href="/admin"          class="s-link"><i class="bi bi-speedometer2"></i> Dashboard</a>
+    <a href="/admin/bookings" class="s-link"><i class="bi bi-ticket-perforated-fill"></i> Bookings</a>
+    <div class="s-section">Events</div>
+    <a href="/admin/events/new" class="s-link"><i class="bi bi-plus-circle-fill"></i> New Event</a>
+    <a href="/admin/reviews"    class="s-link"><i class="bi bi-star-fill"></i> Reviews</a>
+    <a href="/admin/banners"    class="s-link"><i class="bi bi-image-fill"></i> Banners</a>
+    <div class="s-section">Team</div>
+    <a href="/admin/staff" class="s-link active"><i class="bi bi-people-fill"></i> Staff</a>
+    <a href="/" class="s-link" target="_blank"><i class="bi bi-box-arrow-up-right"></i> View Site</a>
+    <a href="/admin/profile" class="s-link"><i class="bi bi-person-circle"></i> My Profile</a>
+    <% if(locals.isSuperAdmin){ %>
+    <a href="/superadmin" class="s-link" style="color:#9D4EDD;border-color:rgba(157,78,221,0.2);background:rgba(157,78,221,0.06);"><i class="bi bi-shield-lock-fill" style="color:#9D4EDD;"></i> SuperAdmin Panel</a>
+    <% } %>
+    <a href="/admin/logout" class="s-logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
   </aside>
-  <main class="main">
-    <h1 class="page-title">STAFF & ADMINS</h1>
-    <p class="page-sub">Create accounts for admins and staff. Enter credentials manually or let the system generate them.</p>
 
-    <!-- Add Staff Form -->
+  <main class="main">
+    <h1 class="page-title">STAFF MANAGEMENT</h1>
+    <p class="page-sub">Create and manage QR scanner staff accounts.</p>
+
     <div class="add-card">
       <div class="card-bar"></div>
       <div class="card-body">
-        <div class="card-head">ADD NEW MEMBER</div>
+        <div class="card-head">ADD NEW STAFF</div>
         <div class="f-grid">
           <div class="f-grp"><label class="f-lbl">First Name *</label><input class="f-inp" id="saFirstName" placeholder="e.g. Rahul"/></div>
           <div class="f-grp"><label class="f-lbl">Last Name</label><input class="f-inp" id="saLastName" placeholder="e.g. Kumar"/></div>
@@ -108,23 +94,15 @@
         <div class="f-grid cols3">
           <div class="f-grp"><label class="f-lbl">Email *</label><input class="f-inp" type="email" id="saEmail" placeholder="email@example.com"/></div>
           <div class="f-grp"><label class="f-lbl">Phone *</label><input class="f-inp" type="tel" id="saPhone" placeholder="10-digit mobile"/></div>
-          <div class="f-grp">
-            <label class="f-lbl">Role *</label>
-            <select class="f-sel" id="saRole" onchange="togglePerms()">
-              <option value="staff">Staff (QR Scanner)</option>
-              <option value="admin">Admin</option>
-            </select>
-          </div>
         </div>
-        <div id="permsWrap" style="margin-bottom:1rem;display:none;">
-          <div class="f-lbl" style="margin-bottom:0.5rem;">Admin Permissions</div>
+        <div style="margin-bottom:1rem;">
+          <div class="f-lbl" style="margin-bottom:0.5rem;">Permissions</div>
           <div class="perms-row">
             <label class="perm-check"><input type="checkbox" id="pCanScanQR" checked/> Scan QR</label>
             <label class="perm-check"><input type="checkbox" id="pCanViewBookings"/> View Bookings</label>
             <label class="perm-check"><input type="checkbox" id="pCanManageEvents"/> Manage Events</label>
           </div>
         </div>
-        <!-- Manual credentials toggle -->
         <div style="margin-bottom:1rem;">
           <label class="perm-check" style="font-size:0.85rem;">
             <input type="checkbox" id="manualCreds" onchange="toggleManualCreds()"/> Set username &amp; password manually
@@ -134,35 +112,33 @@
           <div class="f-grid">
             <div class="f-grp">
               <label class="f-lbl">Username *</label>
-              <input class="f-inp" id="saManualUsername" placeholder="e.g. admin-raju or staff-gate1"/>
+              <input class="f-inp" id="saManualUsername" placeholder="e.g. staff-gate1"/>
             </div>
             <div class="f-grp">
               <label class="f-lbl">Password *</label>
               <input class="f-inp" type="password" id="saManualPassword" placeholder="Min 4 characters"/>
             </div>
           </div>
-          <div style="font-size:0.72rem;color:#555;margin-top:0.3rem;">Username will be lowercased. Leave blank to auto-generate.</div>
+          <div style="font-size:0.72rem;color:#555;margin-top:0.3rem;">Leave blank to auto-generate (username-last3phone format).</div>
         </div>
-        <button class="submit-btn" onclick="addStaff()"><i class="bi bi-person-plus-fill"></i> Create Account</button>
+        <button class="submit-btn" onclick="addStaff()"><i class="bi bi-person-plus-fill"></i> Create Staff Account</button>
         <div class="result-box" id="resultBox">
           <div style="font-family:'Space Mono',monospace;font-size:0.65rem;letter-spacing:2px;color:var(--success);margin-bottom:0.7rem;">✓ ACCOUNT CREATED — SAVE THESE CREDENTIALS</div>
           <div class="cred-row"><span class="cred-key">Username</span><span class="cred-val" id="rUser">—</span></div>
           <div class="cred-row"><span class="cred-key">Password</span><span class="cred-val" id="rPass">—</span></div>
-          <div style="font-size:0.72rem;color:#555;margin-top:0.5rem;">Password format: username-last3digitsofphone</div>
         </div>
         <div id="errBox" style="display:none;color:var(--error);font-size:0.82rem;margin-top:0.7rem;"></div>
       </div>
     </div>
 
-    <!-- Staff List -->
-    <h2 style="font-family:'Anton',sans-serif;font-size:1.2rem;letter-spacing:2px;margin-bottom:1rem;">ALL MEMBERS (<%= staff.length %>)</h2>
+    <h2 style="font-family:'Anton',sans-serif;font-size:1.2rem;letter-spacing:2px;margin-bottom:1rem;">ALL STAFF (<%= staff.length %>)</h2>
     <% if(staff.length === 0){ %>
     <div class="empty"><i class="bi bi-people" style="font-size:2.5rem;display:block;margin-bottom:0.8rem;"></i>No staff yet.</div>
     <% } else { %>
     <div style="overflow-x:auto;">
     <table class="staff-table">
       <thead><tr>
-        <th>Name</th><th>Username</th><th>Email</th><th>Phone</th><th>Role</th><th>Permissions</th><th>Status</th><th>Actions</th>
+        <th>Name</th><th>Username</th><th>Email</th><th>Phone</th><th>Permissions</th><th>Status</th><th>Actions</th>
       </tr></thead>
       <tbody>
       <% staff.forEach(function(m){ %>
@@ -171,11 +147,8 @@
         <td style="font-family:'Space Mono',monospace;font-size:0.75rem;color:var(--accent);"><%= m.username %></td>
         <td style="font-size:0.8rem;color:var(--muted);"><%= m.email %></td>
         <td style="font-size:0.8rem;color:var(--muted);"><%= m.phone||'—' %></td>
-        <td><span class="role-badge <%= m.role==='admin'?'role-admin':'role-staff' %>"><%= m.role.toUpperCase() %></span></td>
         <td style="font-size:0.72rem;color:var(--muted);">
-          <% if(m.role==='admin'){ %>
           <%= [m.canScanQR&&'QR',m.canViewBookings&&'Bookings',m.canManageEvents&&'Events'].filter(Boolean).join(' · ')||'None' %>
-          <% } else { %>QR Scanner<% } %>
         </td>
         <td><span class="<%= m.isActive?'badge-active':'badge-blocked' %>" id="sbadge-<%= m._id %>"><%= m.isActive?'ACTIVE':'BLOCKED' %></span></td>
         <td>
@@ -184,7 +157,7 @@
               <i class="bi bi-<%= m.isActive?'lock-fill':'unlock-fill' %>"></i>
               <span id="stxt-<%= m._id %>"><%= m.isActive?'Block':'Unblock' %></span>
             </button>
-            <form method="POST" action="/superadmin/staff/<%= m._id %>/delete" onsubmit="return confirm('Delete <%= m.firstName %>?')" style="display:inline;">
+            <form method="POST" action="/admin/staff/<%= m._id %>/delete" onsubmit="return confirm('Delete <%= m.firstName %>?')" style="display:inline;">
               <button type="submit" class="btn-sm btn-del"><i class="bi bi-trash3-fill"></i></button>
             </form>
           </div>
@@ -198,11 +171,6 @@
   </main>
 </div>
 <script>
-function togglePerms(){
-  const role=document.getElementById('saRole').value;
-  document.getElementById('permsWrap').style.display=role==='admin'?'block':'none';
-}
-
 function toggleManualCreds(){
   const on=document.getElementById('manualCreds').checked;
   document.getElementById('manualCredsWrap').style.display=on?'block':'none';
@@ -214,7 +182,6 @@ async function addStaff(){
   const lastName=document.getElementById('saLastName').value.trim();
   const email=document.getElementById('saEmail').value.trim();
   const phone=document.getElementById('saPhone').value.trim();
-  const role=document.getElementById('saRole').value;
   const manualUsername=document.getElementById('saManualUsername').value.trim();
   const manualPassword=document.getElementById('saManualPassword').value.trim();
   const errBox=document.getElementById('errBox');
@@ -222,8 +189,8 @@ async function addStaff(){
   if(!firstName||!email||!phone){errBox.textContent='First name, email and phone are required.';errBox.style.display='block';return;}
   if(document.getElementById('manualCreds').checked&&!manualUsername){errBox.textContent='Enter a username or uncheck manual credentials.';errBox.style.display='block';return;}
   try{
-    const res=await fetch('/superadmin/staff',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({firstName,lastName,email,phone,role,manualUsername,manualPassword,
+    const res=await fetch('/admin/staff',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({firstName,lastName,email,phone,manualUsername,manualPassword,
         canScanQR:document.getElementById('pCanScanQR').checked?'on':'',
         canViewBookings:document.getElementById('pCanViewBookings').checked?'on':'',
         canManageEvents:document.getElementById('pCanManageEvents').checked?'on':''})});
@@ -238,7 +205,7 @@ async function addStaff(){
 }
 
 async function toggleStaff(id){
-  const res=await fetch(`/superadmin/staff/${id}/toggle`,{method:'POST',credentials:'include'});
+  const res=await fetch(`/admin/staff/${id}/toggle`,{method:'POST',credentials:'include'});
   const d=await res.json();
   if(d.success){
     const badge=document.getElementById('sbadge-'+id);

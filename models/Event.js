@@ -17,6 +17,9 @@ const ticketTypeSchema = new mongoose.Schema({
   ticketType:  { type: String, enum: ['single', 'multiple'], default: 'single' },
   isCombo:     { type: Boolean, default: false },
   comboCount:  { type: Number, default: 1 },
+  // Combo offer: buy comboOfferMinQty or more tickets → get comboOfferDiscount rupees off
+  comboOfferMinQty:    { type: Number, default: 0 },   // 0 = no combo offer
+  comboOfferDiscount:  { type: Number, default: 0 },   // flat rupee discount
   totalSeats:  { type: Number, required: true },
   bookedSeats: { type: Number, default: 0 },
   terms:       { type: String, default: '' },

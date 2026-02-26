@@ -23,6 +23,7 @@
     .s-logout:hover{background:rgba(255,92,92,0.08);border-color:rgba(255,92,92,0.2);}
     /* Main */
     .main{padding:2rem;position:relative;z-index:1;overflow-x:hidden;}
+    .table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;}
     .page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem;flex-wrap:wrap;gap:1rem;}
     .page-title{font-family:'Anton',sans-serif;font-size:2rem;letter-spacing:2px;color:#fff;}
     .btn-primary{display:inline-flex;align-items:center;gap:0.5rem;background:var(--accent);color:#fff;padding:0.7rem 1.4rem;border-radius:6px;text-decoration:none;font-weight:700;font-size:0.85rem;letter-spacing:1px;transition:all 0.2s;border:none;cursor:pointer;}
@@ -69,6 +70,7 @@
     <a href="/admin/reviews"      class="s-link"><i class="bi bi-star-fill"></i> Reviews</a>
     <a href="/admin/banners"       class="s-link"><i class="bi bi-image-fill"></i> Banners</a>
     <a href="/" class="s-link" target="_blank"><i class="bi bi-box-arrow-up-right"></i> View Site</a>
+    <a href="/admin/staff" class="s-link"><i class="bi bi-people-fill"></i> Staff</a>
         <a href="/admin/profile" class="s-link"><i class="bi bi-person-circle"></i> My Profile</a>
     <% if(locals.isSuperAdmin){ %>
     <a href="/superadmin" class="s-link" style="color:#9D4EDD;border-color:rgba(157,78,221,0.2);background:rgba(157,78,221,0.06);"><i class="bi bi-shield-lock-fill" style="color:#9D4EDD;"></i> SuperAdmin Panel</a>
@@ -128,8 +130,11 @@
             <td>
               <% const tierColors = {standard:'#a0a0a0',silver:'#c0c8d8',gold:'#f5c842',platinum:'#6A0DAD',vip:'#bf80ff',general:'#a0a0a0'}; %>
               <% ev.ticketTypes.forEach(function(t) { %>
-                <span class="tier-pill" style="background:rgba(106,13,173,0.07);border:1px solid rgba(106,13,173,0.15);color:<%= tierColors[t.category]||'#6A0DAD' %>;">
-                  <%= t.name %> ₹<%= t.price %>
+                <span class="tier-pill" id="tp-<%= ev._id %>-<%= t.category %>"
+                  style="background:rgba(106,13,173,0.07);border:1px solid <%= t.isActive===false?'rgba(255,68,68,0.3)':'rgba(106,13,173,0.15)' %>;color:<%= t.isActive===false?'#FF4444':tierColors[t.category]||'#6A0DAD' %>;cursor:pointer;user-select:none;"
+                  title="<%= t.isActive===false?'Selling Stopped — click to resume':'Click to stop selling' %>"
+                  onclick="toggleTicketCat('<%= ev._id %>','<%= t.category %>',this)">
+                  <%= t.isActive===false?'⛔ ':'✓ ' %><%= t.name %> ₹<%= t.price %>
                 </span>
               <% }); %>
             </td>
@@ -162,6 +167,7 @@
           <% }); %>
         </tbody>
       </table>
+      </div>
       <% } %>
     </div>
   </main>
@@ -269,6 +275,33 @@ function closeModal(){
   document.body.style.overflow='';
 }
 document.getElementById('evModal').addEventListener('click',e=>{if(e.target===document.getElementById('evModal'))closeModal();});
+
+// Toggle individual ticket category selling on/off
+async function toggleTicketCat(eventId, category, el) {
+  el.style.opacity='0.5';
+  try {
+    const r = await fetch(`/admin/events/${eventId}/ticket-toggle`, {
+      method:'POST', credentials:'include',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ category })
+    });
+    const d = await r.json();
+    if (d.success) {
+      if (d.isActive) {
+        el.style.border='1px solid rgba(106,13,173,0.15)';
+        el.style.color='#6A0DAD';
+        el.innerHTML = el.innerHTML.replace('⛔ ','✓ ');
+        el.title = 'Click to stop selling';
+      } else {
+        el.style.border='1px solid rgba(255,68,68,0.3)';
+        el.style.color='#FF4444';
+        el.innerHTML = el.innerHTML.replace('✓ ','⛔ ');
+        el.title = 'Selling Stopped — click to resume';
+      }
+    }
+  } catch(e) {}
+  el.style.opacity='1';
+}
 </script>
 
 </body>

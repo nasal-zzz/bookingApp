@@ -25,7 +25,9 @@ function parseEventBody(b) {
     terms:       t.terms                  || '',
     isActive:    t.isActive === true || t.isActive === 'true',
     isCombo:     t.isCombo  === true || t.isCombo  === 'true',
-    comboCount:  parseInt(t.comboCount)   || 1,
+    comboCount:          parseInt(t.comboCount)          || 1,
+    comboOfferMinQty:    parseInt(t.comboOfferMinQty)    || 0,
+    comboOfferDiscount:  parseInt(t.comboOfferDiscount)  || 0,
   }));
 
   let artists = [];
@@ -136,7 +138,7 @@ exports.toggleEvent = async (req, res) => {
 
 exports.getBookings = async (req, res) => {
   try {
-    const bookings = await Booking.find({ paymentStatus: 'paid' })
+    const bookings = await Booking.find()
       .populate('user', 'firstName lastName phone email')
       .populate('event', 'name date')
       .sort({ createdAt: -1 })

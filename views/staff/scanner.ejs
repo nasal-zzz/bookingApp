@@ -251,37 +251,52 @@
       lastScanned = raw;
       lastScannedTime = now;
 
-      // Extract ticketId from QR payload
-      let ticketId = raw;
-      try {
-        const parsed = JSON.parse(raw);
-        ticketId = parsed.tid || parsed.ticketId || parsed.id || raw;
-      } catch(e) { /* raw string ticketId */ }
+      // ── Parse QR payload ──
+      let ticketId  = null;
+      let bookingRef = null;
+      let isGroup   = false;
+      let parsedQR  = null;
 
-      processTicket(ticketId, 'camera');
+      try {
+        parsedQR = JSON.parse(raw);
+        // Single ticket: field is 't'
+        ticketId   = parsedQR.t || parsedQR.tid || parsedQR.ticketId || null;
+        // Booking ref: field is 'b'
+        bookingRef = parsedQR.b || parsedQR.bookingRef || null;
+        // Group QR flag
+        isGroup    = !!parsedQR.grp;
+      } catch(e) {
+        // Raw string — treat as ticketId directly
+        ticketId = raw;
+      }
+
+      processTicket({ ticketId, bookingRef, isGroup, raw }, 'camera');
     }
 
     // ── Manual scan ──
     function manualScan() {
-      const val = document.getElementById('manualInp').value.trim();
+      const val = document.getElementById('manualInp').value.trim().toUpperCase();
       if (!val) return;
-      processTicket(val, 'manual');
+      // Manual entry is always a raw ticketId string
+      processTicket({ ticketId: val, bookingRef: null, isGroup: false, raw: val }, 'manual');
       document.getElementById('manualInp').value = '';
     }
 
     // ── Core: send to server for verification ──
-    async function processTicket(ticketId, source) {
+    async function processTicket({ ticketId, bookingRef, isGroup, raw }, source) {
       frame.classList.remove('ok','fail');
+      // Display label — show ticketId or bookingRef or raw
+      const displayId = ticketId || bookingRef || raw || '?';
 
       try {
         const res = await fetch('/staff/api/scan', {
           method: 'POST', credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ticketId })
+          body: JSON.stringify({ ticketId, bookingRef, isGroup })
         });
         const data = await res.json();
-        showResult(data, ticketId);
-        addToLog(data, ticketId);
+        showResult(data, displayId);
+        addToLog(data, displayId);
 
         if (data.status === 'valid') {
           frame.classList.add('ok');
@@ -295,24 +310,27 @@
         setTimeout(() => frame.classList.remove('ok','fail'), 3000);
 
       } catch(e) {
-        showResult({ success: false, status: 'error', message: 'Network error. Check connection.' }, ticketId);
+        showResult({ success: false, status: 'error', message: 'Network error. Check connection.' }, displayId);
       }
     }
 
     // ── Show result card ──
-    function showResult(data, ticketId) {
+    function showResult(data, displayId) {
       const card = document.getElementById('resultCard');
       card.style.display = 'block';
 
       if (data.status === 'valid') {
+        const isGroup = data.ticket?.groupSize > 1;
         card.innerHTML = `
           <div class="status-card sc-valid">
-            <div class="sc-header"><span class="sc-icon">✅</span><span class="sc-title ok">ENTRY GRANTED</span></div>
+            <div class="sc-header"><span class="sc-icon">${isGroup ? '✅👥' : '✅'}</span><span class="sc-title ok">${isGroup ? 'GROUP ENTRY GRANTED' : 'ENTRY GRANTED'}</span></div>
             <div class="sc-body">
-              <div class="sc-row"><span class="sc-key">ATTENDEE</span><span class="sc-val">${data.ticket?.attendee || '—'}</span></div>
-              <div class="sc-row"><span class="sc-key">TICKET ID</span><span class="sc-val" style="font-family:'Space Mono',monospace;font-size:0.7rem;">${data.ticket?.ticketId || ticketId}</span></div>
+              <div class="sc-row"><span class="sc-key">ATTENDEE${isGroup ? 'S' : ''}</span><span class="sc-val" style="font-size:${isGroup?'0.7rem':'0.82rem'}">${data.ticket?.attendee || '—'}</span></div>
+              <div class="sc-row"><span class="sc-key">TICKET REF</span><span class="sc-val" style="font-family:'Space Mono',monospace;font-size:0.7rem;">${data.ticket?.ticketId || displayId}</span></div>
               <div class="sc-row"><span class="sc-key">TICKET TYPE</span><span class="sc-val">${(data.ticket?.type||'—').toUpperCase()}</span></div>
+              ${isGroup ? `<div class="sc-row"><span class="sc-key">GROUP SIZE</span><span class="sc-val" style="color:var(--success)">${data.ticket.groupSize} people</span></div>` : ''}
               ${data.ticket?.seatNumber ? `<div class="sc-row"><span class="sc-key">SEAT</span><span class="sc-val">${data.ticket.seatNumber.toUpperCase()}</span></div>` : ''}
+              ${data.ticket?.seatNumbers?.length ? `<div class="sc-row"><span class="sc-key">SEATS</span><span class="sc-val">${data.ticket.seatNumbers.join(', ').toUpperCase()}</span></div>` : ''}
               <div class="sc-row"><span class="sc-key">EVENT</span><span class="sc-val">${data.event?.name || '—'}</span></div>
               <div class="sc-row"><span class="sc-key">SCANNED BY</span><span class="sc-val">${data.scannedBy || '—'}</span></div>
             </div>
@@ -323,7 +341,7 @@
             <div class="sc-header"><span class="sc-icon">⚠️</span><span class="sc-title warn">ALREADY USED</span></div>
             <div class="sc-body">
               <div class="sc-row"><span class="sc-key">ATTENDEE</span><span class="sc-val">${data.ticket?.attendee || '—'}</span></div>
-              <div class="sc-row"><span class="sc-key">TICKET ID</span><span class="sc-val" style="font-family:'Space Mono',monospace;font-size:0.7rem;">${data.ticket?.ticketId || ticketId}</span></div>
+              <div class="sc-row"><span class="sc-key">TICKET REF</span><span class="sc-val" style="font-family:'Space Mono',monospace;font-size:0.7rem;">${data.ticket?.ticketId || displayId}</span></div>
               <div class="sc-row"><span class="sc-key">STATUS</span><span class="sc-val" style="color:var(--warn)">ENTRY DENIED</span></div>
             </div>
           </div>`;
@@ -333,7 +351,7 @@
             <div class="sc-header"><span class="sc-icon">❌</span><span class="sc-title err">INVALID TICKET</span></div>
             <div class="sc-body">
               <div class="sc-row"><span class="sc-key">REASON</span><span class="sc-val" style="color:var(--error)">${data.message || 'Unknown error'}</span></div>
-              <div class="sc-row"><span class="sc-key">SCANNED ID</span><span class="sc-val" style="font-family:'Space Mono',monospace;font-size:0.68rem;">${ticketId}</span></div>
+              <div class="sc-row"><span class="sc-key">SCANNED ID</span><span class="sc-val" style="font-family:'Space Mono',monospace;font-size:0.68rem;">${displayId}</span></div>
             </div>
           </div>`;
       }

@@ -114,16 +114,30 @@ router.get('/staff', async (req, res) => {
 
 router.post('/staff', async (req, res) => {
   try {
-    const { firstName, lastName, email, phone, role, canScanQR, canViewBookings, canManageEvents } = req.body;
-    // Auto-generate username: "staff-firstname" or "admin-firstname"
-    const prefix    = role === 'admin' ? 'admin' : 'staff';
-    const baseUser  = `${prefix}-${firstName.toLowerCase().replace(/[^a-z0-9]/g, '')}`;
-    // If username exists, append random suffix
-    const existing  = await Staff.findOne({ username: baseUser });
-    const username  = existing ? `${baseUser}${Math.floor(Math.random() * 900) + 100}` : baseUser;
-    // Password: username-last3digitsofphone
-    const last3     = (phone || '000').slice(-3);
-    const password  = `${username}-${last3}`;
+    const { firstName, lastName, email, phone, role, canScanQR, canViewBookings, canManageEvents,
+            manualUsername, manualPassword } = req.body;
+
+    let username, password;
+
+    if (manualUsername && manualUsername.trim()) {
+      // Manual credentials provided
+      username = manualUsername.trim().toLowerCase().replace(/\s+/g, '-');
+      if (!manualPassword || manualPassword.trim().length < 4)
+        return res.json({ success: false, message: 'Password must be at least 4 characters.' });
+      password = manualPassword.trim();
+      // Check username is unique
+      const taken = await Staff.findOne({ username });
+      if (taken) return res.json({ success: false, message: `Username "${username}" is already taken.` });
+    } else {
+      // Auto-generate username and password
+      const prefix   = role === 'admin' ? 'admin' : 'staff';
+      const baseUser = `${prefix}-${firstName.toLowerCase().replace(/[^a-z0-9]/g, '')}`;
+      const existing = await Staff.findOne({ username: baseUser });
+      username = existing ? `${baseUser}${Math.floor(Math.random() * 900) + 100}` : baseUser;
+      const last3 = (phone || '000').slice(-3);
+      password = `${username}-${last3}`;
+    }
+
     const member = await Staff.create({
       firstName, lastName: lastName || '', email, phone: phone || '',
       username, password, role: role || 'staff',
@@ -132,7 +146,7 @@ router.post('/staff', async (req, res) => {
     });
     res.json({ success: true, username: member.username, password: member.password, id: member._id });
   } catch (err) {
-    res.json({ success: false, message: err.code === 11000 ? 'Email already exists.' : err.message });
+    res.json({ success: false, message: err.code === 11000 ? 'Email or username already exists.' : err.message });
   }
 });
 
@@ -237,6 +251,48 @@ router.post('/api/validate-coupon', async (req, res) => {
       : coupon.value;
     res.json({ success: true, discount: Math.min(discount, orderAmount), code: coupon.code, description: coupon.description });
   } catch (err) { res.json({ success: false, message: 'Server error.' }); }
+});
+
+// ── ONE-TIME REPAIR: Fix existing bookings with "PENDING" in qrData ──
+router.post('/api/repair-qr', async (req, res) => {
+  try {
+    const { generateQRCode, buildQRPayload, buildGroupQRPayload } = require('../utils/qrHelper');
+    // Find all paid bookings where any ticket has "PENDING" in qrData
+    const bookings = await Booking.find({ paymentStatus: 'paid' });
+    let fixed = 0, skipped = 0;
+    for (const booking of bookings) {
+      let changed = false;
+      const isGroup = booking.tickets.length > 1 && booking.tickets[0]?.qrData?.includes('"grp":true');
+      if (isGroup) {
+        // Check if group QR has PENDING
+        const first = booking.tickets[0];
+        if (first.qrData && first.qrData.includes('"PENDING"')) {
+          const oldPayload = JSON.parse(first.qrData);
+          const newPayload = { ...oldPayload, b: booking.bookingRef };
+          const newQR = await generateQRCode(newPayload).catch(() => '');
+          const newData = JSON.stringify(newPayload);
+          booking.tickets.forEach(t => { t.qrData = newData; if(newQR) t.qrCode = newQR; });
+          changed = true;
+        }
+      } else {
+        for (const t of booking.tickets) {
+          if (t.qrData && t.qrData.includes('"PENDING"')) {
+            const oldPayload = JSON.parse(t.qrData);
+            const newPayload = { ...oldPayload, b: booking.bookingRef };
+            const newQR = await generateQRCode(newPayload).catch(() => '');
+            t.qrData = JSON.stringify(newPayload);
+            if (newQR) t.qrCode = newQR;
+            changed = true;
+          }
+        }
+      }
+      if (changed) { await booking.save(); fixed++; }
+      else skipped++;
+    }
+    res.json({ success: true, message: `Fixed ${fixed} bookings, ${skipped} already OK.`, fixed, skipped });
+  } catch(err) {
+    res.json({ success: false, message: err.message });
+  }
 });
 
 // ── Superadmin error handler ──

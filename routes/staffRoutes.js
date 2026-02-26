@@ -121,12 +121,52 @@ router.post('/api/scan', staffAuth, async (req, res) => {
       return res.json({ success: false, message: 'No scan permission.' });
     }
 
-    const { ticketId, bookingRef } = req.body;
+    const { ticketId, bookingRef, isGroup } = req.body;
     if (!ticketId && !bookingRef) return res.json({ success: false, message: 'No ticket data provided.' });
 
     const Booking = require('../models/Booking');
 
-    // Find the booking containing this ticket
+    // ── GROUP QR: find by bookingRef ──
+    if (isGroup || (!ticketId && bookingRef)) {
+      const booking = await Booking.findOne({ bookingRef, paymentStatus: 'paid' })
+        .populate('event', 'name date venue');
+
+      if (!booking) return res.json({ success: false, status: 'invalid', message: 'Booking not found or payment not confirmed.' });
+
+      // Check if ALL tickets already used
+      const usedCount = booking.tickets.filter(t => t.isUsed).length;
+      if (usedCount === booking.tickets.length) {
+        return res.json({
+          success: false, status: 'used',
+          message: `All ${booking.tickets.length} tickets already used!`,
+          ticket: { ticketId: bookingRef, attendee: booking.tickets.map(t => t.attendee.name).join(', '), usedAt: booking.tickets[0]?.usedAt },
+          event:  { name: booking.event?.name, date: booking.event?.date },
+        });
+      }
+
+      // Mark all unused tickets as used
+      const now = new Date();
+      booking.tickets.forEach(t => {
+        if (!t.isUsed) { t.isUsed = true; t.usedAt = now; t.usedBy = u.username; }
+      });
+      await booking.save();
+
+      return res.json({
+        success: true, status: 'valid',
+        message: `Group entry granted ✓ (${booking.tickets.length} people)`,
+        ticket: {
+          ticketId:   bookingRef,
+          attendee:   booking.tickets.map(t => t.attendee.name).join(', '),
+          type:       booking.ticketType,
+          groupSize:  booking.tickets.length,
+          seatNumbers: booking.tickets.map(t => t.seatNumber).filter(Boolean),
+        },
+        event: { name: booking.event?.name, date: booking.event?.date, venue: booking.event?.venue },
+        scannedBy: u.name,
+      });
+    }
+
+    // ── SINGLE TICKET QR: find by ticketId, fallback to bookingRef ──
     const query = ticketId
       ? { 'tickets.ticketId': ticketId, paymentStatus: 'paid' }
       : { bookingRef, paymentStatus: 'paid' };
@@ -146,7 +186,7 @@ router.post('/api/scan', staffAuth, async (req, res) => {
         success: false, status: 'used',
         message: 'Ticket already used!',
         ticket: { ticketId: ticket.ticketId, attendee: ticket.attendee.name, usedAt: ticket.usedAt },
-        event: { name: booking.event?.name, date: booking.event?.date },
+        event:  { name: booking.event?.name, date: booking.event?.date },
       });
     }
 
@@ -166,11 +206,7 @@ router.post('/api/scan', staffAuth, async (req, res) => {
         seatNumber: ticket.seatNumber || null,
         type:       booking.ticketType,
       },
-      event: {
-        name:  booking.event?.name,
-        date:  booking.event?.date,
-        venue: booking.event?.venue,
-      },
+      event: { name: booking.event?.name, date: booking.event?.date, venue: booking.event?.venue },
       scannedBy: u.name,
     });
   } catch (err) {

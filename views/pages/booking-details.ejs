@@ -224,7 +224,12 @@
           <div class="sum-row"><span class="lbl">Price each</span><span class="val" id="sumPrice" style="color:var(--accent);font-family:var(--font-mono);">—</span></div>
           <div class="sum-row"><span class="lbl">Quantity</span><span class="val" id="sumQty">× 1</span></div>
           <div class="sum-row"><span class="lbl">Subtotal</span><span class="val" id="sumSub">—</span></div>
-          <div class="disc-row" id="discRow"><span class="lbl" style="color:#00FF88;">Discount</span><span class="val" id="discVal" style="color:#00FF88;">—</span></div>
+          <div class="disc-row" id="discRow"><span class="lbl" style="color:#f5c842;">Discount</span><span class="val" id="discVal" style="color:#f5c842;">—</span></div>
+          <!-- Combo offer nudge -->
+          <div id="comboOfferNudge" style="display:none;align-items:center;gap:0.5rem;background:rgba(245,200,66,0.07);border:1px solid rgba(245,200,66,0.25);border-radius:7px;padding:0.5rem 0.75rem;margin:0.4rem 0;">
+            <i class="bi bi-tag-fill" style="color:#f5c842;font-size:0.85rem;flex-shrink:0;"></i>
+            <span class="cn-text" style="font-size:0.78rem;color:#f5c842;font-weight:600;"></span>
+          </div>
           <div class="sum-row"><span class="lbl">Convenience fee</span><span class="val" id="sumFee">₹<%= event.convenienceFee||0 %></span></div>
           <div class="sum-total-row">
             <div class="sum-total-lbl">TOTAL</div>
@@ -378,7 +383,7 @@
         <div>
           <label class="form-label">Age *</label>
           <input type="number" class="form-inp" id="a-${n}" placeholder="25" min="0" max="99" inputmode="numeric"/>
-          <div class="field-err" id="ae-${n}"><i class="bi bi-exclamation-circle"></i> Age is required</div>
+          <div class="field-err" id="ae-${n}"><i class="bi bi-exclamation-circle"></i>1</div>
         </div>
         ${isFirst?`
         <div>
@@ -399,7 +404,17 @@
 
   // ─── SUMMARY ─────────────────────────────────────────────────────
   function updateSummary(){
-    const sub=qty*price, disc=couponApplied?discAmt:0, total=sub-disc+CONV_FEE;
+    const sub = qty * price;
+    // Auto-apply combo offer if qty meets minimum
+    let comboDisc = 0;
+    const comboMin = selTicketData?.comboOfferMinQty || 0;
+    const comboAmt = selTicketData?.comboOfferDiscount || 0;
+    if (comboMin > 0 && comboAmt > 0 && qty >= comboMin) comboDisc = comboAmt;
+
+    // Use whichever discount is bigger: combo offer or coupon
+    const disc = Math.max(couponApplied ? discAmt : 0, comboDisc);
+    const total = Math.max(sub - disc + CONV_FEE, 0);
+
     document.getElementById('sumType').textContent=selTypeName||'—';
     document.getElementById('sumPrice').textContent=price?'₹'+price.toLocaleString('en-IN'):'—';
     document.getElementById('sumQty').textContent='× '+qty;
@@ -407,8 +422,30 @@
     document.getElementById('sumTotal').textContent=price?'₹'+total.toLocaleString('en-IN'):'—';
     document.getElementById('qtyTotalAmt').textContent=price?'₹'+sub.toLocaleString('en-IN'):'—';
     document.getElementById('mobTotal').textContent=price?'₹'+total.toLocaleString('en-IN'):'—';
-    if(couponApplied){document.getElementById('discRow').classList.add('show');document.getElementById('discVal').textContent='-₹'+disc.toLocaleString('en-IN');}
-    else document.getElementById('discRow').classList.remove('show');
+
+    const discRow = document.getElementById('discRow');
+    const discVal = document.getElementById('discVal');
+    // Show combo offer nudge
+    const comboNudge = document.getElementById('comboOfferNudge');
+    if (comboMin > 0 && comboAmt > 0) {
+      if (qty >= comboMin) {
+        // Combo applied!
+        discRow.classList.add('show');
+        discVal.textContent = '-₹'+disc.toLocaleString('en-IN');
+        discVal.style.color = '#f5c842';
+        if(comboNudge) comboNudge.style.display='none';
+      } else {
+        // Show nudge: "Add X more for ₹Y off"
+        const need = comboMin - qty;
+        if(comboNudge){ comboNudge.style.display='flex'; comboNudge.querySelector('.cn-text').textContent=`Add ${need} more ticket${need>1?'s':''} → get ₹${comboAmt.toLocaleString('en-IN')} off!`; }
+        if(!couponApplied) discRow.classList.remove('show');
+        else { discRow.classList.add('show'); discVal.textContent='-₹'+(couponApplied?discAmt:0).toLocaleString('en-IN'); discVal.style.color='#00FF88'; }
+      }
+    } else {
+      if(comboNudge) comboNudge.style.display='none';
+      if(couponApplied){discRow.classList.add('show');discVal.textContent='-₹'+discAmt.toLocaleString('en-IN');discVal.style.color='#00FF88';}
+      else discRow.classList.remove('show');
+    }
     return total;
   }
 
@@ -475,7 +512,7 @@
       if(!data.success){alert(data.message);setLoading(false);return;}
       const rzp=new Razorpay({
         key:data.key,amount:data.amount,currency:data.currency,
-        name:'NightPass',description:selTypeName.toUpperCase()+' × '+qty,
+        name:'Melattur Entertainment Events',description:selTypeName.toUpperCase()+' × '+qty,
         order_id:data.orderId,prefill:data.prefill,
         theme:{color:'#6A0DAD',backdrop_color:'#0B0B0F'},
         modal:{ondismiss:async()=>{

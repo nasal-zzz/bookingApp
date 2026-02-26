@@ -94,7 +94,8 @@ exports.createOrder = async (req, res) => {
     if (!ttype) return res.json({ success: false, message: 'Invalid ticket type selected.' });
 
     const available = ttype.totalSeats - ttype.bookedSeats;
-    if (available <= 0) return res.json({ success: false, message: 'This ticket type is sold out.' });
+    if (available <= 0) return res.json({ success: false, message: `Sorry, ${ttype.name||ttype.category} tickets are sold out.` });
+    if (!ttype.isActive) return res.json({ success: false, message: `${ttype.name||ttype.category} tickets are currently not available.` });
     // For multiple-entry tickets qty=1 but attendees = comboCount
     const effectiveQty = ttype.ticketType === 'multiple' ? 1 : qty;
     if (effectiveQty > 10) return res.json({ success: false, message: 'Max 10 tickets per booking.' });
@@ -104,10 +105,25 @@ exports.createOrder = async (req, res) => {
     const subtotal = pricePerTicket * effectiveQty;
     const convFee  = event.convenienceFee || 20;
 
-    const COUPONS = { 'PARTY10': 100, 'NIGHT20': 200, 'FIRST50': 50 };
     let discount = 0;
-    if (couponCode && COUPONS[couponCode.toUpperCase()]) {
-      discount = COUPONS[couponCode.toUpperCase()];
+
+    // ── Combo offer: auto-apply if qty meets the minimum ──
+    if (ttype.comboOfferMinQty > 0 && ttype.comboOfferDiscount > 0 && effectiveQty >= ttype.comboOfferMinQty) {
+      discount = ttype.comboOfferDiscount;
+    }
+
+    // ── Coupon code discount (stacks on top or replaces, use whichever is bigger) ──
+    if (couponCode) {
+      try {
+        const Coupon = require('../models/Coupon');
+        const coupon = await Coupon.findOne({ code: couponCode.toUpperCase(), isActive: true });
+        if (coupon && new Date() <= new Date(coupon.expiresAt)) {
+          const couponDisc = coupon.type === 'percent'
+            ? Math.floor(subtotal * coupon.value / 100)
+            : coupon.value;
+          if (couponDisc > discount) discount = couponDisc; // use whichever is bigger
+        }
+      } catch(e) { /* ignore coupon errors */ }
     }
 
     const totalAmount = Math.max(subtotal - discount + convFee, 0);
@@ -119,7 +135,7 @@ exports.createOrder = async (req, res) => {
     const order = await razorpay.orders.create({
       amount:   totalAmount * 100,
       currency: 'INR',
-      receipt:  'NP_' + Date.now(),
+      receipt:  'MEE_' + Date.now(),
     });
 
     req.session.pendingBooking = {
@@ -335,7 +351,7 @@ exports.retryPayment = async (req, res) => {
 
     // Create a new Razorpay order
     const razorpay = new Razorpay({ key_id: process.env.RAZORPAY_KEY_ID, key_secret: process.env.RAZORPAY_KEY_SECRET });
-    const order = await razorpay.orders.create({ amount: booking.totalAmount * 100, currency: 'INR', receipt: 'NP_RETRY_' + Date.now() });
+    const order = await razorpay.orders.create({ amount: booking.totalAmount * 100, currency: 'INR', receipt: 'MEE_RETRY_' + Date.now() });
     req.session.pendingBooking.orderId = order.id;
     await new Promise((resolve,reject)=>{ req.session.save(err=>err?reject(err):resolve()); });
 
@@ -412,58 +428,27 @@ exports.verifyPayment = async (req, res) => {
       }
     }
 
-    // Generate tickets + QR codes (new booking)
-    // Multiple-entry: 1 GROUP QR shared by all attendees (scanned once at gate)
-    // Single-entry: 1 QR per ticket as before
+    // ── STEP 1: Build ticket stubs (QR generated after save, once bookingRef is known) ──
     const tickets = [];
     const attendees = pending.attendees || [];
     const isMultiple = pending.comboCount > 1 || (attendees.length > 1 && pending.quantity === 1);
     const ticketCount = attendees.length > 0 ? attendees.length : pending.quantity;
-
-    // Helper: generate seat number like "gold_s1", "family_s2"
     const makeSeatNum = (category, idx) => `${(category||'ticket').toLowerCase().replace(/[^a-z0-9]/g,'_')}_s${idx + 1}`;
 
     if (isMultiple && attendees.length > 1) {
-      // Assign a seat number to each person in the group
       const seatNumbers = attendees.map((_, i) => makeSeatNum(pending.ticketType, i));
-
-      // Build ONE group QR that encodes all attendees + seat numbers
-      const groupQRPayload = buildGroupQRPayload({
-        bookingRef:  'PENDING',
-        eventId:     pending.eventId,
-        paymentId:   razorpay_payment_id,
-        ticketType:  pending.ticketType,
-        attendees:   attendees,
-        groupSize:   attendees.length,
-        seatNumbers: seatNumbers,
-      });
-      let groupQRCode = '';
-      try { groupQRCode = await generateQRCode(groupQRPayload); } catch(e) {}
-      const groupQRData = JSON.stringify(groupQRPayload);
-      // Each attendee record gets the SAME group QR + their own seat number
       for (let i = 0; i < attendees.length; i++) {
         const att = attendees[i] || { name: req.user.firstName, age: 25 };
-        tickets.push({
-          ticketId:   generateTicketId(i),
-          attendee:   { name: att.name || req.user.firstName, age: parseInt(att.age) || 25, special: att.special || '' },
-          qrData:     groupQRData,
-          qrCode:     groupQRCode,   // shared group QR
-          seatNumber: seatNumbers[i],
-        });
+        tickets.push({ ticketId: generateTicketId(i), attendee: { name: att.name || req.user.firstName, age: parseInt(att.age)||25, special: att.special||'' }, qrData:'', qrCode:'', seatNumber: seatNumbers[i] });
       }
     } else {
-      // Single-entry: one QR per ticket, each with own seat number
       for (let i = 0; i < ticketCount; i++) {
-        const ticketId  = generateTicketId(i);
-        const attendee  = attendees[i] || attendees[0] || { name: req.user.firstName, age: 25 };
-        const seatNumber = makeSeatNum(pending.ticketType, i);
-        const qrPayload = buildQRPayload({ ticketId, bookingRef: 'PENDING', eventId: pending.eventId, paymentId: razorpay_payment_id, attendeeName: attendee.name || req.user.firstName, ticketType: pending.ticketType, seatNumber });
-        let qrCode = '';
-        try { qrCode = await generateQRCode(qrPayload); } catch(e) {}
-        tickets.push({ ticketId, seatNumber, attendee: { name: attendee.name || req.user.firstName, age: parseInt(attendee.age) || 25, special: attendee.special || '' }, qrData: JSON.stringify(qrPayload), qrCode });
+        const att = attendees[i] || attendees[0] || { name: req.user.firstName, age: 25 };
+        tickets.push({ ticketId: generateTicketId(i), seatNumber: makeSeatNum(pending.ticketType, i), attendee: { name: att.name||req.user.firstName, age: parseInt(att.age)||25, special: att.special||'' }, qrData:'', qrCode:'' });
       }
     }
 
+    // ── STEP 2: Save booking — now bookingRef is auto-generated by Mongoose ──
     const booking = await Booking.create({
       user:           req.user._id,
       event:          pending.eventId,
@@ -483,6 +468,39 @@ exports.verifyPayment = async (req, res) => {
       contactPhone:   req.user.phone || '',
       contactEmail:   req.user.email || '',
     });
+
+    // ── STEP 3: Regenerate QR codes with real bookingRef, then update DB ──
+    try {
+      const realRef = booking.bookingRef;
+      if (isMultiple && attendees.length > 1) {
+        // One shared group QR for all attendees
+        const seatNums = booking.tickets.map(t => t.seatNumber);
+        const groupPayload = buildGroupQRPayload({
+          bookingRef: realRef,
+          eventId:    pending.eventId,
+          paymentId:  razorpay_payment_id,
+          ticketType: pending.ticketType,
+          attendees:  attendees,
+          groupSize:  attendees.length,
+          seatNumbers: seatNums,
+        });
+        const groupQRCode = await generateQRCode(groupPayload).catch(() => '');
+        const groupQRData = JSON.stringify(groupPayload);
+        booking.tickets.forEach(t => { t.qrCode = groupQRCode; t.qrData = groupQRData; });
+      } else {
+        // One QR per ticket
+        for (let i = 0; i < booking.tickets.length; i++) {
+          const t = booking.tickets[i];
+          const payload = buildQRPayload({ ticketId: t.ticketId, bookingRef: realRef, eventId: pending.eventId, paymentId: razorpay_payment_id, attendeeName: t.attendee.name, ticketType: pending.ticketType, seatNumber: t.seatNumber });
+          t.qrCode = await generateQRCode(payload).catch(() => '');
+          t.qrData = JSON.stringify(payload);
+        }
+      }
+      await booking.save();
+      console.log('✅ QR codes generated with bookingRef:', booking.bookingRef);
+    } catch(qrErr) {
+      console.error('⚠ QR regeneration failed (booking still valid):', qrErr.message);
+    }
 
     // Update Event seat count
     await Event.updateOne(
@@ -543,7 +561,7 @@ exports.getSuccessPage = async (req, res) => {
     }
 
     res.render('pages/ticket', {
-      title:   `Booking Confirmed — NightPass`,
+      title:   `Booking Confirmed — MEE`,
       booking,
       event:   booking.event,
       user:    req.user,
@@ -571,7 +589,7 @@ exports.getMyBookings = async (req, res) => {
       .sort({ createdAt: -1 });
 
     res.render('pages/my-bookings', {
-      title:    'My Tickets — NightPass',
+      title:    'My Tickets — MEE',
       bookings,
       user:     req.user,
     });
@@ -629,7 +647,7 @@ exports.retryPaymentApi = async (req, res) => {
     };
 
     const razorpay = new Razorpay({ key_id: process.env.RAZORPAY_KEY_ID, key_secret: process.env.RAZORPAY_KEY_SECRET });
-    const order = await razorpay.orders.create({ amount: booking.totalAmount * 100, currency: 'INR', receipt: 'NP_PAYNOW_' + Date.now() });
+    const order = await razorpay.orders.create({ amount: booking.totalAmount * 100, currency: 'INR', receipt: 'MEE_PAYNOW_' + Date.now() });
     req.session.pendingBooking.orderId = order.id;
     await new Promise((resolve, reject) => { req.session.save(err => err ? reject(err) : resolve()); });
 

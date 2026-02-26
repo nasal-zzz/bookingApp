@@ -8,13 +8,13 @@
 //   try {
 //     const events = await Event.find({ isActive: true }).sort({ isFeatured: -1, date: 1 });
 //     res.render('pages/index', {
-//       title: 'NightPass — Book Your Party Entry',
+//       title: 'MEE — Book Your Event Entry',
 //       events,
 //       event: events[0] || null,
 //       user: req.user || null,
 //     });
 //   } catch (err) {
-//     res.render('pages/index', { title: 'NightPass', events: [], event: null, user: null });
+//     res.render('pages/index', { title: 'Melattur Entertainment Events', events: [], event: null, user: null });
 //   }
 // });
 
@@ -24,7 +24,7 @@
 //     const event = await Event.findById(req.params.id);
 //     if (!event || !event.isActive) return res.redirect('/');
 //     res.render('pages/event-detail', {
-//       title: `${event.name} — NightPass`,
+//       title: `${event.name} — MEE`,
 //       event,
 //       user: req.user || null,
 //     });
@@ -35,7 +35,7 @@
 
 // // Payment page
 // router.get('/payment', optionalAuth, (req, res) => {
-//   res.render('pages/payment', { title: 'Payment — NightPass', user: req.user || null });
+//   res.render('pages/payment', { title: 'Payment — MEE', user: req.user || null });
 // });
 
 // module.exports = router;
@@ -54,13 +54,13 @@ router.get('/', noCache, optionalAuth, async (req, res) => {
     const pastEvents   = allEvents.filter(ev => new Date(ev.date) < new Date());
     const banners      = await Banner.find({ isVisible: true }).sort({ order: 1 }).lean();
     res.render('pages/index', {
-      title: 'NightPass — Book Your Party Entry',
+      title: 'MEE — Book Your Event Entry',
       events, pastEvents, banners,
       event: events[0] || null,
       user: req.user || null,
     });
   } catch (err) {
-    res.render('pages/index', { title: 'NightPass', events: [], pastEvents: [], banners: [], event: null, user: null });
+    res.render('pages/index', { title: 'Melattur Entertainment Events', events: [], pastEvents: [], banners: [], event: null, user: null });
   }
 });
 
@@ -70,23 +70,39 @@ router.get('/event/:id', optionalAuth, async (req, res) => {
     const event = await Event.findById(req.params.id);
     if (!event || !event.isActive) {
       return res.status(404).render('pages/error', {
-        title: '404 — NightPass',
+        title: '404 — MEE',
         message: 'Event not found or no longer available.',
         code: 404,
       });
     }
     // Also fetch all active events so the detail page can show the hero slider
     const events = await Event.find({ isActive: true }).sort({ isFeatured: -1, date: 1 });
+    // Find user's paid bookings for this event — to show what they've already booked
+    let userBookedCategories = [];
+    let userHasMultipleEntry = false;
+    if (req.user) {
+      const Booking = require('../models/Booking');
+      const userBookings = await Booking.find({
+        user: req.user._id, event: event._id, paymentStatus: 'paid'
+      }).select('ticketType');
+      userBookedCategories = userBookings.map(b => b.ticketType);
+      // Check if any of their bookings is a multiple-entry type
+      userHasMultipleEntry = event.ticketTypes
+        .filter(t => userBookedCategories.includes(t.category) && t.ticketType === 'multiple')
+        .length > 0;
+    }
     res.render('pages/event-detail', {
-      title: `${event.name} — NightPass`,
+      title: `${event.name} — MEE`,
       event,
       events,
       user: req.user || null,
+      userBookedCategories,
+      userHasMultipleEntry,
     });
   } catch (err) {
     console.error('Event detail error:', err);
     res.status(500).render('pages/error', {
-      title: 'Error — NightPass',
+      title: 'Error — MEE',
       message: 'Could not load event.',
       code: 500,
     });
@@ -95,13 +111,13 @@ router.get('/event/:id', optionalAuth, async (req, res) => {
 
 // Payment page (GET — just renders the page, actual payment via POST API)
 router.get('/payment', optionalAuth, (req, res) => {
-  res.render('pages/payment', { title: 'Payment — NightPass', user: req.user || null });
+  res.render('pages/payment', { title: 'Payment — MEE', user: req.user || null });
 });
 
 module.exports = router;
 // Help & Support page
 router.get('/support', optionalAuth, (req, res) => {
-  res.render('pages/support', { title: 'Help & Support — NightPass', user: req.user || null });
+  res.render('pages/support', { title: 'Help & Support — MEE', user: req.user || null });
 });
 
 // Support email send
@@ -124,14 +140,14 @@ router.post('/support/send', optionalAuth, async (req, res) => {
       return res.json({ success: true });
     }
     await transporter.sendMail({
-      from:    `"NightPass Support" <${process.env.SMTP_USER}>`,
+      from:    `"Melattur Entertainment Events Support" <${process.env.SMTP_USER}>`,
       to:      'meemelattur@gmail.com',
       replyTo: email,
-      subject: `[NightPass Support] ${subject}`,
+      subject: `[Melattur Entertainment Events Support] ${subject}`,
       html: `
         <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#08080e;color:#e8e8f0;border-radius:12px;overflow:hidden;">
           <div style="background:linear-gradient(135deg,#1a0030,#6A0DAD);padding:24px;text-align:center;">
-            <h2 style="color:#fff;margin:0;letter-spacing:3px;">NIGHTPASS — SUPPORT REQUEST</h2>
+            <h2 style="color:#fff;margin:0;letter-spacing:3px;">MEE — SUPPORT REQUEST</h2>
           </div>
           <div style="padding:28px;">
             <table style="width:100%;border-collapse:collapse;">

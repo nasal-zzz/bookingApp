@@ -6,101 +6,193 @@
   <link href="https://fonts.googleapis.com/css2?family=Anton&family=Outfit:wght@400;500;600;700&family=Space+Mono&display=swap" rel="stylesheet"/>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet"/>
   <style>
-    :root{--bg:#0B0B0F;--surface:#14141C;--card:#14141C;--border:rgba(255,255,255,0.08);--accent:#6A0DAD;--text:#FFFFFF;--muted:#B3B3B3;--success:#00FF88;--error:#FF4444;}
+    :root{--bg:#0B0B0F;--surface:#14141C;--border:rgba(255,255,255,0.08);--accent:#6A0DAD;--text:#fff;--muted:#B3B3B3;--success:#00FF88;--error:#FF4444;}
     *{box-sizing:border-box;margin:0;padding:0;}
     body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-height:100vh;}
     body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(255,255,255,0.012) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.012) 1px,transparent 1px);background-size:50px 50px;pointer-events:none;}
     .admin-layout{display:grid;grid-template-columns:220px 1fr;min-height:100vh;}
-    .sidebar{background:var(--surface);border-right:1px solid var(--border);padding:1.5rem 1rem;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:0.3rem;}
-    .s-logo{font-family:'Anton',sans-serif;font-size:1.3rem;letter-spacing:3px;color:#fff;text-decoration:none;display:block;padding:0 0.5rem 1.2rem;border-bottom:1px solid var(--border);margin-bottom:0.8rem;}
-    .s-logo span{color:var(--accent);}
+    .sidebar{background:var(--surface);border-right:1px solid var(--border);padding:1.5rem 1rem;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:0.3rem;z-index:10;overflow-y:auto;}
+    .s-logo{display:block;padding:0 0.5rem 1.2rem;border-bottom:1px solid var(--border);margin-bottom:0.8rem;}
+    .s-section{font-family:'Space Mono',monospace;font-size:0.52rem;letter-spacing:2px;color:var(--muted);padding:0.5rem;margin-top:0.5rem;}
     .s-link{display:flex;align-items:center;gap:0.7rem;padding:0.7rem 0.8rem;color:var(--muted);text-decoration:none;border-radius:6px;font-size:0.85rem;transition:all 0.15s;border:1px solid transparent;}
     .s-link:hover,.s-link.active{background:rgba(106,13,173,0.07);border-color:rgba(106,13,173,0.15);color:#fff;}
     .s-link i{color:var(--accent);width:18px;}
     .s-logout{margin-top:auto;display:flex;align-items:center;gap:0.7rem;padding:0.7rem 0.8rem;color:var(--error);text-decoration:none;border-radius:6px;font-size:0.85rem;border:1px solid transparent;}
     .s-logout:hover{background:rgba(255,92,92,0.08);}
-    .main{padding:2rem;position:relative;z-index:1;}
-    .page-title{font-family:'Anton',sans-serif;font-size:2rem;letter-spacing:2px;color:#fff;margin-bottom:2rem;}
-    .page-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;margin-bottom:2rem;}
-    .reminder-btn{display:inline-flex;align-items:center;gap:0.5rem;padding:0.6rem 1.2rem;background:rgba(245,200,66,0.1);border:1px solid rgba(245,200,66,0.35);border-radius:7px;color:#f5c842;font-size:0.82rem;font-weight:700;cursor:pointer;letter-spacing:0.5px;transition:all 0.15s;font-family:inherit;}
+    .main{padding:2rem;position:relative;z-index:1;overflow-x:hidden;}
+    .page-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;margin-bottom:1.5rem;}
+    .page-title{font-family:'Anton',sans-serif;font-size:2rem;letter-spacing:2px;}
+    /* Buttons */
+    .reminder-btn{display:inline-flex;align-items:center;gap:0.5rem;padding:0.6rem 1.2rem;background:rgba(245,200,66,0.1);border:1px solid rgba(245,200,66,0.35);border-radius:7px;color:#f5c842;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all 0.15s;}
     .reminder-btn:hover{background:rgba(245,200,66,0.2);}
-    .table-card{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
-    .table-header{padding:1.2rem 1.5rem;border-bottom:1px solid var(--border);}
-    .tbl-title{font-family:'Anton',sans-serif;font-size:1.2rem;letter-spacing:1px;color:#fff;}
-    table{width:100%;border-collapse:collapse;}
-    th{font-family:'Space Mono',monospace;font-size:0.56rem;letter-spacing:2px;color:var(--muted);text-transform:uppercase;padding:0.8rem 1rem;text-align:left;border-bottom:1px solid var(--border);}
-    td{padding:0.85rem 1rem;border-bottom:1px solid rgba(255,255,255,0.04);font-size:0.82rem;vertical-align:middle;}
-    tr:last-child td{border-bottom:none;}
-    tr:hover td{background:rgba(255,255,255,0.02);}
-    .ref{font-family:'Space Mono',monospace;font-size:0.7rem;color:var(--accent);}
-    .badge{font-family:'Space Mono',monospace;font-size:0.56rem;letter-spacing:1px;padding:0.2rem 0.6rem;border-radius:10px;}
-    .badge-paid{background:rgba(106,13,173,0.15);border:1px solid rgba(144,78,221,0.3);color:var(--success);}
+    /* Stats bar */
+    .stats-bar{display:flex;gap:0.7rem;flex-wrap:wrap;margin-bottom:1.5rem;}
+    .stat-pill{display:flex;align-items:center;gap:0.5rem;padding:0.45rem 0.9rem;border-radius:20px;font-size:0.78rem;font-weight:700;cursor:pointer;border:1px solid transparent;transition:all 0.15s;}
+    .sp-all{background:rgba(255,255,255,0.05);border-color:rgba(255,255,255,0.1);color:#fff;}
+    .sp-all.active,.sp-all:hover{background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.2);}
+    .sp-paid{background:rgba(0,255,136,0.06);border-color:rgba(0,255,136,0.2);color:#00FF88;}
+    .sp-paid.active,.sp-paid:hover{background:rgba(0,255,136,0.12);}
+    .sp-pending{background:rgba(245,200,66,0.06);border-color:rgba(245,200,66,0.25);color:#f5c842;}
+    .sp-pending.active,.sp-pending:hover{background:rgba(245,200,66,0.14);}
+    .sp-failed{background:rgba(255,68,68,0.06);border-color:rgba(255,68,68,0.25);color:#FF4444;}
+    .sp-failed.active,.sp-failed:hover{background:rgba(255,68,68,0.12);}
+    /* Table */
+    .table-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
     .search-row{display:flex;gap:0.8rem;padding:1rem 1.5rem;border-bottom:1px solid var(--border);}
-    .search-input{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:0.6rem 0.9rem;font-family:'Outfit',sans-serif;font-size:0.88rem;outline:none;}
+    .search-input{flex:1;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:0.6rem 0.9rem;font-family:'Outfit',sans-serif;font-size:0.88rem;outline:none;}
     .search-input:focus{border-color:var(--accent);}
+    table{width:100%;border-collapse:collapse;}
+    th{font-family:'Space Mono',monospace;font-size:0.54rem;letter-spacing:2px;color:var(--muted);text-transform:uppercase;padding:0.8rem 1rem;text-align:left;border-bottom:1px solid var(--border);}
+    td{padding:0.8rem 1rem;border-bottom:1px solid rgba(255,255,255,0.04);font-size:0.82rem;vertical-align:middle;}
+    tr:last-child td{border-bottom:none;}
+    tr:hover td{background:rgba(255,255,255,0.015);}
+    .ref{font-family:'Space Mono',monospace;font-size:0.68rem;color:var(--accent);}
+    /* Badges */
+    .badge{font-family:'Space Mono',monospace;font-size:0.54rem;letter-spacing:1px;padding:0.2rem 0.6rem;border-radius:10px;}
+    .b-paid{background:rgba(0,255,136,0.08);border:1px solid rgba(0,255,136,0.25);color:#00FF88;}
+    .b-pending{background:rgba(245,200,66,0.08);border:1px solid rgba(245,200,66,0.3);color:#f5c842;}
+    .b-failed{background:rgba(255,68,68,0.08);border:1px solid rgba(255,68,68,0.3);color:#FF4444;}
+    /* Send msg button */
+    .btn-msg{display:inline-flex;align-items:center;gap:0.3rem;padding:0.3rem 0.65rem;border-radius:5px;font-size:0.7rem;font-weight:700;cursor:pointer;border:1px solid rgba(157,78,221,0.35);background:rgba(157,78,221,0.08);color:#9D4EDD;font-family:inherit;transition:all 0.15s;}
+    .btn-msg:hover{background:rgba(157,78,221,0.18);}
+    .btn-msg:disabled{opacity:0.5;cursor:not-allowed;}
+    .empty-row{text-align:center;padding:2.5rem;color:#444;}
+    @media(max-width:900px){.admin-layout{grid-template-columns:1fr;}.sidebar{display:none;}}
+    @keyframes spin{to{transform:rotate(360deg)}}
   </style>
 </head>
 <body>
 <div class="admin-layout">
   <aside class="sidebar">
     <a href="/admin" class="s-logo"><img src="/img/mee-logo.png" alt="MEE" style="height:28px;width:auto;object-fit:contain;"/></a>
-    <a href="/admin" class="s-link"><i class="bi bi-speedometer2"></i> Dashboard</a>
+    <div class="s-section">Main</div>
+    <a href="/admin"          class="s-link"><i class="bi bi-speedometer2"></i> Dashboard</a>
     <a href="/admin/bookings" class="s-link active"><i class="bi bi-ticket-perforated-fill"></i> Bookings</a>
+    <div class="s-section">Events</div>
     <a href="/admin/events/new" class="s-link"><i class="bi bi-plus-circle-fill"></i> New Event</a>
-    <a href="/admin/reviews"      class="s-link"><i class="bi bi-star-fill"></i> Reviews</a>
-    <a href="/admin/banners"       class="s-link"><i class="bi bi-image-fill"></i> Banners</a>
+    <a href="/admin/reviews"    class="s-link"><i class="bi bi-star-fill"></i> Reviews</a>
+    <a href="/admin/banners"    class="s-link"><i class="bi bi-image-fill"></i> Banners</a>
     <a href="/" class="s-link" target="_blank"><i class="bi bi-box-arrow-up-right"></i> View Site</a>
-        <a href="/admin/profile" class="s-link"><i class="bi bi-person-circle"></i> My Profile</a>
+    <a href="/admin/staff" class="s-link"><i class="bi bi-people-fill"></i> Staff</a>
+    <a href="/admin/profile" class="s-link"><i class="bi bi-person-circle"></i> My Profile</a>
     <% if(locals.isSuperAdmin){ %>
     <a href="/superadmin" class="s-link" style="color:#9D4EDD;border-color:rgba(157,78,221,0.2);background:rgba(157,78,221,0.06);"><i class="bi bi-shield-lock-fill" style="color:#9D4EDD;"></i> SuperAdmin Panel</a>
     <% } %>
     <a href="/admin/logout" class="s-logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
   </aside>
+
   <main class="main">
     <div class="page-header">
       <div class="page-title">ALL BOOKINGS (<%= bookings.length %>)</div>
       <button class="reminder-btn" onclick="sendReminders()">
-        <i class="bi bi-send-fill"></i> Send Pending/Failed Reminders
+        <i class="bi bi-send-fill"></i> Send Bulk Reminders
       </button>
     </div>
+
+    <!-- Status filter pills -->
+    <div class="stats-bar">
+      <div class="stat-pill sp-all active" onclick="filterStatus('all',this)">
+        <i class="bi bi-list-ul"></i> All <span style="opacity:0.6;font-size:0.7rem;margin-left:2px;" id="cnt-all">(<%= bookings.length %>)</span>
+      </div>
+      <div class="stat-pill sp-paid" onclick="filterStatus('paid',this)">
+        <i class="bi bi-check-circle-fill"></i> Paid <span style="opacity:0.6;font-size:0.7rem;margin-left:2px;" id="cnt-paid">(<%= bookings.filter(b=>b.paymentStatus==='paid').length %>)</span>
+      </div>
+      <div class="stat-pill sp-pending" onclick="filterStatus('pending',this)">
+        <i class="bi bi-clock-fill"></i> Pending <span style="opacity:0.6;font-size:0.7rem;margin-left:2px;" id="cnt-pending">(<%= bookings.filter(b=>b.paymentStatus==='pending').length %>)</span>
+      </div>
+      <div class="stat-pill sp-failed" onclick="filterStatus('failed',this)">
+        <i class="bi bi-x-circle-fill"></i> Failed <span style="opacity:0.6;font-size:0.7rem;margin-left:2px;" id="cnt-failed">(<%= bookings.filter(b=>b.paymentStatus==='failed').length %>)</span>
+      </div>
+    </div>
+
     <div class="table-card">
       <div class="search-row">
-        <input class="search-input" id="searchInput" placeholder="Search by name, phone, ref..." oninput="filterTable(this.value)"/>
+        <input class="search-input" id="searchInput" placeholder="Search by name, phone, ref, event…" oninput="applyFilters()"/>
       </div>
+      <div style="overflow-x:auto;">
       <table id="bookingsTable">
         <thead><tr>
-          <th>Ref</th><th>User</th><th>Event</th><th>Tier</th><th>Qty</th><th>Amount</th><th>Date</th><th>Status</th>
+          <th>Ref</th><th>User</th><th>Event</th><th>Tier</th><th>Qty</th><th>Amount</th><th>Date</th><th>Status</th><th>Action</th>
         </tr></thead>
         <tbody>
           <% bookings.forEach(function(b) { %>
-          <tr>
+          <tr data-status="<%= b.paymentStatus %>">
             <td><div class="ref"><%= b.bookingRef %></div></td>
             <td>
-              <div style="font-weight:600;color:#fff;"><%= b.user ? b.user.firstName + ' ' + (b.user.lastName||'') : 'Unknown' %></div>
-              <div style="font-size:0.72rem;color:var(--muted);"><%= b.user ? b.user.phone : '' %></div>
+              <div style="font-weight:600;color:#fff;"><%= b.user ? b.user.firstName+' '+(b.user.lastName||'') : 'Unknown' %></div>
+              <div style="font-size:0.7rem;color:var(--muted);font-family:'Space Mono',monospace;"><%= b.user ? b.user.phone : '' %></div>
             </td>
             <td>
               <div style="font-weight:500;"><%= b.event ? b.event.name : 'N/A' %></div>
-              <div style="font-size:0.72rem;color:var(--muted);"><%= b.event ? new Date(b.event.date).toLocaleDateString('en-IN') : '' %></div>
+              <div style="font-size:0.7rem;color:var(--muted);"><%= b.event ? new Date(b.event.date).toLocaleDateString('en-IN') : '' %></div>
             </td>
-            <td><%= b.ticketType %></td>
-            <td><%= b.quantity %></td>
-            <td style="color:var(--accent);font-weight:600;">₹<%= b.totalAmount.toLocaleString('en-IN') %></td>
-            <td style="color:var(--muted);font-size:0.75rem;"><%= new Date(b.createdAt).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) %></td>
-            <td><span class="badge badge-paid">PAID</span></td>
+            <td style="font-size:0.78rem;"><%= b.ticketType %></td>
+            <td style="text-align:center;"><%= b.quantity %></td>
+            <td style="color:var(--accent);font-weight:700;">₹<%= b.totalAmount.toLocaleString('en-IN') %></td>
+            <td style="color:var(--muted);font-size:0.72rem;white-space:nowrap;"><%= new Date(b.createdAt).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) %></td>
+            <td>
+              <span class="badge b-<%= b.paymentStatus %>"><%= b.paymentStatus.toUpperCase() %></span>
+            </td>
+            <td>
+              <% if(b.paymentStatus === 'pending' || b.paymentStatus === 'failed') { %>
+              <button class="btn-msg" id="msgbtn-<%= b._id %>" onclick="sendMsg('<%= b._id %>',this)">
+                <i class="bi bi-whatsapp"></i> Notify
+              </button>
+              <% } %>
+            </td>
           </tr>
           <% }); %>
         </tbody>
       </table>
+      </div>
+      <div id="emptyMsg" style="display:none;" class="empty-row">
+        <i class="bi bi-inbox" style="font-size:2rem;display:block;margin-bottom:0.5rem;"></i>No bookings match this filter.
+      </div>
     </div>
   </main>
 </div>
 <script>
-  function filterTable(q) {
-    q = q.toLowerCase();
+  let currentStatus = 'all';
+
+  function filterStatus(status, el) {
+    currentStatus = status;
+    document.querySelectorAll('.stat-pill').forEach(p => p.classList.remove('active'));
+    el.classList.add('active');
+    applyFilters();
+  }
+
+  function applyFilters() {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    let visible = 0;
     document.querySelectorAll('#bookingsTable tbody tr').forEach(row => {
-      row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+      const matchStatus = currentStatus === 'all' || row.dataset.status === currentStatus;
+      const matchSearch = !q || row.textContent.toLowerCase().includes(q);
+      const show = matchStatus && matchSearch;
+      row.style.display = show ? '' : 'none';
+      if (show) visible++;
     });
+    document.getElementById('emptyMsg').style.display = visible === 0 ? 'block' : 'none';
+  }
+
+  async function sendMsg(bookingId, btn) {
+    btn.disabled = true;
+    const orig = btn.innerHTML;
+    btn.innerHTML = '<span style="width:10px;height:10px;border:2px solid rgba(157,78,221,0.3);border-top-color:#9D4EDD;border-radius:50%;animation:spin .7s linear infinite;display:inline-block;"></span>';
+    try {
+      const r = await fetch(`/admin/bookings/${bookingId}/send-message`, { method:'POST', credentials:'include' });
+      const d = await r.json();
+      if (d.success) {
+        btn.innerHTML = '<i class="bi bi-check-circle-fill"></i> Sent';
+        btn.style.color = '#00FF88'; btn.style.borderColor = 'rgba(0,255,136,0.3)'; btn.style.background = 'rgba(0,255,136,0.07)';
+        setTimeout(() => { btn.innerHTML = orig; btn.style = ''; btn.disabled = false; }, 3000);
+      } else {
+        btn.innerHTML = '<i class="bi bi-x-circle-fill"></i> Failed';
+        btn.style.color = '#FF4444';
+        setTimeout(() => { btn.innerHTML = orig; btn.style = ''; btn.disabled = false; }, 3000);
+      }
+    } catch(e) {
+      btn.innerHTML = orig; btn.disabled = false;
+    }
   }
 
   async function sendReminders() {
@@ -108,31 +200,16 @@
     btn.disabled = true;
     btn.innerHTML = '<span style="width:12px;height:12px;border:2px solid rgba(245,200,66,0.3);border-top-color:#f5c842;border-radius:50%;animation:spin .7s linear infinite;display:inline-block;vertical-align:middle;margin-right:6px;"></span> Sending…';
     try {
-      const r = await fetch('/admin/bookings/send-reminders', { method: 'POST', credentials: 'include' });
+      const r = await fetch('/admin/bookings/send-reminders', { method:'POST', credentials:'include' });
       const d = await r.json();
       if (d.success) {
-        const msg = d.sent24 > 0
-          ? `<i class="bi bi-check-circle-fill"></i> 24hr reminders: ${d.sent24}${d.sentImmediate > 0 ? ` · Immediate: ${d.sentImmediate}` : ''}`
-          : d.sentImmediate > 0
-            ? `<i class="bi bi-check-circle-fill"></i> Immediate reminders: ${d.sentImmediate}`
-            : `<i class="bi bi-check-circle-fill"></i> No reminders due (${d.total} checked)`;
-        btn.innerHTML = msg;
+        btn.innerHTML = `<i class="bi bi-check-circle-fill"></i> Sent ${d.sent24+d.sentImmediate} reminders`;
         btn.style.color = '#00FF88'; btn.style.borderColor = 'rgba(0,255,136,0.35)';
-      } else {
-        btn.innerHTML = '<i class="bi bi-exclamation-circle-fill"></i> Error';
-        btn.style.color = '#FF4444';
-      }
-    } catch(e) {
-      btn.innerHTML = '<i class="bi bi-exclamation-circle-fill"></i> Network Error';
-      btn.style.color = '#FF4444';
-    }
+      } else { btn.innerHTML = '<i class="bi bi-x-circle-fill"></i> Error'; btn.style.color='#FF4444'; }
+    } catch(e) { btn.innerHTML = '<i class="bi bi-exclamation-circle-fill"></i> Network Error'; btn.style.color='#FF4444'; }
     btn.disabled = false;
-    setTimeout(() => {
-      btn.innerHTML = '<i class="bi bi-send-fill"></i> Send Pending/Failed Reminders';
-      btn.style.color = ''; btn.style.borderColor = '';
-    }, 4000);
+    setTimeout(() => { btn.innerHTML = '<i class="bi bi-send-fill"></i> Send Bulk Reminders'; btn.style.color=''; btn.style.borderColor=''; }, 4000);
   }
 </script>
-<style>@keyframes spin{to{transform:rotate(360deg)}}</style>
 </body>
 </html>

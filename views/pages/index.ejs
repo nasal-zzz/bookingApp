@@ -4,7 +4,7 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <meta name="theme-color" content="#0B0B0F"/>
-  <title>MEE — Book Your Party Entry</title>
+  <title>MEE — Book Your Event Entry</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Poppins:wght@300;400;500;600;700&family=Space+Mono&display=swap" rel="stylesheet"/>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet"/>
   <style>
@@ -33,11 +33,13 @@
       position: relative;
       width: 100%;
       height: calc(100vh - 60px);
-      min-height: 460px;
-      max-height: 780px;
+      min-height: 400px;
+      max-height: 860px;   /* taller on large screens */
       overflow: hidden;
       background: #0a0a0f;
     }
+    @media(min-width:1400px){.hero-slider{max-height:980px;}}  /* 4K / large laptops */
+    @media(min-width:1200px) and (max-width:1399px){.hero-slider{max-height:820px;}}
 
     /* Each slide */
     .slide {
@@ -178,15 +180,18 @@
 
     /* ── SPONSORS MARQUEE ── */
     .sp-banner-item {
-      height: 72px;
-      min-width: 200px;
-      border-radius: 8px;
+      height: 90px;
+      min-width: 260px;
+      max-width: 340px;
+      border-radius: 10px;
       overflow: hidden;
       flex-shrink: 0;
       cursor: pointer;
-      border: 1px solid rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.08);
       background: #0d0d15;
+      transition: border-color 0.2s, transform 0.2s;
     }
+    .sp-banner-item:hover { border-color: rgba(106,13,173,0.4); transform: translateY(-2px); }
     .sp-banner-item img {
       width: 100%; height: 100%;
       object-fit: cover;
@@ -194,9 +199,16 @@
       pointer-events: none;
     }
     #sponsorTrack:hover { animation-play-state: paused; }
+    #sponsorSection { padding: 2.5rem 0 0; }
+    .sp-track-wrap { overflow: hidden; width: 100%; }
     @keyframes spScroll { from{transform:translateX(0)} to{transform:translateX(-50%)} }
-    @media(max-width:600px){
-      .sp-banner-item { height: 56px; min-width: 150px; }
+    @media(min-width:1400px){ .sp-banner-item { height: 110px; min-width: 320px; } }
+    @media(min-width:768px) and (max-width:1199px){ .sp-banner-item { height: 80px; min-width: 230px; } }
+    @media(max-width:767px){
+      .sp-banner-item { height: 64px; min-width: 180px; border-radius: 8px; }
+    }
+    @media(max-width:480px){
+      .sp-banner-item { height: 54px; min-width: 150px; }
     }
 
     /* ── EVENTS GRID ── */
@@ -251,10 +263,13 @@
     .f-logo span { color:var(--accent); }
     .f-sub { font-size:var(--desc-max); color:var(--muted); }
 
-    @media(max-width:600px){
-      .hero-slider{ max-height:520px; }
+    @media(max-width:768px){
+      .hero-slider{ height:70vw; min-height:300px; max-height:500px; }
       .events-grid{ grid-template-columns:1fr; }
       .slider-arrow{ display:none; }
+    }
+    @media(max-width:480px){
+      .hero-slider{ height:85vw; min-height:260px; max-height:420px; }
     }
   </style>
 </head>
@@ -383,9 +398,11 @@
     <div class="events-grid">
       <% events.forEach(function(ev){ %>
       <%
-        const isSoldOut = ev.ticketTypes.length > 0 && ev.ticketTypes.every(t => t.bookedSeats >= t.totalSeats);
         const activeTiers = ev.ticketTypes.filter(t => t.isActive);
-        const minPrice = activeTiers.length ? Math.min(...activeTiers.map(t => t.price)) : 0;
+        const isHouseFull = activeTiers.length > 0 && activeTiers.every(t => t.bookedSeats >= t.totalSeats);
+        const isSoldOut = isHouseFull; // alias
+        const minPrice = activeTiers.filter(t => t.bookedSeats < t.totalSeats).length
+          ? Math.min(...activeTiers.filter(t => t.bookedSeats < t.totalSeats).map(t => t.price)) : 0;
       %>
       <div class="event-card <%= ev.isFeatured?'featured':'' %>">
         <div class="event-card-top"></div>
@@ -396,7 +413,7 @@
             <%= ev.poster || '🎶' %>
           <% } %>
           <% if(ev.isFeatured){ %><div class="featured-badge">FEATURED</div><% } %>
-          <% if(isSoldOut){ %><div class="sold-out-overlay">SOLD OUT</div><% } %>
+          <% if(isHouseFull){ %><div class="sold-out-overlay" style="background:rgba(0,0,0,0.75);font-size:0.9rem;letter-spacing:3px;">🏠 HOUSE FULL</div><% } %>
         </div>
         <div class="event-body">
           <div class="event-name"><%= ev.name.toUpperCase() %></div>
@@ -404,12 +421,13 @@
             <div class="event-meta-item"><i class="bi bi-calendar3"></i> <%= new Date(ev.date).toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'long',year:'numeric'}) %></div>
             <div class="event-meta-item"><i class="bi bi-clock"></i> <%= ev.doorsOpen %> – <%= ev.endTime %></div>
             <div class="event-meta-item"><i class="bi bi-geo-alt-fill"></i> <%= ev.venue %></div>
-            <div class="event-meta-item"><i class="bi bi-person-check-fill"></i> <%= ev.ageLimit %>+ · <%= ev.dressCode %></div>
+            
           </div>
           <div class="tier-pills">
-            <% ev.ticketTypes.filter(t=>t.isActive).forEach(function(t){ %>
-            <span class="tier-pill" style="color:<%= tierColors[t.category]||'#6A0DAD' %>;border-color:<%= tierColors[t.category]||'#6A0DAD' %>33;background:<%= tierColors[t.category]||'#6A0DAD' %>11;">
-              <%= t.name %> · ₹<%= t.price.toLocaleString('en-IN') %>
+            <% activeTiers.forEach(function(t){ %>
+            <% const tOut = t.bookedSeats >= t.totalSeats; %>
+            <span class="tier-pill" style="<%= tOut ? 'color:#555;border-color:rgba(255,68,68,0.2);background:rgba(255,68,68,0.04);text-decoration:line-through;' : 'color:'+( tierColors[t.category]||'#6A0DAD' )+';border-color:'+(tierColors[t.category]||'#6A0DAD')+'33;background:'+(tierColors[t.category]||'#6A0DAD')+'11;' %>">
+              <%= t.name %><% if(!tOut){ %> · ₹<%= t.price.toLocaleString('en-IN') %><% } else { %> · Sold Out<% } %>
             </span>
             <% }); %>
           </div>
@@ -417,8 +435,8 @@
             <div class="event-price">
               <% if(minPrice > 0){ %>₹<%= minPrice.toLocaleString('en-IN') %> <span>onwards</span><% } %>
             </div>
-            <% if(isSoldOut){ %>
-              <span class="btn-ev-book disabled"><i class="bi bi-x-circle"></i> Sold Out</span>
+            <% if(isHouseFull){ %>
+              <span class="btn-ev-book disabled" style="background:rgba(255,68,68,0.1);"><i class="bi bi-house-fill"></i> House Full</span>
             <% } else if(locals.user && user){ %>
               <a href="/booking/seatmap/<%= ev._id %>" class="btn-ev-book me-2"><i class="bi bi-ticket-perforated-fill"></i> Book Now</a>
               <a href="/event/<%= ev._id %>" class="btn-view-details"><i class="bi bi-arrow-right">View Details</i></a>

@@ -59,7 +59,7 @@ const generateTicketPDF = async ({ booking, event }) => {
 
         <!-- LEFT PANEL -->
         <div class="left">
-          <div class="brand">NIGHTPASS</div>
+          <div class="brand">MELATTUR ENTERTINMENT EVENTS</div>
           <div class="event-name">${escHtml(event.name)}</div>
           <div class="divider"></div>
 
@@ -79,10 +79,6 @@ const generateTicketPDF = async ({ booking, event }) => {
             <div class="info-item">
               <div class="info-label">VENUE</div>
               <div class="info-value">${escHtml(event.venue)}</div>
-            </div>
-            <div class="info-item">
-              <div class="info-label">DRESS CODE</div>
-              <div class="info-value">${escHtml(event.dressCode || 'Smart Casual')}</div>
             </div>
             <div class="info-item">
               <div class="info-label">TICKET TYPE</div>
