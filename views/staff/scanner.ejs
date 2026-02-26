@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <meta name="theme-color" content="#0B0B0F"/>
+  <title>QR Scanner — MEE</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Space+Mono&display=swap" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+    :root{--bg:#0B0B0F;--surface:#14141C;--border:rgba(255,255,255,0.08);--accent:#6A0DAD;--success:#00FF88;--error:#FF4444;--warn:#f5c842;--text:#fff;--muted:#B3B3B3;}
+    html,body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-height:100dvh;overflow-x:hidden;}
+
+    /* ── TOPBAR ── */
+    .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 1rem;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+    .tb-left{display:flex;align-items:center;gap:0.6rem;}
+    .tb-logo{height:28px;width:auto;object-fit:contain;}
+    .tb-title{font-family:'Space Mono',monospace;font-size:0.6rem;letter-spacing:2px;color:var(--muted);}
+    .tb-right{display:flex;align-items:center;gap:0.5rem;}
+    .tb-user{font-size:0.72rem;color:var(--muted);}
+    .tb-user strong{color:var(--text);}
+    .role-dot{width:7px;height:7px;border-radius:50%;background:var(--success);}
+    .logout-link{font-size:0.72rem;color:var(--error);text-decoration:none;padding:0.3rem 0.5rem;}
+
+    /* ── MAIN LAYOUT ── */
+    .main{padding:1rem;max-width:480px;margin:0 auto;}
+
+    /* ── CAMERA VIEWPORT ── */
+    .scan-box{position:relative;background:#000;border-radius:14px;overflow:hidden;aspect-ratio:1;width:100%;margin-bottom:1rem;border:2px solid var(--border);}
+    .scan-box video{width:100%;height:100%;object-fit:cover;display:block;}
+    .scan-box canvas{display:none;}
+    .scan-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;}
+    .scan-frame{width:65%;aspect-ratio:1;border:3px solid var(--accent);border-radius:12px;box-shadow:0 0 0 1000px rgba(0,0,0,0.45);position:relative;transition:border-color 0.3s;}
+    .scan-frame.ok{border-color:var(--success);box-shadow:0 0 30px rgba(0,255,136,0.4),0 0 0 1000px rgba(0,0,0,0.45);}
+    .scan-frame.fail{border-color:var(--error);box-shadow:0 0 30px rgba(255,68,68,0.4),0 0 0 1000px rgba(0,0,0,0.45);}
+    .scan-corner{position:absolute;width:20px;height:20px;border-color:inherit;}
+    .scan-corner.tl{top:-2px;left:-2px;border-top:3px solid;border-left:3px solid;border-radius:4px 0 0 0;}
+    .scan-corner.tr{top:-2px;right:-2px;border-top:3px solid;border-right:3px solid;border-radius:0 4px 0 0;}
+    .scan-corner.bl{bottom:-2px;left:-2px;border-bottom:3px solid;border-left:3px solid;border-radius:0 0 0 4px;}
+    .scan-corner.br{bottom:-2px;right:-2px;border-bottom:3px solid;border-right:3px solid;border-radius:0 0 4px 0;}
+    .scan-line{position:absolute;width:80%;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent);animation:scanLine 2s linear infinite;left:10%;}
+    @keyframes scanLine{0%{top:10%;}50%{top:85%;}100%{top:10%;}}
+    .cam-off-msg{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.5rem;color:var(--muted);font-size:0.82rem;text-align:center;padding:1rem;}
+    .cam-off-msg i{font-size:2.5rem;color:#333;}
+
+    /* ── STATUS CARD ── */
+    .status-card{border-radius:12px;overflow:hidden;margin-bottom:1rem;animation:slideUp 0.25s ease;}
+    @keyframes slideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+    .sc-valid{background:rgba(0,255,136,0.07);border:1px solid rgba(0,255,136,0.3);}
+    .sc-used{background:rgba(245,200,66,0.07);border:1px solid rgba(245,200,66,0.3);}
+    .sc-invalid{background:rgba(255,68,68,0.07);border:1px solid rgba(255,68,68,0.3);}
+    .sc-header{display:flex;align-items:center;gap:0.7rem;padding:0.9rem 1.1rem;}
+    .sc-icon{font-size:1.5rem;}
+    .sc-title{font-weight:800;font-size:1rem;letter-spacing:0.5px;}
+    .sc-title.ok{color:var(--success);}
+    .sc-title.warn{color:var(--warn);}
+    .sc-title.err{color:var(--error);}
+    .sc-body{padding:0 1.1rem 1rem;}
+    .sc-row{display:flex;justify-content:space-between;align-items:center;padding:0.3rem 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:0.82rem;}
+    .sc-row:last-child{border:none;}
+    .sc-key{color:#555;font-family:'Space Mono',monospace;font-size:0.62rem;letter-spacing:1px;}
+    .sc-val{color:var(--text);font-weight:600;max-width:55%;text-align:right;}
+
+    /* ── MANUAL INPUT ── */
+    .manual-section{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1rem;margin-bottom:1rem;}
+    .sec-title{font-family:'Space Mono',monospace;font-size:0.58rem;letter-spacing:2px;color:#555;margin-bottom:0.7rem;text-transform:uppercase;}
+    .manual-row{display:flex;gap:0.5rem;}
+    .manual-inp{flex:1;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:'Space Mono',monospace;font-size:0.82rem;padding:0.65rem 0.85rem;outline:none;letter-spacing:1px;transition:border-color 0.18s;}
+    .manual-inp:focus{border-color:rgba(106,13,173,0.5);}
+    .manual-inp::placeholder{color:#333;font-family:'Outfit',sans-serif;font-size:0.78rem;letter-spacing:0;}
+    .scan-btn{padding:0.65rem 1.2rem;background:var(--accent);border:none;border-radius:7px;color:#fff;font-weight:700;font-size:0.82rem;cursor:pointer;white-space:nowrap;transition:all 0.18s;}
+    .scan-btn:hover{box-shadow:0 0 18px rgba(106,13,173,0.4);}
+    .scan-btn:active{transform:scale(0.97);}
+
+    /* ── CAMERA CONTROLS ── */
+    .cam-controls{display:flex;gap:0.5rem;margin-bottom:1rem;}
+    .cam-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:0.5rem;padding:0.75rem;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:0.82rem;font-weight:600;cursor:pointer;transition:all 0.18s;font-family:'Outfit',sans-serif;}
+    .cam-btn:hover{border-color:rgba(106,13,173,0.35);}
+    .cam-btn.active{background:rgba(106,13,173,0.1);border-color:rgba(106,13,173,0.4);color:#9D4EDD;}
+    .cam-btn i{font-size:1rem;}
+
+    /* ── RECENT LOG ── */
+    .log-section{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+    .log-header{display:flex;align-items:center;justify-content:space-between;padding:0.7rem 1rem;border-bottom:1px solid var(--border);}
+    .log-title{font-family:'Space Mono',monospace;font-size:0.58rem;letter-spacing:2px;color:#555;}
+    .log-count{font-family:'Space Mono',monospace;font-size:0.62rem;color:var(--accent);}
+    .log-list{max-height:200px;overflow-y:auto;}
+    .log-item{display:flex;align-items:center;gap:0.6rem;padding:0.55rem 1rem;border-bottom:1px solid rgba(255,255,255,0.03);font-size:0.75rem;}
+    .log-item:last-child{border:none;}
+    .log-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+    .log-dot.ok{background:var(--success);}
+    .log-dot.fail{background:var(--error);}
+    .log-dot.warn{background:var(--warn);}
+    .log-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+    .log-time{color:#555;font-family:'Space Mono',monospace;font-size:0.58rem;flex-shrink:0;}
+    .log-empty{padding:1.2rem;text-align:center;color:#444;font-size:0.78rem;}
+
+    /* ── VIBRATION/FLASH feedback ── */
+    .flash-ok{animation:flashGreen 0.4s ease;}
+    .flash-fail{animation:flashRed 0.4s ease;}
+    @keyframes flashGreen{0%,100%{box-shadow:none}50%{box-shadow:0 0 60px rgba(0,255,136,0.6) inset;}}
+    @keyframes flashRed{0%,100%{box-shadow:none}50%{box-shadow:0 0 60px rgba(255,68,68,0.6) inset;}}
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="tb-left">
+      <img src="/img/mee-logo.png" class="tb-logo" alt="MEE"/>
+      <span class="tb-title">QR SCANNER</span>
+    </div>
+    <div class="tb-right">
+      <div class="role-dot"></div>
+      <span class="tb-user">Hi, <strong><%= staffUser.name.split(' ')[0] %></strong></span>
+      <a href="/staff/logout" class="logout-link"><i class="bi bi-box-arrow-right"></i></a>
+    </div>
+  </div>
+
+  <div class="main">
+    <!-- Camera controls -->
+    <div class="cam-controls">
+      <button class="cam-btn active" id="btnStartCam" onclick="startCamera()">
+        <i class="bi bi-camera-video-fill"></i> Start Camera
+      </button>
+      <button class="cam-btn" id="btnStopCam" onclick="stopCamera()" style="display:none;">
+        <i class="bi bi-camera-video-off-fill"></i> Stop
+      </button>
+      <button class="cam-btn" id="btnFlip" onclick="flipCamera()" style="display:none;">
+        <i class="bi bi-arrow-repeat"></i> Flip
+      </button>
+    </div>
+
+    <!-- Camera viewport -->
+    <div class="scan-box" id="scanBox">
+      <video id="scanVideo" autoplay muted playsinline></video>
+      <canvas id="scanCanvas"></canvas>
+      <div class="scan-overlay">
+        <div class="scan-frame" id="scanFrame">
+          <div class="scan-corner tl"></div>
+          <div class="scan-corner tr"></div>
+          <div class="scan-corner bl"></div>
+          <div class="scan-corner br"></div>
+          <div class="scan-line" id="scanLine"></div>
+        </div>
+      </div>
+      <div class="cam-off-msg" id="camOffMsg">
+        <i class="bi bi-qr-code"></i>
+        <span>Tap "Start Camera" to begin scanning</span>
+      </div>
+    </div>
+
+    <!-- Result card -->
+    <div id="resultCard" style="display:none;"></div>
+
+    <!-- Manual entry -->
+    <div class="manual-section">
+      <div class="sec-title">Manual Ticket Entry</div>
+      <div class="manual-row">
+        <input class="manual-inp" id="manualInp" placeholder="Enter Ticket ID (e.g. MEE-XXXXXX)" 
+               style="text-transform:uppercase;" oninput="this.value=this.value.toUpperCase()"
+               onkeydown="if(event.key==='Enter') manualScan()"/>
+        <button class="scan-btn" onclick="manualScan()"><i class="bi bi-search"></i> Verify</button>
+      </div>
+    </div>
+
+    <!-- Recent scans log -->
+    <div class="log-section">
+      <div class="log-header">
+        <span class="log-title">RECENT SCANS</span>
+        <span class="log-count" id="logCount">0 scans</span>
+      </div>
+      <div class="log-list" id="logList">
+        <div class="log-empty">No scans yet this session.</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let videoStream = null;
+    let scanInterval = null;
+    let lastScanned  = '';
+    let lastScannedTime = 0;
+    let scanning = false;
+    let facingMode = 'environment'; // rear camera
+    let scanLog = [];
+
+    const video   = document.getElementById('scanVideo');
+    const canvas  = document.getElementById('scanCanvas');
+    const ctx     = canvas.getContext('2d');
+    const frame   = document.getElementById('scanFrame');
+    const scanBox = document.getElementById('scanBox');
+    const camOff  = document.getElementById('camOffMsg');
+
+    // ── Start camera ──
+    async function startCamera() {
+      try {
+        if (videoStream) stopCamera();
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode, width: { ideal: 1280 }, height: { ideal: 1280 } }
+        });
+        video.srcObject = stream;
+        videoStream = stream;
+        await video.play();
+        camOff.style.display = 'none';
+        document.getElementById('btnStartCam').style.display = 'none';
+        document.getElementById('btnStopCam').style.display  = '';
+        document.getElementById('btnFlip').style.display     = '';
+        document.getElementById('scanLine').style.display    = '';
+        scanning = true;
+        scanInterval = setInterval(scanFrame, 180);
+      } catch (e) {
+        camOff.innerHTML = `<i class="bi bi-camera-video-off"></i><span>Camera access denied.<br/>Use manual entry below.</span>`;
+        camOff.style.display = 'flex';
+      }
+    }
+
+    function stopCamera() {
+      scanning = false;
+      if (scanInterval) { clearInterval(scanInterval); scanInterval = null; }
+      if (videoStream) { videoStream.getTracks().forEach(t => t.stop()); videoStream = null; }
+      video.srcObject = null;
+      camOff.style.display = 'flex';
+      camOff.innerHTML = '<i class="bi bi-qr-code"></i><span>Camera stopped. Tap "Start Camera" to resume.</span>';
+      document.getElementById('btnStartCam').style.display = '';
+      document.getElementById('btnStopCam').style.display  = 'none';
+      document.getElementById('btnFlip').style.display     = 'none';
+    }
+
+    function flipCamera() {
+      facingMode = facingMode === 'environment' ? 'user' : 'environment';
+      startCamera();
+    }
+
+    // ── Scan frame for QR ──
+    function scanFrame() {
+      if (!scanning || video.readyState !== video.HAVE_ENOUGH_DATA) return;
+      canvas.width  = video.videoWidth;
+      canvas.height = video.videoHeight;
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: 'dontInvert' });
+      if (!code) return;
+
+      const raw = code.data;
+      const now = Date.now();
+      // Debounce: don't re-scan same code within 4 seconds
+      if (raw === lastScanned && now - lastScannedTime < 4000) return;
+      lastScanned = raw;
+      lastScannedTime = now;
+
+      // Extract ticketId from QR payload
+      let ticketId = raw;
+      try {
+        const parsed = JSON.parse(raw);
+        ticketId = parsed.tid || parsed.ticketId || parsed.id || raw;
+      } catch(e) { /* raw string ticketId */ }
+
+      processTicket(ticketId, 'camera');
+    }
+
+    // ── Manual scan ──
+    function manualScan() {
+      const val = document.getElementById('manualInp').value.trim();
+      if (!val) return;
+      processTicket(val, 'manual');
+      document.getElementById('manualInp').value = '';
+    }
+
+    // ── Core: send to server for verification ──
+    async function processTicket(ticketId, source) {
+      frame.classList.remove('ok','fail');
+
+      try {
+        const res = await fetch('/staff/api/scan', {
+          method: 'POST', credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ticketId })
+        });
+        const data = await res.json();
+        showResult(data, ticketId);
+        addToLog(data, ticketId);
+
+        if (data.status === 'valid') {
+          frame.classList.add('ok');
+          vibrate([100, 50, 100]);
+          flashBox('ok');
+        } else {
+          frame.classList.add('fail');
+          vibrate([300]);
+          flashBox('fail');
+        }
+        setTimeout(() => frame.classList.remove('ok','fail'), 3000);
+
+      } catch(e) {
+        showResult({ success: false, status: 'error', message: 'Network error. Check connection.' }, ticketId);
+      }
+    }
+
+    // ── Show result card ──
+    function showResult(data, ticketId) {
+      const card = document.getElementById('resultCard');
+      card.style.display = 'block';
+
+      if (data.status === 'valid') {
+        card.innerHTML = `
+          <div class="status-card sc-valid">
+            <div class="sc-header"><span class="sc-icon">✅</span><span class="sc-title ok">ENTRY GRANTED</span></div>
+            <div class="sc-body">
+              <div class="sc-row"><span class="sc-key">ATTENDEE</span><span class="sc-val">${data.ticket?.attendee || '—'}</span></div>
+              <div class="sc-row"><span class="sc-key">TICKET ID</span><span class="sc-val" style="font-family:'Space Mono',monospace;font-size:0.7rem;">${data.ticket?.ticketId || ticketId}</span></div>
+              <div class="sc-row"><span class="sc-key">TICKET TYPE</span><span class="sc-val">${(data.ticket?.type||'—').toUpperCase()}</span></div>
+              ${data.ticket?.seatNumber ? `<div class="sc-row"><span class="sc-key">SEAT</span><span class="sc-val">${data.ticket.seatNumber.toUpperCase()}</span></div>` : ''}
+              <div class="sc-row"><span class="sc-key">EVENT</span><span class="sc-val">${data.event?.name || '—'}</span></div>
+              <div class="sc-row"><span class="sc-key">SCANNED BY</span><span class="sc-val">${data.scannedBy || '—'}</span></div>
+            </div>
+          </div>`;
+      } else if (data.status === 'used') {
+        card.innerHTML = `
+          <div class="status-card sc-used">
+            <div class="sc-header"><span class="sc-icon">⚠️</span><span class="sc-title warn">ALREADY USED</span></div>
+            <div class="sc-body">
+              <div class="sc-row"><span class="sc-key">ATTENDEE</span><span class="sc-val">${data.ticket?.attendee || '—'}</span></div>
+              <div class="sc-row"><span class="sc-key">TICKET ID</span><span class="sc-val" style="font-family:'Space Mono',monospace;font-size:0.7rem;">${data.ticket?.ticketId || ticketId}</span></div>
+              <div class="sc-row"><span class="sc-key">STATUS</span><span class="sc-val" style="color:var(--warn)">ENTRY DENIED</span></div>
+            </div>
+          </div>`;
+      } else {
+        card.innerHTML = `
+          <div class="status-card sc-invalid">
+            <div class="sc-header"><span class="sc-icon">❌</span><span class="sc-title err">INVALID TICKET</span></div>
+            <div class="sc-body">
+              <div class="sc-row"><span class="sc-key">REASON</span><span class="sc-val" style="color:var(--error)">${data.message || 'Unknown error'}</span></div>
+              <div class="sc-row"><span class="sc-key">SCANNED ID</span><span class="sc-val" style="font-family:'Space Mono',monospace;font-size:0.68rem;">${ticketId}</span></div>
+            </div>
+          </div>`;
+      }
+    }
+
+    // ── Add to recent log ──
+    function addToLog(data, ticketId) {
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      scanLog.unshift({
+        status: data.status || 'error',
+        name: data.ticket?.attendee || ticketId,
+        time: timeStr,
+      });
+      if (scanLog.length > 50) scanLog.pop();
+      renderLog();
+    }
+
+    function renderLog() {
+      const list = document.getElementById('logList');
+      document.getElementById('logCount').textContent = scanLog.length + ' scan' + (scanLog.length !== 1 ? 's' : '');
+      if (!scanLog.length) {
+        list.innerHTML = '<div class="log-empty">No scans yet this session.</div>';
+        return;
+      }
+      list.innerHTML = scanLog.map(entry => `
+        <div class="log-item">
+          <div class="log-dot ${entry.status === 'valid' ? 'ok' : entry.status === 'used' ? 'warn' : 'fail'}"></div>
+          <div class="log-name">${entry.name}</div>
+          <div class="log-time">${entry.time}</div>
+        </div>`).join('');
+    }
+
+    function vibrate(pattern) {
+      if (navigator.vibrate) navigator.vibrate(pattern);
+    }
+
+    function flashBox(type) {
+      scanBox.classList.remove('flash-ok','flash-fail');
+      void scanBox.offsetWidth; // reflow
+      scanBox.classList.add(type === 'ok' ? 'flash-ok' : 'flash-fail');
+    }
+
+    // Auto-start camera on load if on mobile
+    window.addEventListener('load', () => {
+      if (/Mobi|Android/i.test(navigator.userAgent)) {
+        startCamera();
+      }
+    });
+  </script>
+</body>
+</html>

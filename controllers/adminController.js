@@ -2,14 +2,23 @@ const Event   = require('../models/Event');
 const Booking = require('../models/Booking');
 const User    = require('../models/User');
 
+// ── Helper: get current admin from session ──
+function getCurrentAdmin(req) {
+  if (req.session.staffUser) return req.session.staffUser;
+  if (req.session.adminUser) return { username: req.session.adminUser, name: req.session.adminUser, role: 'admin' };
+  return { username: 'admin', name: 'Admin', role: 'admin' };
+}
+
 // ── Parse event form body into DB-ready object ──
 function parseEventBody(b) {
   let rawTiers = [];
   try { rawTiers = JSON.parse(b.ticketTypesJson || '[]'); } catch(e) {}
   const ticketTypes = rawTiers.map(t => ({
-    category:    t.category,
+    category:    String(t.category || '').toLowerCase().replace(/\s+/g,'_'),
+    name:        String(t.name     || t.category || ''),
+    color:       t.color           || '#6A0DAD',
     price:       parseInt(t.price)        || 0,
-    ageLimit:    parseInt(t.ageLimit)     || 18,
+    ageLimit:    parseInt(t.ageLimit)     || 0,
     ticketType:  t.ticketType             || 'single',
     totalSeats:  parseInt(t.totalSeats)   || 0,
     bookedSeats: parseInt(t.bookedSeats)  || 0,
@@ -36,8 +45,7 @@ function parseEventBody(b) {
     venue:            b.venue,
     venueAddress:     b.venueAddress     || '',
     googleMapLink:    b.googleMapLink    || '',
-    dressCode:        b.dressCode        || 'All Black',
-    convenienceFee:   parseInt(b.convenienceFee) || 20,
+    convenienceFee:   parseInt(b.convenienceFee) || 0,
     isActive:         b.isActive === 'true' || b.isActive === true,
     isFeatured:       b.isFeatured === 'true' || b.isFeatured === true,
     ticketTypes,
@@ -55,9 +63,14 @@ exports.getDashboard = async (req, res) => {
       { $match: { paymentStatus: 'paid' } },
       { $group: { _id: null, total: { $sum: '$totalAmount' } } },
     ]);
+    const currentAdmin  = getCurrentAdmin(req);
+    const isSuperAdmin  = req.session.superAdminLoggedIn ||
+      (req.session.staffLoggedIn && req.session.staffUser?.role === 'superadmin');
     res.render('admin/dashboard', {
-      title: 'Admin — NightPass',
+      title: 'Admin — MEE',
       events,
+      currentAdmin,
+      isSuperAdmin,
       stats: {
         totalEvents: events.length,
         activeEvents: events.filter(e => e.isActive).length,
@@ -72,7 +85,9 @@ exports.getDashboard = async (req, res) => {
 };
 
 exports.getNewEvent = (req, res) => {
-  res.render('admin/event-form', { title: 'New Event — Admin', event: null, error: null });
+  const currentAdmin = getCurrentAdmin(req);
+  const isSuperAdmin = req.session.superAdminLoggedIn || (req.session.staffLoggedIn && req.session.staffUser?.role === 'superadmin');
+  res.render('admin/event-form', { title: 'New Event — Admin', event: null, error: null, currentAdmin, isSuperAdmin });
 };
 
 exports.postCreateEvent = async (req, res) => {
@@ -126,7 +141,9 @@ exports.getBookings = async (req, res) => {
       .populate('event', 'name date')
       .sort({ createdAt: -1 })
       .limit(200);
-    res.render('admin/bookings', { title: 'Bookings — Admin', bookings });
+    const currentAdmin = getCurrentAdmin(req);
+    const isSuperAdmin = req.session.superAdminLoggedIn || (req.session.staffLoggedIn && req.session.staffUser?.role === 'superadmin');
+    res.render('admin/bookings', { title: 'Bookings — Admin', bookings, currentAdmin, isSuperAdmin });
   } catch (err) {
     res.status(500).send('Error: ' + err.message);
   }

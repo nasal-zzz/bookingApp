@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title><%= title %></title>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Outfit:wght@400;500;600;700&family=Space+Mono&display=swap" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet"/>
+  <style>
+    :root{--bg:#0B0B0F;--surface:#14141C;--card:#14141C;--border:rgba(255,255,255,0.08);--accent:#6A0DAD;--text:#FFFFFF;--muted:#B3B3B3;--success:#00FF88;--error:#FF4444;}
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-height:100vh;}
+    .admin-layout{display:grid;grid-template-columns:220px 1fr;min-height:100vh;}
+    .sidebar{background:var(--surface);border-right:1px solid var(--border);padding:1.5rem 1rem;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:0.3rem;z-index:10;}
+    .s-logo{font-family:'Anton',sans-serif;font-size:1.3rem;letter-spacing:3px;color:#fff;text-decoration:none;display:block;padding:0 0.5rem 1.2rem;border-bottom:1px solid var(--border);margin-bottom:0.8rem;}
+    .s-logo span{color:var(--accent);}
+    .s-link{display:flex;align-items:center;gap:0.7rem;padding:0.7rem 0.8rem;color:var(--muted);text-decoration:none;border-radius:6px;font-size:0.85rem;transition:all 0.15s;border:1px solid transparent;}
+    .s-link:hover,.s-link.active{background:rgba(106,13,173,0.07);border-color:rgba(106,13,173,0.15);color:#fff;}
+    .s-link i{color:var(--accent);width:18px;}
+    .s-logout{margin-top:auto;display:flex;align-items:center;gap:0.7rem;padding:0.7rem 0.8rem;color:var(--error);text-decoration:none;border-radius:6px;font-size:0.85rem;border:1px solid transparent;transition:all 0.15s;}
+    .s-logout:hover{background:rgba(255,92,92,0.08);border-color:rgba(255,92,92,0.2);}
+    .main{padding:2rem;overflow-x:hidden;}
+    .page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem;flex-wrap:wrap;gap:1rem;}
+    .page-title{font-family:'Anton',sans-serif;font-size:2rem;letter-spacing:2px;}
+    .stats-row{display:flex;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap;}
+    .stat-chip{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:0.8rem 1.2rem;display:flex;align-items:center;gap:0.6rem;font-size:0.82rem;}
+    .stat-chip i{color:var(--accent);}
+    .stat-chip strong{color:#fff;}
+    .reviews-table{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+    .rev-row{display:grid;grid-template-columns:1fr auto;gap:1rem;padding:1.2rem 1.4rem;border-bottom:1px solid rgba(255,255,255,0.04);align-items:start;}
+    .rev-row:last-child{border-bottom:none;}
+    .rev-row.hidden-rev{opacity:0.45;}
+    .rev-meta{display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap;margin-bottom:0.5rem;}
+    .rev-user{font-weight:700;font-size:0.88rem;color:#fff;}
+    .rev-event{font-family:'Space Mono',monospace;font-size:0.62rem;color:var(--accent);}
+    .rev-date{font-size:0.65rem;color:#555;}
+    .rev-stars{display:flex;gap:0.15rem;font-size:0.78rem;}
+    .rev-text{font-size:0.82rem;color:var(--muted);line-height:1.6;margin-top:0.4rem;font-style:italic;}
+    .rev-actions{display:flex;gap:0.5rem;flex-shrink:0;}
+    .btn-sm{display:inline-flex;align-items:center;gap:0.3rem;padding:0.35rem 0.75rem;border-radius:4px;font-size:0.75rem;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text);transition:all 0.15s;}
+    .btn-hide{color:#f5c842;border-color:rgba(245,200,66,0.3);}
+    .btn-hide:hover{background:rgba(245,200,66,0.1);}
+    .btn-del{color:var(--error);border-color:rgba(255,68,68,0.3);}
+    .btn-del:hover{background:rgba(255,68,68,0.1);}
+    .badge-visible{background:rgba(0,255,136,0.08);border:1px solid rgba(0,255,136,0.3);color:#00FF88;font-size:0.58rem;letter-spacing:1px;padding:0.15rem 0.5rem;border-radius:10px;font-family:'Space Mono',monospace;}
+    .badge-hidden{background:rgba(255,68,68,0.08);border:1px solid rgba(255,68,68,0.3);color:#FF4444;font-size:0.58rem;letter-spacing:1px;padding:0.15rem 0.5rem;border-radius:10px;font-family:'Space Mono',monospace;}
+    .empty{text-align:center;padding:4rem 1rem;color:#555;}
+    .empty i{font-size:2.5rem;display:block;margin-bottom:0.8rem;}
+    @media(max-width:768px){.admin-layout{grid-template-columns:1fr;}.sidebar{display:none;}.rev-row{grid-template-columns:1fr;}}
+  </style>
+</head>
+<body>
+<div class="admin-layout">
+  <aside class="sidebar">
+    <a href="/admin" class="s-logo"><img src="/img/mee-logo.png" alt="MEE" style="height:28px;width:auto;object-fit:contain;"/></a>
+    <a href="/admin"            class="s-link"><i class="bi bi-speedometer2"></i> Dashboard</a>
+    <a href="/admin/events/new" class="s-link"><i class="bi bi-plus-circle-fill"></i> New Event</a>
+    <a href="/admin/bookings"   class="s-link"><i class="bi bi-ticket-perforated-fill"></i> Bookings</a>
+    <a href="/admin/reviews"    class="s-link active"><i class="bi bi-star-fill"></i> Reviews</a>
+        <a href="/admin/profile" class="s-link"><i class="bi bi-person-circle"></i> My Profile</a>
+    <% if(locals.isSuperAdmin){ %>
+    <a href="/superadmin" class="s-link" style="color:#9D4EDD;border-color:rgba(157,78,221,0.2);background:rgba(157,78,221,0.06);"><i class="bi bi-shield-lock-fill" style="color:#9D4EDD;"></i> SuperAdmin Panel</a>
+    <% } %>
+    <a href="/admin/logout" class="s-logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
+  </aside>
+  <main class="main">
+    <div class="page-header">
+      <h1 class="page-title">REVIEWS</h1>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-chip"><i class="bi bi-star-fill"></i> <strong><%= reviews.length %></strong> Total Reviews</div>
+      <div class="stat-chip"><i class="bi bi-eye-fill"></i> <strong><%= reviews.filter(r=>r.isVisible).length %></strong> Visible</div>
+      <div class="stat-chip"><i class="bi bi-eye-slash-fill"></i> <strong><%= reviews.filter(r=>!r.isVisible).length %></strong> Hidden</div>
+      <%
+        const avg = reviews.length ? (reviews.reduce((s,r)=>s+r.rating,0)/reviews.length).toFixed(1) : 'N/A';
+      %>
+      <div class="stat-chip"><i class="bi bi-graph-up"></i> <strong><%= avg %></strong> Avg Rating</div>
+    </div>
+
+    <% if(reviews.length === 0){ %>
+    <div class="reviews-table">
+      <div class="empty"><i class="bi bi-star"></i>No reviews yet.</div>
+    </div>
+    <% } else { %>
+    <div class="reviews-table">
+      <% reviews.forEach(function(rev){ %>
+      <div class="rev-row <%= rev.isVisible ? '' : 'hidden-rev' %>" id="revrow-<%= rev._id %>">
+        <div>
+          <div class="rev-meta">
+            <span class="rev-user"><%= (rev.user?.firstName||'?')+' '+(rev.user?.lastName||'') %></span>
+            <span class="rev-event"><%= rev.event?.name || 'Unknown Event' %></span>
+            <div class="rev-stars">
+              <% for(let s=1;s<=5;s++){ %>
+              <i class="bi bi-star-fill" style="color:<%= s<=rev.rating?'#f5c842':'#333' %>;"></i>
+              <% } %>
+            </div>
+            <span class="<%= rev.isVisible ? 'badge-visible' : 'badge-hidden' %>" id="badge-<%= rev._id %>"><%= rev.isVisible ? 'VISIBLE' : 'HIDDEN' %></span>
+            <span class="rev-date"><%= new Date(rev.createdAt).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) %></span>
+          </div>
+          <div class="rev-text">"<%= rev.text %>"</div>
+        </div>
+        <div class="rev-actions">
+          <button class="btn-sm btn-hide" onclick="toggleRev('<%= rev._id %>')">
+            <i class="bi bi-eye<%= rev.isVisible ? '-slash' : '' %>-fill" id="eye-<%= rev._id %>"></i>
+            <span id="btntxt-<%= rev._id %>"><%= rev.isVisible ? 'Hide' : 'Show' %></span>
+          </button>
+          <form method="POST" action="/admin/reviews/<%= rev._id %>/delete" onsubmit="return confirm('Delete this review?')">
+            <button type="submit" class="btn-sm btn-del"><i class="bi bi-trash3-fill"></i></button>
+          </form>
+        </div>
+      </div>
+      <% }); %>
+    </div>
+    <% } %>
+  </main>
+</div>
+<script>
+async function toggleRev(id){
+  try{
+    const r=await fetch(`/admin/reviews/${id}/toggle`,{method:'POST',credentials:'include'});
+    const d=await r.json();
+    if(d.success){
+      const row=document.getElementById('revrow-'+id);
+      const badge=document.getElementById('badge-'+id);
+      const eye=document.getElementById('eye-'+id);
+      const btntxt=document.getElementById('btntxt-'+id);
+      if(d.isVisible){
+        row.classList.remove('hidden-rev');
+        badge.className='badge-visible';badge.textContent='VISIBLE';
+        eye.className='bi bi-eye-slash-fill';btntxt.textContent='Hide';
+      } else {
+        row.classList.add('hidden-rev');
+        badge.className='badge-hidden';badge.textContent='HIDDEN';
+        eye.className='bi bi-eye-fill';btntxt.textContent='Show';
+      }
+    }
+  }catch(e){alert('Error toggling review');}
+}
+</script>
+</body>
+</html>

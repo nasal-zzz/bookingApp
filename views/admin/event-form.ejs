@@ -46,6 +46,38 @@
     .banner-upload .up-label{font-size:0.85rem;color:#B3B3B3;}
     .banner-upload .up-sub{font-size:0.72rem;color:rgba(255,255,255,0.3);margin-top:0.2rem;}
     .banner-preview{width:100%;max-height:160px;object-fit:cover;border-radius:8px;display:none;margin-top:0.8rem;}
+    .banner-change-btn{margin-top:0.5rem;display:none;padding:0.3rem 0.8rem;background:rgba(106,13,173,0.15);border:1px solid rgba(106,13,173,0.35);border-radius:5px;color:#9D4EDD;font-size:0.72rem;cursor:pointer;font-family:inherit;}
+    /* Crop Modal */
+    #cropModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:2000;align-items:center;justify-content:center;padding:1rem;backdrop-filter:blur(8px);}
+    #cropModal.open{display:flex;}
+    .crop-modal-box{background:#14141C;border:1px solid rgba(255,255,255,0.09);border-radius:14px;width:100%;max-width:560px;overflow:hidden;}
+    .crop-modal-top{height:3px;background:linear-gradient(90deg,#6A0DAD,#9D4EDD,#6A0DAD);}
+    .crop-modal-head{padding:1rem 1.2rem 0.6rem;display:flex;align-items:center;justify-content:space-between;}
+    .crop-modal-head h3{font-family:'Anton',sans-serif;font-size:1rem;letter-spacing:2px;color:#fff;}
+    .crop-modal-head button{background:none;border:none;color:#555;font-size:1.3rem;cursor:pointer;line-height:1;}
+    .crop-area-wrap{position:relative;margin:0 1.2rem;aspect-ratio:16/7;background:#08080e;border-radius:8px;overflow:hidden;touch-action:none;border:1px solid rgba(255,255,255,0.07);}
+    #cropCanvas{display:block;width:100%;height:100%;}
+    .crop-dashed{position:absolute;inset:0;border:2px dashed rgba(106,13,173,0.5);border-radius:8px;pointer-events:none;}
+    .crop-ctrls{padding:0.9rem 1.2rem;display:flex;align-items:center;gap:0.8rem;flex-wrap:wrap;}
+    .crop-ctrls label{font-family:'Space Mono',monospace;font-size:0.55rem;letter-spacing:1px;color:#555;text-transform:uppercase;}
+    .crop-ctrls input[type=range]{flex:1;min-width:80px;accent-color:#6A0DAD;}
+    .crop-footer{padding:0.8rem 1.2rem 1.2rem;display:flex;gap:0.7rem;}
+    .crop-cancel-btn{flex:1;padding:0.7rem;background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:7px;color:#888;font-family:inherit;font-size:0.85rem;cursor:pointer;}
+    .crop-save-btn{flex:2;padding:0.7rem;background:#6A0DAD;border:none;border-radius:7px;color:#fff;font-family:inherit;font-weight:700;font-size:0.85rem;cursor:pointer;letter-spacing:1px;}
+    .size-warn{font-size:0.7rem;color:#FF4444;display:none;padding:0 1.2rem 0.5rem;}
+    /* Artist crop modal — circular */
+    #artistCropModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:2000;align-items:center;justify-content:center;padding:1rem;backdrop-filter:blur(8px);}
+    #artistCropModal.open{display:flex;}
+    .ac-box{background:#14141C;border:1px solid rgba(255,255,255,0.09);border-radius:14px;width:100%;max-width:400px;overflow:hidden;}
+    .ac-top{height:3px;background:linear-gradient(90deg,#6A0DAD,#9D4EDD,#6A0DAD);}
+    .ac-head{padding:1rem 1.2rem 0.6rem;display:flex;align-items:center;justify-content:space-between;}
+    .ac-head h3{font-family:'Anton',sans-serif;font-size:1rem;letter-spacing:2px;color:#fff;}
+    .ac-area{margin:0 1.2rem;position:relative;width:220px;height:220px;border-radius:50%;overflow:hidden;border:2px solid rgba(106,13,173,0.5);background:#08080e;touch-action:none;margin-left:auto;margin-right:auto;}
+    #acCanvas{display:block;width:100%;height:100%;}
+    .ac-ctrls{padding:0.9rem 1.2rem;display:flex;align-items:center;gap:0.8rem;}
+    .ac-ctrls label{font-family:'Space Mono',monospace;font-size:0.55rem;letter-spacing:1px;color:#555;}
+    .ac-ctrls input[type=range]{flex:1;accent-color:#6A0DAD;}
+    .ac-footer{padding:0.8rem 1.2rem 1.2rem;display:flex;gap:0.7rem;}
 
     /* Artists */
     .artist-list{display:flex;flex-direction:column;gap:0.8rem;}
@@ -98,10 +130,14 @@
 </head>
 <body>
 <nav>
-  <a href="/admin" class="logo">NIGHT<span>PASS</span> <span style="font-size:0.7rem;letter-spacing:2px;color:#B3B3B3;">ADMIN</span></a>
+  <a href="/admin" class="logo"><img src="/img/mee-logo.png" alt="MEE" style="height:28px;width:auto;object-fit:contain;"/></a>
   <div class="nav-links">
     <a href="/admin"><i class="bi bi-speedometer2"></i> Dashboard</a>
     <a href="/admin/bookings"><i class="bi bi-collection"></i> Bookings</a>
+    <a href="/admin/reviews"><i class="bi bi-star-fill"></i> Reviews</a>
+    <a href="/admin/banners"><i class="bi bi-image-fill"></i> Banners</a>
+    <a href="/admin/profile" class="btn-secondary" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#B3B3B3;padding:0.55rem 1.1rem;border-radius:6px;text-decoration:none;font-size:0.82rem;display:flex;align-items:center;gap:0.4rem;"><i class="bi bi-person-circle"></i> Profile</a>
+    <% if(locals.isSuperAdmin){ %><a href="/superadmin" style="background:rgba(157,78,221,0.1);border:1px solid rgba(157,78,221,0.25);color:#9D4EDD;padding:0.55rem 1.1rem;border-radius:6px;text-decoration:none;font-size:0.82rem;display:flex;align-items:center;gap:0.4rem;"><i class="bi bi-shield-lock-fill"></i> SuperAdmin</a><% } %>
     <a href="/admin/logout" class="btn-danger"><i class="bi bi-box-arrow-right"></i> Logout</a>
   </div>
 </nav>
@@ -136,12 +172,8 @@
         </div>
         <div class="field-row cols-2">
           <div class="field-group">
-            <label class="field-label">Dress Code</label>
-            <input class="field-input" name="dressCode" placeholder="All Black" value="<%= event ? event.dressCode : 'All Black' %>"/>
-          </div>
-          <div class="field-group">
             <label class="field-label">Convenience Fee (₹)</label>
-            <input class="field-input" type="number" name="convenienceFee" value="<%= event ? event.convenienceFee : 20 %>"/>
+            <input class="field-input" type="number" name="convenienceFee" value="<%= event ? event.convenienceFee : 0 %>"/>
           </div>
         </div>
       </div>
@@ -155,10 +187,10 @@
           <div class="field-group">
             <label class="field-label">Landing Page Banner (Desktop)</label>
             <div class="banner-upload" id="wrap-bannerDesktop">
-              <input type="file" accept="image/*" onchange="previewBanner(this,'bannerDesktop')"/>
+              <input type="file" accept="image/*" id="file-bannerDesktop" onchange="previewBanner(this,'bannerDesktop')" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;"/>
               <i class="bi bi-image"></i>
-              <div class="up-label">Click to upload</div>
-              <div class="up-sub">1920×600 recommended</div>
+              <div class="up-label">Click to upload · max 10 MB</div>
+              <div class="up-sub">1920×600 recommended · auto-cropped</div>
               <img id="prev-bannerDesktop" class="banner-preview" src="<%= event && event.bannerDesktop ? event.bannerDesktop : '' %>"/>
             </div>
             <input type="hidden" name="bannerDesktop" id="bannerDesktop" value="<%= event ? event.bannerDesktop : '' %>"/>
@@ -166,10 +198,10 @@
           <div class="field-group">
             <label class="field-label">Landing Page Banner (Mobile)</label>
             <div class="banner-upload" id="wrap-bannerMobile">
-              <input type="file" accept="image/*" onchange="previewBanner(this,'bannerMobile')"/>
+              <input type="file" accept="image/*" id="file-bannerMobile" onchange="previewBanner(this,'bannerMobile')" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;"/>
               <i class="bi bi-phone"></i>
-              <div class="up-label">Click to upload</div>
-              <div class="up-sub">800×600 recommended</div>
+              <div class="up-label">Click to upload · max 10 MB</div>
+              <div class="up-sub">800×600 recommended · auto-cropped</div>
               <img id="prev-bannerMobile" class="banner-preview" src="<%= event && event.bannerMobile ? event.bannerMobile : '' %>"/>
             </div>
             <input type="hidden" name="bannerMobile" id="bannerMobile" value="<%= event ? event.bannerMobile : '' %>"/>
@@ -177,10 +209,10 @@
           <div class="field-group">
             <label class="field-label">Event Detail Page Banner</label>
             <div class="banner-upload" id="wrap-bannerDetail">
-              <input type="file" accept="image/*" onchange="previewBanner(this,'bannerDetail')"/>
+              <input type="file" accept="image/*" id="file-bannerDetail" onchange="previewBanner(this,'bannerDetail')" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;"/>
               <i class="bi bi-card-image"></i>
-              <div class="up-label">Click to upload</div>
-              <div class="up-sub">1200×400 recommended</div>
+              <div class="up-label">Click to upload · max 10 MB</div>
+              <div class="up-sub">1200×400 recommended · auto-cropped</div>
               <img id="prev-bannerDetail" class="banner-preview" src="<%= event && event.bannerDetail ? event.bannerDetail : '' %>"/>
             </div>
             <input type="hidden" name="bannerDetail" id="bannerDetail" value="<%= event ? event.bannerDetail : '' %>"/>
@@ -249,78 +281,11 @@
     <div class="section">
       <div class="section-head"><div class="section-num">6</div><div class="section-title">Ticket Categories</div></div>
       <div class="section-body">
-        <div class="ticket-categories">
-
-          <% const cats = [
-            { key: 'platinum', label: 'PLATINUM', icon: '💎' },
-            { key: 'gold',     label: 'GOLD',     icon: '🥇' },
-            { key: 'silver',   label: 'SILVER',   icon: '🥈' },
-            { key: 'fanfit',   label: 'FANFIT',   icon: '🎤' },
-            { key: 'family',   label: 'FAMILY (COMBO × 4)', icon: '👨‍👩‍👧‍👦' },
-          ]; %>
-
-          <% cats.forEach(function(cat) {
-            const existing = event && event.ticketTypes ? event.ticketTypes.find(t => t.category === cat.key) : null;
-          %>
-          <div class="ticket-cat cat-<%= cat.key %>" id="cat-<%= cat.key %>">
-            <div class="ticket-cat-head" onclick="toggleCat('<%= cat.key %>')">
-              <div style="display:flex;align-items:center;gap:0.8rem;">
-                <span style="font-size:1.3rem;"><%= cat.icon %></span>
-                <span style="font-weight:700;font-size:0.95rem;"><%= cat.label %></span>
-                <span class="cat-badge"><%= cat.key.toUpperCase() %></span>
-              </div>
-              <div style="display:flex;align-items:center;gap:1rem;">
-                <label class="cat-enabled-toggle" onclick="event.stopPropagation()">
-                  <div class="toggle-sw <%= existing && existing.isActive ? 'on' : '' %>" id="toggle-<%= cat.key %>" onclick="flipToggle('<%= cat.key %>')"></div>
-                  <span style="font-size:0.8rem;color:#B3B3B3;" id="toggle-lbl-<%= cat.key %>"><%= existing && existing.isActive ? 'Enabled' : 'Disabled' %></span>
-                </label>
-                <i class="bi bi-chevron-down" id="chevron-<%= cat.key %>" style="color:#B3B3B3;transition:transform 0.2s;"></i>
-              </div>
-            </div>
-            <div class="ticket-cat-body" id="body-<%= cat.key %>">
-              <% if (cat.key === 'family') { %>
-              <div class="combo-note">
-                <i class="bi bi-info-circle-fill"></i> <strong>Combo Ticket:</strong> When a user books Family ticket, they get 4 tickets and must fill details for all 4 attendees.
-              </div>
-              <% } %>
-              <div class="field-row cols-3">
-                <div class="field-group">
-                  <label class="field-label">Price (₹) *</label>
-                  <input class="field-input" type="number" id="<%= cat.key %>_price" placeholder="0" value="<%= existing ? existing.price : '' %>"/>
-                </div>
-                <div class="field-group">
-                  <label class="field-label">Age Limit</label>
-                  <input class="field-input" type="number" id="<%= cat.key %>_ageLimit" placeholder="18" value="<%= existing ? existing.ageLimit : 18 %>"/>
-                </div>
-                <div class="field-group">
-                  <label class="field-label">Total Seats *</label>
-                  <input class="field-input" type="number" id="<%= cat.key %>_totalSeats" placeholder="100" value="<%= existing ? existing.totalSeats : '' %>"/>
-                </div>
-              </div>
-              <div class="field-row cols-2">
-                <div class="field-group">
-                  <label class="field-label">Ticket Type</label>
-                  <select class="field-input" id="<%= cat.key %>_ticketType">
-                    <option value="single" <%= !existing || existing.ticketType === 'single' ? 'selected' : '' %>>Single Entry</option>
-                    <option value="multiple" <%= existing && existing.ticketType === 'multiple' ? 'selected' : '' %>>Multiple Entry</option>
-                  </select>
-                </div>
-                <div class="field-group">
-                  <label class="field-label">Booked Seats (current)</label>
-                  <input class="field-input" type="number" id="<%= cat.key %>_bookedSeats" value="<%= existing ? existing.bookedSeats : 0 %>" min="0"/>
-                </div>
-              </div>
-              <div class="field-row">
-                <div class="field-group">
-                  <label class="field-label">Terms & Conditions</label>
-                  <textarea class="field-input" id="<%= cat.key %>_terms" placeholder="Entry conditions, refund policy..." style="min-height:70px;"><%= existing ? existing.terms : '' %></textarea>
-                </div>
-              </div>
-            </div>
-          </div>
-          <% }); %>
-
-        </div>
+        <div style="margin-bottom:1rem;font-size:0.82rem;color:#777;">Add as many ticket categories as you need. Each can have a custom name and color.</div>
+        <div id="ticketCatList" style="display:flex;flex-direction:column;gap:1rem;margin-bottom:1rem;"></div>
+        <button type="button" class="btn-add" onclick="addTicketCat()">
+          <i class="bi bi-plus-circle-fill"></i> Add Ticket Category
+        </button>
         <input type="hidden" name="ticketTypesJson" id="ticketTypesJson" value="[]"/>
       </div>
     </div>
@@ -351,6 +316,54 @@
   </form>
 </div>
 
+<!-- ── Banner Crop Modal ── -->
+<div id="cropModal">
+  <div class="crop-modal-box">
+    <div class="crop-modal-top"></div>
+    <div class="crop-modal-head">
+      <h3 id="cropModalTitle">CROP BANNER</h3>
+      <button onclick="closeBannerCrop()">×</button>
+    </div>
+    <div class="size-warn" id="cropSizeWarn">⚠ File exceeds 10 MB limit</div>
+    <div class="crop-area-wrap">
+      <canvas id="cropCanvas"></canvas>
+      <div class="crop-dashed"></div>
+    </div>
+    <div class="crop-ctrls">
+      <label>Zoom</label>
+      <input type="range" id="cropZoom" min="0.1" max="5" step="0.01" value="1" oninput="drawBannerCrop()"/>
+      <label>X</label>
+      <input type="range" id="cropOffX" min="-2000" max="2000" step="1" value="0" oninput="drawBannerCrop()"/>
+      <label>Y</label>
+      <input type="range" id="cropOffY" min="-2000" max="2000" step="1" value="0" oninput="drawBannerCrop()"/>
+    </div>
+    <div class="crop-footer">
+      <button class="crop-cancel-btn" onclick="closeBannerCrop()">Cancel</button>
+      <button class="crop-save-btn" onclick="saveBannerCrop()"><i class="bi bi-crop"></i> Use This Crop</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Artist Photo Crop Modal ── -->
+<div id="artistCropModal">
+  <div class="ac-box">
+    <div class="ac-top"></div>
+    <div class="ac-head"><h3>CROP PHOTO</h3><button onclick="closeArtistCrop()">×</button></div>
+    <div class="size-warn" id="artistSizeWarn">⚠ File exceeds 10 MB limit</div>
+    <div class="ac-area" id="acArea">
+      <canvas id="acCanvas"></canvas>
+    </div>
+    <div class="ac-ctrls">
+      <label>Zoom</label>
+      <input type="range" id="acZoom" min="0.1" max="5" step="0.01" value="1" oninput="drawArtistCrop()"/>
+    </div>
+    <div class="ac-footer">
+      <button class="crop-cancel-btn" onclick="closeArtistCrop()">Cancel</button>
+      <button class="crop-save-btn" onclick="saveArtistCrop()"><i class="bi bi-person-circle"></i> Use Photo</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -358,17 +371,182 @@
 const EXISTING_ARTISTS = <%- JSON.stringify(event && event.artists ? event.artists : []) %>;
 
 // ── Banner preview ──
+// ── Banner Crop System ──
+const MAX_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
+let cropImg = null, cropFieldId = null, cropAspect = 16/7;
+
+// BANNER CONFIGS: [fieldId, aspectW, aspectH, outputW, outputH, label]
+const BANNER_CONFIGS = {
+  bannerDesktop: { aw:16, ah:6, ow:1920, oh:600, label:'DESKTOP BANNER' },
+  bannerMobile:  { aw:4,  ah:3, ow:800,  oh:600, label:'MOBILE BANNER'  },
+  bannerDetail:  { aw:3,  ah:1, ow:1200, oh:400, label:'DETAIL BANNER'  },
+};
+
 function previewBanner(input, fieldId) {
   const file = input.files[0];
   if (!file) return;
+  if (file.size > MAX_SIZE_BYTES) {
+    document.getElementById('cropSizeWarn').style.display = 'block';
+    alert('Image exceeds 10 MB limit. Please choose a smaller file.');
+    input.value = ''; return;
+  }
   const reader = new FileReader();
   reader.onload = e => {
-    document.getElementById('prev-' + fieldId).src   = e.target.result;
-    document.getElementById('prev-' + fieldId).style.display = 'block';
-    document.getElementById(fieldId).value = e.target.result;
+    const img = new Image();
+    img.onload = () => {
+      cropImg = img;
+      cropFieldId = fieldId;
+      const cfg = BANNER_CONFIGS[fieldId] || { aw:16, ah:7 };
+      cropAspect = cfg.aw / cfg.ah;
+      // reset controls
+      document.getElementById('cropZoom').value = 1;
+      document.getElementById('cropOffX').value = 0;
+      document.getElementById('cropOffY').value = 0;
+      document.getElementById('cropModalTitle').textContent = cfg.label || 'CROP BANNER';
+      document.getElementById('cropSizeWarn').style.display = 'none';
+      document.getElementById('cropModal').classList.add('open');
+      // give modal time to paint then draw
+      requestAnimationFrame(() => requestAnimationFrame(drawBannerCrop));
+    };
+    img.src = e.target.result;
   };
   reader.readAsDataURL(file);
 }
+
+function drawBannerCrop() {
+  if (!cropImg) return;
+  const canvas = document.getElementById('cropCanvas');
+  const wrap   = canvas.parentElement;
+  const W = wrap.clientWidth  || 500;
+  const H = wrap.clientHeight || Math.round(W / cropAspect);
+  canvas.width  = W;
+  canvas.height = H;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0,0,W,H);
+  const zoom = parseFloat(document.getElementById('cropZoom').value) || 1;
+  const offX = parseFloat(document.getElementById('cropOffX').value) || 0;
+  const offY = parseFloat(document.getElementById('cropOffY').value) || 0;
+  const scale = Math.max(W/cropImg.width, H/cropImg.height) * zoom;
+  const dx = (W - cropImg.width  * scale) / 2 + offX;
+  const dy = (H - cropImg.height * scale) / 2 + offY;
+  ctx.drawImage(cropImg, dx, dy, cropImg.width * scale, cropImg.height * scale);
+}
+
+function saveBannerCrop() {
+  if (!cropImg || !cropFieldId) return;
+  const cfg = BANNER_CONFIGS[cropFieldId] || { ow:1200, oh:400 };
+  const out  = document.createElement('canvas');
+  out.width  = cfg.ow;
+  out.height = cfg.oh;
+  const ctx  = out.getContext('2d');
+  const zoom = parseFloat(document.getElementById('cropZoom').value) || 1;
+  const offX = parseFloat(document.getElementById('cropOffX').value) || 0;
+  const offY = parseFloat(document.getElementById('cropOffY').value) || 0;
+  const W = out.width, H = out.height;
+  const scale = Math.max(W/cropImg.width, H/cropImg.height) * zoom;
+  const dx = (W - cropImg.width * scale)/2 + (offX * W / (document.getElementById('cropCanvas').parentElement.clientWidth || W));
+  const dy = (H - cropImg.height * scale)/2 + (offY * H / (document.getElementById('cropCanvas').parentElement.clientHeight || H));
+  ctx.drawImage(cropImg, dx, dy, cropImg.width*scale, cropImg.height*scale);
+  const dataUrl = out.toDataURL('image/jpeg', 0.88);
+  document.getElementById(cropFieldId).value = dataUrl;
+  const prev = document.getElementById('prev-' + cropFieldId);
+  if (prev) { prev.src = dataUrl; prev.style.display = 'block'; }
+  closeBannerCrop();
+}
+
+function closeBannerCrop() {
+  document.getElementById('cropModal').classList.remove('open');
+  cropImg = null; cropFieldId = null;
+}
+
+// drag-to-pan on banner crop
+(function(){
+  let dragging=false, sx=0, sy=0, ox=0, oy=0;
+  const ca = document.getElementById('cropCanvas');
+  if (!ca) return;
+  function getXY(e){ return e.touches ? {x:e.touches[0].clientX,y:e.touches[0].clientY} : {x:e.clientX,y:e.clientY}; }
+  ca.addEventListener('mousedown',  e=>{dragging=true;const p=getXY(e);sx=p.x;sy=p.y;ox=parseFloat(document.getElementById('cropOffX').value)||0;oy=parseFloat(document.getElementById('cropOffY').value)||0;});
+  ca.addEventListener('touchstart', e=>{dragging=true;const p=getXY(e);sx=p.x;sy=p.y;ox=parseFloat(document.getElementById('cropOffX').value)||0;oy=parseFloat(document.getElementById('cropOffY').value)||0;},{passive:true});
+  window.addEventListener('mousemove',  e=>{if(!dragging)return;const p=getXY(e);document.getElementById('cropOffX').value=ox+(p.x-sx);document.getElementById('cropOffY').value=oy+(p.y-sy);drawBannerCrop();});
+  window.addEventListener('touchmove',  e=>{if(!dragging)return;const p=getXY(e);document.getElementById('cropOffX').value=ox+(p.x-sx);document.getElementById('cropOffY').value=oy+(p.y-sy);drawBannerCrop();},{passive:true});
+  window.addEventListener('mouseup',   ()=>dragging=false);
+  window.addEventListener('touchend',  ()=>dragging=false);
+})();
+
+// ── Artist Photo Crop System ──
+let acImg=null, acArtistIndex=-1;
+
+function openArtistCrop(file, idx) {
+  if (!file) return;
+  if (file.size > MAX_SIZE_BYTES) { alert('Image exceeds 10 MB limit.'); return; }
+  document.getElementById('artistSizeWarn').style.display='none';
+  acArtistIndex = idx;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const img=new Image();
+    img.onload=()=>{
+      acImg=img;
+      document.getElementById('acZoom').value=1;
+      document.getElementById('artistCropModal').classList.add('open');
+      requestAnimationFrame(()=>requestAnimationFrame(drawArtistCrop));
+    };
+    img.src=e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function drawArtistCrop(){
+  if(!acImg)return;
+  const canvas=document.getElementById('acCanvas');
+  const area=document.getElementById('acArea');
+  const S=area.clientWidth||220;
+  canvas.width=S;canvas.height=S;
+  const ctx=canvas.getContext('2d');
+  ctx.clearRect(0,0,S,S);
+  ctx.save();ctx.beginPath();ctx.arc(S/2,S/2,S/2,0,Math.PI*2);ctx.clip();
+  const zoom=parseFloat(document.getElementById('acZoom').value)||1;
+  const scale=Math.max(S/acImg.width,S/acImg.height)*zoom;
+  const dx=(S-acImg.width*scale)/2;
+  const dy=(S-acImg.height*scale)/2;
+  ctx.drawImage(acImg,dx,dy,acImg.width*scale,acImg.height*scale);
+  ctx.restore();
+}
+
+function saveArtistCrop(){
+  if(!acImg||acArtistIndex<0)return;
+  const out=document.createElement('canvas');
+  out.width=400;out.height=400;
+  const ctx=out.getContext('2d');
+  ctx.save();ctx.beginPath();ctx.arc(200,200,200,0,Math.PI*2);ctx.clip();
+  const zoom=parseFloat(document.getElementById('acZoom').value)||1;
+  const scale=Math.max(400/acImg.width,400/acImg.height)*zoom;
+  const dx=(400-acImg.width*scale)/2;
+  const dy=(400-acImg.height*scale)/2;
+  ctx.drawImage(acImg,dx,dy,acImg.width*scale,acImg.height*scale);
+  ctx.restore();
+  const dataUrl=out.toDataURL('image/jpeg',0.9);
+  artists[acArtistIndex].photo=dataUrl;
+  renderArtists();
+  closeArtistCrop();
+}
+
+function closeArtistCrop(){
+  document.getElementById('artistCropModal').classList.remove('open');
+  acImg=null;acArtistIndex=-1;
+}
+
+// drag to pan artist crop
+(function(){
+  let dr=false,sx=0,sy=0,base=1;
+  const ca=document.getElementById('acCanvas');
+  if(!ca)return;
+  function gp(e){return e.touches?{x:e.touches[0].clientX,y:e.touches[0].clientY}:{x:e.clientX,y:e.clientY};}
+  ca.addEventListener('mousedown', e=>{dr=true;const p=gp(e);sx=p.x;sy=p.y;base=parseFloat(document.getElementById('acZoom').value)||1;});
+  ca.addEventListener('touchstart',e=>{dr=true;const p=gp(e);sx=p.x;sy=p.y;base=parseFloat(document.getElementById('acZoom').value)||1;},{passive:true});
+  // Note: artist crop only supports zoom for simplicity on circular crop
+  window.addEventListener('mouseup',()=>dr=false);
+  window.addEventListener('touchend',()=>dr=false);
+})();
 
 // Show existing banner previews
 ['bannerDesktop','bannerMobile','bannerDetail'].forEach(id => {
@@ -425,75 +603,156 @@ function removeArtist(i) {
 function setArtistPhoto(i, input) {
   const file = input.files[0];
   if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    artists[i].photo = e.target.result;
-    renderArtists();
-  };
-  reader.readAsDataURL(file);
+  openArtistCrop(file, i);
 }
 
-// ── Ticket category toggles ──
-const catKeys = ['platinum','gold','silver','fanfit','family'];
-const catEnabled = {};
-catKeys.forEach(k => {
-  const tog = document.getElementById('toggle-' + k);
-  catEnabled[k] = tog ? tog.classList.contains('on') : false;
-});
+// ── Dynamic Ticket Categories ──
+let catCounter = 0;
+const PRESET_COLORS = ['#9D4EDD','#f5c842','#c0c8d8','#00FF88','#FF6B6B','#FF8C42','#4ECDC4','#45B7D1'];
 
-function toggleCat(key) {
-  const body    = document.getElementById('body-' + key);
-  const chevron = document.getElementById('chevron-' + key);
-  body.classList.toggle('open');
-  chevron.style.transform = body.classList.contains('open') ? 'rotate(180deg)' : '';
+// Load existing categories from server (edit mode)
+const EXISTING_CATS = <%- JSON.stringify(event && event.ticketTypes ? event.ticketTypes : []) %>;
+EXISTING_CATS.forEach(t => addTicketCat(t));
+if (EXISTING_CATS.length === 0) addTicketCat(); // start with one empty
+
+function addTicketCat(existing) {
+  const id = 'cat_' + (++catCounter);
+  const color = existing?.color || PRESET_COLORS[(catCounter - 1) % PRESET_COLORS.length];
+  const isActive = existing ? (existing.isActive !== false) : true;
+  const isMultiple = existing?.ticketType === 'multiple';
+
+  const el = document.createElement('div');
+  el.id = id;
+  el.style.cssText = `border-radius:10px;border:1.5px solid rgba(255,255,255,0.08);overflow:hidden;background:#0d0d14;`;
+
+  el.innerHTML = `
+    <div style="padding:0.9rem 1.2rem;display:flex;align-items:center;justify-content:space-between;cursor:pointer;background:rgba(255,255,255,0.02);" onclick="toggleCatBody('${id}')">
+      <div style="display:flex;align-items:center;gap:0.8rem;">
+        <input type="color" value="${color}" id="${id}_color" onclick="event.stopPropagation()"
+          onchange="updateCatColor('${id}',this.value)"
+          style="width:28px;height:28px;border-radius:6px;border:none;cursor:pointer;background:none;padding:0;"/>
+        <input type="text" id="${id}_name" value="${existing?.category||''}" placeholder="e.g. Gold, VIP, Family"
+          onclick="event.stopPropagation()"
+          style="background:transparent;border:none;outline:none;color:#fff;font-family:'Anton',sans-serif;font-size:1rem;letter-spacing:2px;width:180px;"
+          oninput="updateCatLabel('${id}')"/>
+        <span id="${id}_badge" style="font-family:'Space Mono',monospace;font-size:0.58rem;letter-spacing:1px;padding:0.15rem 0.55rem;border-radius:8px;background:${color}22;color:${color};border:1px solid ${color}44;">${existing?.category?.toUpperCase()||'NEW'}</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:0.8rem;" onclick="event.stopPropagation()">
+        <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer;font-size:0.82rem;color:#B3B3B3;">
+          <div id="${id}_tog" class="toggle-sw ${isActive?'on':''}" onclick="flipCatToggle('${id}')"></div>
+          <span id="${id}_toglbl">${isActive?'Active':'Disabled'}</span>
+        </label>
+        <button type="button" onclick="removeCat('${id}')" style="background:rgba(255,68,68,0.1);border:1px solid rgba(255,68,68,0.25);color:#FF4444;border-radius:5px;padding:0.25rem 0.5rem;cursor:pointer;font-size:0.75rem;">✕</button>
+        <i class="bi bi-chevron-down" id="${id}_chev" style="color:#B3B3B3;transition:transform 0.2s;"></i>
+      </div>
+    </div>
+    <div id="${id}_body" style="padding:1.2rem;display:none;border-top:1px solid rgba(255,255,255,0.06);">
+      <div class="field-row cols-3">
+        <div class="field-group"><label class="field-label">Price (₹) *</label>
+          <input class="field-input" type="number" id="${id}_price" placeholder="0" value="${existing?.price||''}"/></div>
+        <div class="field-group"><label class="field-label">Age Limit (0=any)</label>
+          <input class="field-input" type="number" id="${id}_ageLimit" placeholder="0" value="${existing?.ageLimit||0}"/></div>
+        <div class="field-group"><label class="field-label">Total Seats *</label>
+          <input class="field-input" type="number" id="${id}_totalSeats" placeholder="100" value="${existing?.totalSeats||''}"/></div>
+      </div>
+      <div class="field-row cols-2">
+        <div class="field-group"><label class="field-label">Ticket Type</label>
+          <select class="field-input" id="${id}_ticketType" onchange="toggleCatCombo('${id}')">
+            <option value="single" ${!isMultiple?'selected':''}>Single Entry</option>
+            <option value="multiple" ${isMultiple?'selected':''}>Multiple Entry (Group / Combo)</option>
+          </select></div>
+        <div class="field-group" id="${id}_comboWrap" style="display:${isMultiple?'block':'none'};">
+          <label class="field-label">People per Ticket *</label>
+          <input class="field-input" type="number" id="${id}_comboCount" min="2" max="20" placeholder="e.g. 4" value="${existing?.comboCount>1?existing.comboCount:2}"/>
+          <small style="color:#777;font-size:0.7rem;margin-top:0.25rem;display:block;">Each purchase = this many attendees (all fill their details)</small>
+        </div>
+        <div class="field-group"><label class="field-label">Booked Seats</label>
+          <input class="field-input" type="number" id="${id}_bookedSeats" value="${existing?.bookedSeats||0}" min="0"/></div>
+      </div>
+      <div class="field-row">
+        <div class="field-group"><label class="field-label">Terms & Conditions</label>
+          <textarea class="field-input" id="${id}_terms" placeholder="Entry conditions, refund policy..." style="min-height:60px;">${existing?.terms||''}</textarea></div>
+      </div>
+    </div>`;
+
+  document.getElementById('ticketCatList').appendChild(el);
+  // Auto-open if existing
+  if (existing) toggleCatBody(id);
+  updateCatColor(id, color);
 }
 
-function flipToggle(key) {
-  catEnabled[key] = !catEnabled[key];
-  const tog = document.getElementById('toggle-' + key);
-  const lbl = document.getElementById('toggle-lbl-' + key);
-  tog.classList.toggle('on', catEnabled[key]);
-  lbl.textContent = catEnabled[key] ? 'Enabled' : 'Disabled';
+function toggleCatBody(id) {
+  const body = document.getElementById(id+'_body');
+  const chev = document.getElementById(id+'_chev');
+  const open = body.style.display === 'none';
+  body.style.display = open ? 'block' : 'none';
+  chev.style.transform = open ? 'rotate(180deg)' : '';
 }
 
-// Open cats that have data
-catKeys.forEach(k => {
-  if (catEnabled[k]) toggleCat(k);
-});
+function updateCatColor(id, color) {
+  const badge = document.getElementById(id+'_badge');
+  if (badge) {
+    badge.style.background = color+'22';
+    badge.style.color = color;
+    badge.style.borderColor = color+'44';
+  }
+}
+
+function updateCatLabel(id) {
+  const val = document.getElementById(id+'_name').value.toUpperCase()||'NEW';
+  const badge = document.getElementById(id+'_badge');
+  if (badge) badge.textContent = val;
+}
+
+function flipCatToggle(id) {
+  const tog = document.getElementById(id+'_tog');
+  const lbl = document.getElementById(id+'_toglbl');
+  const active = tog.classList.toggle('on');
+  lbl.textContent = active ? 'Active' : 'Disabled';
+}
+
+function removeCat(id) {
+  const el = document.getElementById(id);
+  if (el) el.remove();
+}
+
+function toggleCatCombo(id) {
+  const val = document.getElementById(id+'_ticketType').value;
+  const wrap = document.getElementById(id+'_comboWrap');
+  if (wrap) wrap.style.display = val === 'multiple' ? 'block' : 'none';
+}
 
 // ── Submit — inject JSON fields ──
 function prepareSubmit() {
   // Artists JSON
   document.getElementById('artistsJson').value = JSON.stringify(artists);
 
-  // Ticket types JSON
+  // Ticket types JSON — collect from all dynamic cat cards
   const tickets = [];
-  catKeys.forEach(k => {
-    const price      = parseInt(document.getElementById(k + '_price')?.value) || 0;
-    const totalSeats = parseInt(document.getElementById(k + '_totalSeats')?.value) || 0;
-    const ageLimit   = parseInt(document.getElementById(k + '_ageLimit')?.value) || 18;
-    const ticketType = document.getElementById(k + '_ticketType')?.value || 'single';
-    const bookedSeats= parseInt(document.getElementById(k + '_bookedSeats')?.value) || 0;
-    const terms      = document.getElementById(k + '_terms')?.value || '';
-
-    if (price > 0 && totalSeats > 0) {
-      tickets.push({
-        category:    k,
-        price,
-        ageLimit,
-        ticketType,
-        totalSeats,
-        bookedSeats,
-        terms,
-        isActive:    catEnabled[k],
-        isCombo:     k === 'family',
-        comboCount:  k === 'family' ? 4 : 1,
-      });
-    }
+  document.querySelectorAll('#ticketCatList > div').forEach(el => {
+    const id = el.id;
+    const name = (document.getElementById(id+'_name')?.value||'').trim();
+    const price = parseInt(document.getElementById(id+'_price')?.value) || 0;
+    const totalSeats = parseInt(document.getElementById(id+'_totalSeats')?.value) || 0;
+    if (!name || price <= 0 || totalSeats <= 0) return; // skip incomplete
+    const color = document.getElementById(id+'_color')?.value || '#6A0DAD';
+    const ageLimit = parseInt(document.getElementById(id+'_ageLimit')?.value) || 0;
+    const ticketType = document.getElementById(id+'_ticketType')?.value || 'single';
+    const bookedSeats = parseInt(document.getElementById(id+'_bookedSeats')?.value) || 0;
+    const terms = document.getElementById(id+'_terms')?.value || '';
+    const rawCombo = parseInt(document.getElementById(id+'_comboCount')?.value) || 2;
+    const comboCount = ticketType === 'multiple' ? rawCombo : 1;
+    const isActive = document.getElementById(id+'_tog')?.classList.contains('on') || false;
+    tickets.push({
+      category: name.toLowerCase().replace(/\s+/g,'_'),
+      name, color, price, ageLimit, ticketType,
+      totalSeats, bookedSeats, terms,
+      isActive, isCombo: ticketType === 'multiple', comboCount,
+    });
   });
 
   if (tickets.length === 0) {
-    showToast('Add at least one ticket category with price and seats.', 'err');
+    showToast('Add at least one ticket category with name, price and seats.', 'err');
     return false;
   }
 

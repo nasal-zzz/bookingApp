@@ -41,7 +41,7 @@ const sendSmsOTP = async (phone, otp) => {
     const msg = await client.messages.create({
       from: SMS_FROM(),
       to:   phone,
-      body: `Your NightPass OTP is: ${otp}\nValid for 5 minutes. Do not share.\n— NightPass`,
+      body: `Your Melattur Entertainment Events OTP is: ${otp}\nValid for 5 minutes. Do not share.\n— MEE`,
     });
     console.log(`✅ SMS OTP sent to ${phone} | SID: ${msg.sid}`);
     return { success: true, sid: msg.sid };
@@ -68,9 +68,9 @@ const sendEmailOTP = async (email, otp) => {
   try {
     const mailer = getMailer();
     await mailer.sendMail({
-      from:    `"NightPass" <${process.env.SMTP_USER}>`,
+      from:    `"Melattur Entertainment Events" <${process.env.SMTP_USER}>`,
       to:      email,
-      subject: `${otp} is your NightPass verification code`,
+      subject: `${otp} is your Melattur Entertainment Events verification code`,
       html: `
 <!DOCTYPE html>
 <html>
@@ -81,13 +81,13 @@ const sendEmailOTP = async (email, otp) => {
       <table width="480" cellpadding="0" cellspacing="0" style="background:#14141C;border-radius:12px;overflow:hidden;border:1px solid rgba(106,13,173,0.3);">
         <!-- Header -->
         <tr><td style="background:#6A0DAD;padding:24px;text-align:center;">
-          <h1 style="margin:0;color:#fff;font-size:22px;letter-spacing:6px;font-weight:900;">NIGHTPASS</h1>
+          <img src="${process.env.APP_URL}/img/mee-logo.png" alt="MEE" style="height:44px;width:auto;object-fit:contain;" onerror="this.style.display='none'"/>
         </td></tr>
         <!-- Body -->
         <tr><td style="padding:32px 36px;">
           <p style="color:#B3B3B3;font-size:14px;margin:0 0 8px;">Hi there,</p>
           <p style="color:#fff;font-size:15px;line-height:1.6;margin:0 0 28px;">
-            Your email verification code for NightPass is:
+            Your email verification code for Melattur Entertainment Events is:
           </p>
           <!-- OTP Box -->
           <table width="100%" cellpadding="0" cellspacing="0">
@@ -98,12 +98,12 @@ const sendEmailOTP = async (email, otp) => {
             </td></tr>
           </table>
           <p style="color:#666;font-size:13px;margin:0 0 6px;">⏱ Valid for <strong style="color:#fff;">5 minutes</strong></p>
-          <p style="color:#666;font-size:13px;margin:0;">🔒 Never share this code with anyone — NightPass will never ask for it.</p>
+          <p style="color:#666;font-size:13px;margin:0;">🔒 Never share this code with anyone — MEE will never ask for it.</p>
         </td></tr>
         <!-- Footer -->
         <tr><td style="background:#0B0B0F;padding:16px 36px;border-top:1px solid rgba(255,255,255,0.06);">
           <p style="color:#444;font-size:12px;margin:0;text-align:center;">
-            If you didn't create a NightPass account, you can safely ignore this email.
+            If you didn't create a Melattur Entertainment Events account, you can safely ignore this email.
           </p>
         </td></tr>
       </table>

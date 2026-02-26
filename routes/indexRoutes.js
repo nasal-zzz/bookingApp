@@ -42,7 +42,8 @@
 
 const express = require('express');
 const router = express.Router();
-const Event = require('../models/Event');
+const Event  = require('../models/Event');
+const Banner = require('../models/Banner');
 const { optionalAuth, noCache } = require('../middleware/auth');
 
 // Home page — noCache ensures back button always hits server
@@ -51,14 +52,15 @@ router.get('/', noCache, optionalAuth, async (req, res) => {
     const allEvents   = await Event.find().sort({ date: -1 });
     const events       = allEvents.filter(ev => ev.isActive && new Date(ev.date) >= new Date());
     const pastEvents   = allEvents.filter(ev => new Date(ev.date) < new Date());
+    const banners      = await Banner.find({ isVisible: true }).sort({ order: 1 }).lean();
     res.render('pages/index', {
       title: 'NightPass — Book Your Party Entry',
-      events, pastEvents,
+      events, pastEvents, banners,
       event: events[0] || null,
       user: req.user || null,
     });
   } catch (err) {
-    res.render('pages/index', { title: 'NightPass', events: [], pastEvents: [], event: null, user: null });
+    res.render('pages/index', { title: 'NightPass', events: [], pastEvents: [], banners: [], event: null, user: null });
   }
 });
 

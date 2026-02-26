@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title><%= title %></title>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Outfit:wght@400;500;600;700&family=Space+Mono&display=swap" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet"/>
+  <style>
+    :root{--bg:#0B0B0F;--surface:#14141C;--card:#14141C;--border:rgba(255,255,255,0.08);--accent:#6A0DAD;--text:#fff;--muted:#B3B3B3;--error:#FF4444;--success:#00FF88;}
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-height:100vh;}
+    .layout{display:grid;grid-template-columns:220px 1fr;min-height:100vh;}
+    .sidebar{background:var(--surface);border-right:1px solid var(--border);padding:1.5rem 1rem;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:0.3rem;}
+    .s-logo{font-family:'Anton',sans-serif;font-size:1.3rem;letter-spacing:3px;color:#fff;text-decoration:none;display:block;padding:0 0.5rem 1.2rem;border-bottom:1px solid var(--border);margin-bottom:0.8rem;}
+    .s-logo span{color:var(--accent);}
+    .s-link{display:flex;align-items:center;gap:0.7rem;padding:0.7rem 0.8rem;color:var(--muted);text-decoration:none;border-radius:6px;font-size:0.85rem;transition:all 0.15s;border:1px solid transparent;}
+    .s-link:hover,.s-link.active{background:rgba(106,13,173,0.07);border-color:rgba(106,13,173,0.15);color:#fff;}
+    .s-link i{color:var(--accent);width:18px;}
+    .s-logout{margin-top:auto;display:flex;align-items:center;gap:0.7rem;padding:0.7rem 0.8rem;color:var(--error);text-decoration:none;border-radius:6px;font-size:0.85rem;border:1px solid transparent;transition:all 0.15s;}
+    .s-logout:hover{background:rgba(255,92,92,0.08);border-color:rgba(255,92,92,0.2);}
+    .main{padding:2rem;overflow-x:hidden;}
+    .page-title{font-family:'Anton',sans-serif;font-size:1.8rem;letter-spacing:2px;margin-bottom:0.3rem;}
+    .page-sub{font-size:0.78rem;color:var(--muted);margin-bottom:2rem;}
+
+    /* Upload card */
+    .upload-card{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:2rem;}
+    .card-top{height:3px;background:linear-gradient(90deg,#6A0DAD,#9D4EDD,#6A0DAD);}
+    .card-body{padding:1.5rem;}
+    .card-head{font-family:'Anton',sans-serif;font-size:1rem;letter-spacing:2px;color:#fff;margin-bottom:1.2rem;}
+    .f-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;}
+    .f-grp{display:flex;flex-direction:column;gap:0.3rem;}
+    .f-lbl{font-family:'Space Mono',monospace;font-size:0.52rem;letter-spacing:1px;color:#555;text-transform:uppercase;}
+    .f-inp{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:7px;color:#fff;font-family:'Outfit',sans-serif;font-size:0.88rem;padding:0.62rem 0.85rem;outline:none;transition:border-color 0.18s;width:100%;}
+    .f-inp:focus{border-color:rgba(106,13,173,0.45);}
+
+    /* Crop area */
+    .crop-wrap{display:none;margin-bottom:1rem;}
+    .crop-area{position:relative;width:100%;aspect-ratio:16/5;background:#08080e;border-radius:10px;overflow:hidden;border:1px solid var(--border);touch-action:none;}
+    .crop-canvas{display:block;width:100%;height:100%;}
+    .crop-overlay{position:absolute;inset:0;pointer-events:none;border:2px dashed rgba(106,13,173,0.6);border-radius:10px;}
+    .crop-controls{margin-top:0.8rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap;}
+    .zoom-row{display:flex;align-items:center;gap:0.6rem;flex:1;}
+    .zoom-row label{font-size:0.72rem;color:var(--muted);white-space:nowrap;}
+    .zoom-row input[type=range]{flex:1;accent-color:var(--accent);}
+
+    .drop-zone{border:2px dashed rgba(106,13,173,0.35);border-radius:10px;padding:2.5rem 1rem;text-align:center;cursor:pointer;transition:all 0.18s;color:#555;margin-bottom:1rem;}
+    .drop-zone:hover,.drop-zone.drag-over{border-color:var(--accent);background:rgba(106,13,173,0.06);color:#fff;}
+    .drop-zone i{font-size:2rem;display:block;margin-bottom:0.5rem;color:var(--accent);}
+    .drop-zone p{font-size:0.8rem;}
+    .drop-zone small{font-size:0.68rem;color:#555;margin-top:0.3rem;display:block;}
+
+    .submit-btn{display:flex;align-items:center;justify-content:center;gap:0.5rem;padding:0.85rem 2rem;background:var(--accent);color:#fff;border:none;border-radius:8px;font-weight:700;font-size:0.88rem;cursor:pointer;letter-spacing:1px;transition:all 0.18s;width:100%;}
+    .submit-btn:hover:not(:disabled){box-shadow:0 0 24px rgba(106,13,173,0.45);}
+    .submit-btn:disabled{opacity:0.45;cursor:not-allowed;}
+
+    .toast{display:none;padding:0.7rem 1rem;border-radius:7px;font-size:0.82rem;margin-top:0.75rem;align-items:center;gap:0.5rem;}
+    .toast.ok{background:rgba(0,255,136,0.08);border:1px solid rgba(0,255,136,0.25);color:#00FF88;display:flex;}
+    .toast.err{background:rgba(255,68,68,0.08);border:1px solid rgba(255,68,68,0.28);color:#FF4444;display:flex;}
+
+    /* Banners grid */
+    .banners-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem;}
+    .banner-card{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;transition:border-color 0.18s;}
+    .banner-card.hidden-banner{opacity:0.45;}
+    .banner-card:hover{border-color:rgba(106,13,173,0.3);}
+    .banner-img{width:100%;aspect-ratio:16/5;object-fit:cover;background:#0a0a12;display:block;}
+    .banner-meta{padding:0.8rem;}
+    .banner-title{font-weight:700;font-size:0.85rem;color:#fff;margin-bottom:0.3rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+    .banner-actions{display:flex;gap:0.5rem;margin-top:0.6rem;}
+    .btn-sm{display:inline-flex;align-items:center;gap:0.3rem;padding:0.35rem 0.7rem;border-radius:4px;font-size:0.75rem;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text);transition:all 0.15s;}
+    .btn-vis{color:#f5c842;border-color:rgba(245,200,66,0.3);}
+    .btn-vis:hover{background:rgba(245,200,66,0.1);}
+    .btn-del{color:var(--error);border-color:rgba(255,68,68,0.3);}
+    .btn-del:hover{background:rgba(255,68,68,0.1);}
+    .badge-on{background:rgba(0,255,136,0.08);border:1px solid rgba(0,255,136,0.3);color:#00FF88;font-size:0.58rem;padding:0.1rem 0.45rem;border-radius:10px;}
+    .badge-off{background:rgba(255,68,68,0.08);border:1px solid rgba(255,68,68,0.3);color:#FF4444;font-size:0.58rem;padding:0.1rem 0.45rem;border-radius:10px;}
+    .empty{text-align:center;padding:4rem 1rem;color:#555;}
+    @media(max-width:768px){.layout{grid-template-columns:1fr;}.sidebar{display:none;}.f-row{grid-template-columns:1fr;}}
+  </style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <a href="/admin" class="s-logo"><img src="/img/mee-logo.png" alt="MEE" style="height:28px;width:auto;object-fit:contain;"/></a>
+    <a href="/admin"              class="s-link"><i class="bi bi-speedometer2"></i> Dashboard</a>
+    <a href="/admin/events/new"   class="s-link"><i class="bi bi-plus-circle-fill"></i> New Event</a>
+    <a href="/admin/bookings"     class="s-link"><i class="bi bi-ticket-perforated-fill"></i> Bookings</a>
+    <a href="/admin/reviews"      class="s-link"><i class="bi bi-star-fill"></i> Reviews</a>
+    <a href="/admin/banners"      class="s-link active"><i class="bi bi-image-fill"></i> Banners</a>
+        <a href="/admin/profile" class="s-link"><i class="bi bi-person-circle"></i> My Profile</a>
+    <% if(locals.isSuperAdmin){ %>
+    <a href="/superadmin" class="s-link" style="color:#9D4EDD;border-color:rgba(157,78,221,0.2);background:rgba(157,78,221,0.06);"><i class="bi bi-shield-lock-fill" style="color:#9D4EDD;"></i> SuperAdmin Panel</a>
+    <% } %>
+    <a href="/admin/logout" class="s-logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
+  </aside>
+  <main class="main">
+    <h1 class="page-title">SPONSOR BANNERS</h1>
+    <p class="page-sub">Upload sponsor banners that display as a live loop on the homepage. Max 5MB per image.</p>
+
+    <!-- Upload form -->
+    <div class="upload-card">
+      <div class="card-top"></div>
+      <div class="card-body">
+        <div class="card-head">ADD NEW BANNER</div>
+        <div class="f-row">
+          <div class="f-grp">
+            <label class="f-lbl">Banner Title (optional)</label>
+            <input class="f-inp" type="text" id="bannerTitle" placeholder="e.g. Gold Sponsor — Acme Corp"/>
+          </div>
+          <div class="f-grp">
+            <label class="f-lbl">Click URL (optional)</label>
+            <input class="f-inp" type="url" id="bannerLink" placeholder="https://sponsor.com"/>
+          </div>
+        </div>
+
+        <!-- Drop zone -->
+        <div class="drop-zone" id="dropZone" onclick="document.getElementById('bannerFileInput').click()"
+          ondragover="this.classList.add('drag-over');event.preventDefault()"
+          ondragleave="this.classList.remove('drag-over')"
+          ondrop="handleDrop(event)">
+          <i class="bi bi-cloud-arrow-up"></i>
+          <p>Click or drag & drop banner image</p>
+          <small>Recommended: 1200×375px (16:5 ratio) · JPEG/PNG/WebP · Max 5MB</small>
+        </div>
+        <input type="file" id="bannerFileInput" accept="image/*" style="display:none;" onchange="loadBannerImage(event)"/>
+
+        <!-- Crop area (hidden until image loaded) -->
+        <div class="crop-wrap" id="cropWrap">
+          <div style="font-family:'Space Mono',monospace;font-size:0.52rem;letter-spacing:1px;color:#555;text-transform:uppercase;margin-bottom:0.5rem;">Adjust Banner — drag & zoom</div>
+          <div class="crop-area" id="cropArea">
+            <canvas class="crop-canvas" id="bannerCanvas"></canvas>
+            <div class="crop-overlay"></div>
+          </div>
+          <div class="crop-controls">
+            <div class="zoom-row">
+              <label>Zoom</label>
+              <input type="range" id="bannerZoom" min="0.5" max="3" step="0.01" value="1" oninput="bannerUpdateZoom(this.value)"/>
+            </div>
+            <button type="button" onclick="clearBannerImage()" style="padding:0.4rem 0.8rem;background:rgba(255,68,68,0.1);border:1px solid rgba(255,68,68,0.3);color:#FF4444;border-radius:6px;font-size:0.78rem;cursor:pointer;white-space:nowrap;">
+              <i class="bi bi-x"></i> Remove
+            </button>
+          </div>
+        </div>
+
+        <button class="submit-btn" id="uploadBtn" onclick="uploadBanner()">
+          <i class="bi bi-upload"></i> Upload Banner
+        </button>
+        <div class="toast" id="uploadToast"></div>
+      </div>
+    </div>
+
+    <!-- Existing banners -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+      <h2 style="font-family:'Anton',sans-serif;font-size:1.2rem;letter-spacing:2px;">EXISTING BANNERS (<%= banners.length %>)</h2>
+    </div>
+    <% if(banners.length===0){ %>
+    <div class="empty"><i class="bi bi-image" style="font-size:2.5rem;color:#333;display:block;margin-bottom:0.8rem;"></i>No banners yet. Upload your first one above.</div>
+    <% } else { %>
+    <div class="banners-grid">
+      <% banners.forEach(function(b){ %>
+      <div class="banner-card <%= b.isVisible?'':'hidden-banner' %>" id="bc-<%= b._id %>">
+        <img class="banner-img" src="<%= b.image %>" alt="<%= b.title||'Banner' %>"/>
+        <div class="banner-meta">
+          <div class="banner-title"><%= b.title||'(No title)' %></div>
+          <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem;">
+            <span class="<%= b.isVisible?'badge-on':'badge-off' %>" id="badge-<%= b._id %>"><%= b.isVisible?'VISIBLE':'HIDDEN' %></span>
+            <% if(b.linkUrl){ %><span style="font-size:0.65rem;color:#555;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:120px;"><%= b.linkUrl %></span><% } %>
+          </div>
+          <div class="banner-actions">
+            <button class="btn-sm btn-vis" onclick="toggleBanner('<%= b._id %>')">
+              <i class="bi bi-eye<%= b.isVisible?'-slash':'' %>-fill" id="eye-<%= b._id %>"></i>
+              <span id="visTxt-<%= b._id %>"><%= b.isVisible?'Hide':'Show' %></span>
+            </button>
+            <form method="POST" action="/admin/banners/<%= b._id %>/delete" style="display:inline" onsubmit="return confirm('Delete this banner?')">
+              <button type="submit" class="btn-sm btn-del"><i class="bi bi-trash3-fill"></i> Delete</button>
+            </form>
+          </div>
+        </div>
+      </div>
+      <% }); %>
+    </div>
+    <% } %>
+  </main>
+</div>
+
+<script>
+// ── Banner crop system ──
+let bImg = null, bScale = 1, bOffX = 0, bOffY = 0, bDragging = false, bLX = 0, bLY = 0;
+let bPinchDist = 0, bPinchScale = 1;
+
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('dropZone').classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file) processFile(file);
+}
+
+function loadBannerImage(e) {
+  const file = e.target.files[0];
+  if (file) processFile(file);
+  e.target.value = '';
+}
+
+function processFile(file) {
+  if (!file.type.startsWith('image/')) { showToast('Please select an image file.', 'err'); return; }
+  if (file.size > 5 * 1024 * 1024)    { showToast('Image too large. Max 5MB.', 'err'); return; }
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const img = new Image();
+    img.onload = () => {
+      bImg = img; bScale = 1; bOffX = 0; bOffY = 0;
+      document.getElementById('bannerZoom').value = 1;
+      document.getElementById('cropWrap').style.display = 'block';
+      document.getElementById('dropZone').style.display = 'none';
+      setTimeout(drawBanner, 50);
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearBannerImage() {
+  bImg = null;
+  document.getElementById('cropWrap').style.display = 'none';
+  document.getElementById('dropZone').style.display = 'block';
+}
+
+function drawBanner() {
+  const canvas = document.getElementById('bannerCanvas');
+  const area = document.getElementById('cropArea');
+  const W = area.offsetWidth, H = area.offsetHeight;
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = '#0a0a12';
+  ctx.fillRect(0, 0, W, H);
+  if (!bImg) return;
+  const aspect = bImg.width / bImg.height;
+  let bW, bH;
+  if (aspect > W/H) { bH = H; bW = bH * aspect; }
+  else              { bW = W; bH = bW / aspect; }
+  bW *= bScale; bH *= bScale;
+  ctx.drawImage(bImg, (W-bW)/2 + bOffX, (H-bH)/2 + bOffY, bW, bH);
+}
+
+function bannerUpdateZoom(v) { bScale = parseFloat(v); drawBanner(); }
+
+const ca = document.getElementById('cropArea');
+ca.addEventListener('mousedown', e => { bDragging=true; bLX=e.clientX; bLY=e.clientY; e.preventDefault(); });
+window.addEventListener('mousemove', e => {
+  if (!bDragging) return;
+  bOffX += e.clientX-bLX; bOffY += e.clientY-bLY; bLX=e.clientX; bLY=e.clientY; drawBanner();
+});
+window.addEventListener('mouseup', () => { bDragging=false; });
+ca.addEventListener('touchstart', e => {
+  if (e.touches.length===1){ bDragging=true; bLX=e.touches[0].clientX; bLY=e.touches[0].clientY; }
+  else if(e.touches.length===2){ bDragging=false; bPinchDist=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY); bPinchScale=bScale; }
+  e.preventDefault();
+}, {passive:false});
+ca.addEventListener('touchmove', e => {
+  if(e.touches.length===1&&bDragging){ bOffX+=e.touches[0].clientX-bLX; bOffY+=e.touches[0].clientY-bLY; bLX=e.touches[0].clientX; bLY=e.touches[0].clientY; drawBanner(); }
+  else if(e.touches.length===2){ const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY); bScale=Math.min(3,Math.max(0.5,bPinchScale*(d/bPinchDist))); document.getElementById('bannerZoom').value=bScale; drawBanner(); }
+  e.preventDefault();
+}, {passive:false});
+ca.addEventListener('touchend', ()=>{bDragging=false;});
+
+async function uploadBanner() {
+  if (!bImg) { showToast('Please select an image first.', 'err'); return; }
+  const canvas = document.getElementById('bannerCanvas');
+  const area = document.getElementById('cropArea');
+  // Export at 1200x375
+  const out = document.createElement('canvas');
+  out.width = 1200; out.height = 375;
+  const ctx = out.getContext('2d');
+  ctx.drawImage(canvas, 0, 0, area.offsetWidth, area.offsetHeight, 0, 0, 1200, 375);
+  const dataUrl = out.toDataURL('image/jpeg', 0.88);
+
+  const btn = document.getElementById('uploadBtn');
+  btn.disabled = true; btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Uploading…';
+
+  try {
+    const res = await fetch('/admin/banners', {
+      method:'POST', credentials:'include',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ title: document.getElementById('bannerTitle').value, linkUrl: document.getElementById('bannerLink').value, image: dataUrl }),
+    });
+    const d = await res.json();
+    if (d.success) { showToast('Banner uploaded! Refreshing…', 'ok'); setTimeout(()=>location.reload(), 1200); }
+    else showToast(d.message||'Upload failed.', 'err');
+  } catch(e) { showToast('Network error.', 'err'); }
+  btn.disabled=false; btn.innerHTML='<i class="bi bi-upload"></i> Upload Banner';
+}
+
+async function toggleBanner(id) {
+  const res = await fetch(`/admin/banners/${id}/toggle`, {method:'POST',credentials:'include'});
+  const d = await res.json();
+  if (d.success) {
+    const card=document.getElementById('bc-'+id);
+    const badge=document.getElementById('badge-'+id);
+    const eye=document.getElementById('eye-'+id);
+    const txt=document.getElementById('visTxt-'+id);
+    if(d.isVisible){ card.classList.remove('hidden-banner'); badge.className='badge-on'; badge.textContent='VISIBLE'; eye.className='bi bi-eye-slash-fill'; txt.textContent='Hide'; }
+    else            { card.classList.add('hidden-banner');    badge.className='badge-off'; badge.textContent='HIDDEN';  eye.className='bi bi-eye-fill';       txt.textContent='Show'; }
+  }
+}
+
+function showToast(msg, type) {
+  const t = document.getElementById('uploadToast');
+  t.textContent = msg; t.className = 'toast ' + type;
+  setTimeout(()=>{ t.className='toast'; }, 4000);
+}
+</script>
+</body>
+</html>

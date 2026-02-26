@@ -34,7 +34,7 @@
                   <span style="display:flex;align-items:center;gap:0.4rem;font-size:0.78rem;color:var(--muted);"><i class="bi bi-calendar3" style="color:var(--accent);"></i> <%= new Date(event.date).toDateString() %></span>
                   <span style="display:flex;align-items:center;gap:0.4rem;font-size:0.78rem;color:var(--muted);"><i class="bi bi-clock" style="color:var(--accent);"></i> <%= event.doorsOpen %> – <%= event.endTime %></span>
                   <span style="display:flex;align-items:center;gap:0.4rem;font-size:0.78rem;color:var(--muted);"><i class="bi bi-geo-alt" style="color:var(--accent);"></i> <%= event.venue %></span>
-                  <span style="display:flex;align-items:center;gap:0.4rem;font-size:0.78rem;color:var(--muted);"><i class="bi bi-suit-spade-fill" style="color:var(--accent);"></i> Dress Code: <%= event.dressCode %></span>
+                  
                 </div>
               </div>
             </div>
@@ -50,9 +50,7 @@
           <div class="section-card-body">
             <p class="qty-label" style="margin-bottom:0.8rem;">Ticket Type</p>
             <%
-              const tierOrder = ['standard','general','silver','gold','platinum','vip'];
-              const tierColors = {standard:'#a0a0a0',silver:'#c0c8d8',gold:'#f5c842',platinum:'#6A0DAD',vip:'#bf80ff',general:'#a0a0a0'};
-              const sortedTypes = [...event.ticketTypes].sort((a,b)=>tierOrder.indexOf(a.category)-tierOrder.indexOf(b.category));
+              const sortedTypes = [...event.ticketTypes].sort((a,b) => b.price - a.price);
               const firstAvail = sortedTypes.findIndex(t=>t.bookedSeats<t.totalSeats);
             %>
             <div class="ticket-tier-grid">
@@ -60,7 +58,7 @@
               <%
                 const isSoldOut = ttype.bookedSeats >= ttype.totalSeats;
                 const isFirst = ti === firstAvail;
-                const tColor = tierColors[ttype.category] || '#6A0DAD';
+                const tColor = ttype.color || '#6A0DAD';
                 const avail = ttype.totalSeats - ttype.bookedSeats;
               %>
               <label class="ticket-tier-card <%= isFirst ? 'selected' : '' %> <%= isSoldOut ? 'sold-out' : '' %>"
@@ -71,10 +69,10 @@
                        <%= isSoldOut ? 'disabled' : '' %>/>
                 <!-- Tier badge -->
                 <div class="tier-badge" style="color:<%= tColor %>;background:<%= tColor %>18;border-color:<%= tColor %>44;">
-                  <%= ttype.category.toUpperCase() %>
+                  <%= (ttype.name||ttype.category).toUpperCase() %>
                 </div>
                 <div class="tier-check"><i class="bi bi-check-lg"></i></div>
-                <div class="tier-name"><%= ttype.category.toUpperCase() %></div>
+                <div class="tier-name"><%= (ttype.name||ttype.category).toUpperCase() %></div>
                 <div class="tier-price">₹<%= ttype.price.toLocaleString('en-IN') %><span>/person</span></div>
                 <div class="tier-includes">
                   <% (ttype.terms ? [ttype.terms] : []).forEach(function(inc){ %>
@@ -97,20 +95,12 @@
 
             <div style="height:1px;background:var(--border);margin:1.2rem 0;"></div>
 
-            <p class="qty-label">Number of Tickets</p>
-            <div style="display:flex;align-items:center;gap:1.2rem;">
-              <button class="qty-btn" id="qtyMinus" onclick="changeQty(-1)" disabled>−</button>
-              <div class="qty-display" id="qtyDisplay">1</div>
-              <button class="qty-btn" id="qtyPlus" onclick="changeQty(1)">+</button>
-              <div style="flex:1;">
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.8rem;">
+              <div>
                 <div style="font-size:0.75rem;color:var(--muted);margin-bottom:0.2rem;">Total Amount</div>
-                <div style="font-family:var(--font-display);font-size:1.6rem;color:var(--accent);letter-spacing:1px;" id="qtyTotalPrice">—</div>
-                <div style="font-size:0.72rem;color:var(--muted);margin-top:0.3rem;font-family:var(--font-mono);">Max 10 tickets per booking</div>
+                <div style="font-family:var(--font-display);font-size:1.8rem;color:var(--accent);letter-spacing:1px;" id="qtyTotalPrice">—</div>
               </div>
-            </div>
-
-            <div style="display:flex;gap:0.5rem;margin-top:1.5rem;flex-wrap:wrap;" id="ticketChips">
-              <div class="ticket-chip"><i class="bi bi-ticket-perforated-fill"></i> TICKET #1</div>
+              <input type="hidden" id="qtyDisplay" value="1"/>
             </div>
           </div>
         </div>

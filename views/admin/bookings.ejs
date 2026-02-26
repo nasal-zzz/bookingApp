@@ -21,6 +21,9 @@
     .s-logout:hover{background:rgba(255,92,92,0.08);}
     .main{padding:2rem;position:relative;z-index:1;}
     .page-title{font-family:'Anton',sans-serif;font-size:2rem;letter-spacing:2px;color:#fff;margin-bottom:2rem;}
+    .page-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;margin-bottom:2rem;}
+    .reminder-btn{display:inline-flex;align-items:center;gap:0.5rem;padding:0.6rem 1.2rem;background:rgba(245,200,66,0.1);border:1px solid rgba(245,200,66,0.35);border-radius:7px;color:#f5c842;font-size:0.82rem;font-weight:700;cursor:pointer;letter-spacing:0.5px;transition:all 0.15s;font-family:inherit;}
+    .reminder-btn:hover{background:rgba(245,200,66,0.2);}
     .table-card{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
     .table-header{padding:1.2rem 1.5rem;border-bottom:1px solid var(--border);}
     .tbl-title{font-family:'Anton',sans-serif;font-size:1.2rem;letter-spacing:1px;color:#fff;}
@@ -40,15 +43,26 @@
 <body>
 <div class="admin-layout">
   <aside class="sidebar">
-    <a href="/admin" class="s-logo">NIGHT<span>PASS</span></a>
+    <a href="/admin" class="s-logo"><img src="/img/mee-logo.png" alt="MEE" style="height:28px;width:auto;object-fit:contain;"/></a>
     <a href="/admin" class="s-link"><i class="bi bi-speedometer2"></i> Dashboard</a>
     <a href="/admin/bookings" class="s-link active"><i class="bi bi-ticket-perforated-fill"></i> Bookings</a>
     <a href="/admin/events/new" class="s-link"><i class="bi bi-plus-circle-fill"></i> New Event</a>
+    <a href="/admin/reviews"      class="s-link"><i class="bi bi-star-fill"></i> Reviews</a>
+    <a href="/admin/banners"       class="s-link"><i class="bi bi-image-fill"></i> Banners</a>
     <a href="/" class="s-link" target="_blank"><i class="bi bi-box-arrow-up-right"></i> View Site</a>
+        <a href="/admin/profile" class="s-link"><i class="bi bi-person-circle"></i> My Profile</a>
+    <% if(locals.isSuperAdmin){ %>
+    <a href="/superadmin" class="s-link" style="color:#9D4EDD;border-color:rgba(157,78,221,0.2);background:rgba(157,78,221,0.06);"><i class="bi bi-shield-lock-fill" style="color:#9D4EDD;"></i> SuperAdmin Panel</a>
+    <% } %>
     <a href="/admin/logout" class="s-logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
   </aside>
   <main class="main">
-    <div class="page-title">ALL BOOKINGS (<%= bookings.length %>)</div>
+    <div class="page-header">
+      <div class="page-title">ALL BOOKINGS (<%= bookings.length %>)</div>
+      <button class="reminder-btn" onclick="sendReminders()">
+        <i class="bi bi-send-fill"></i> Send Pending/Failed Reminders
+      </button>
+    </div>
     <div class="table-card">
       <div class="search-row">
         <input class="search-input" id="searchInput" placeholder="Search by name, phone, ref..." oninput="filterTable(this.value)"/>
@@ -88,6 +102,37 @@
       row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
     });
   }
+
+  async function sendReminders() {
+    const btn = document.querySelector('.reminder-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<span style="width:12px;height:12px;border:2px solid rgba(245,200,66,0.3);border-top-color:#f5c842;border-radius:50%;animation:spin .7s linear infinite;display:inline-block;vertical-align:middle;margin-right:6px;"></span> Sending…';
+    try {
+      const r = await fetch('/admin/bookings/send-reminders', { method: 'POST', credentials: 'include' });
+      const d = await r.json();
+      if (d.success) {
+        const msg = d.sent24 > 0
+          ? `<i class="bi bi-check-circle-fill"></i> 24hr reminders: ${d.sent24}${d.sentImmediate > 0 ? ` · Immediate: ${d.sentImmediate}` : ''}`
+          : d.sentImmediate > 0
+            ? `<i class="bi bi-check-circle-fill"></i> Immediate reminders: ${d.sentImmediate}`
+            : `<i class="bi bi-check-circle-fill"></i> No reminders due (${d.total} checked)`;
+        btn.innerHTML = msg;
+        btn.style.color = '#00FF88'; btn.style.borderColor = 'rgba(0,255,136,0.35)';
+      } else {
+        btn.innerHTML = '<i class="bi bi-exclamation-circle-fill"></i> Error';
+        btn.style.color = '#FF4444';
+      }
+    } catch(e) {
+      btn.innerHTML = '<i class="bi bi-exclamation-circle-fill"></i> Network Error';
+      btn.style.color = '#FF4444';
+    }
+    btn.disabled = false;
+    setTimeout(() => {
+      btn.innerHTML = '<i class="bi bi-send-fill"></i> Send Pending/Failed Reminders';
+      btn.style.color = ''; btn.style.borderColor = '';
+    }, 4000);
+  }
 </script>
+<style>@keyframes spin{to{transform:rotate(360deg)}}</style>
 </body>
 </html>

@@ -1,5 +1,3 @@
-
-
 const mongoose = require('mongoose');
 
 // ── Artist Schema ──
@@ -11,20 +9,17 @@ const artistSchema = new mongoose.Schema({
 
 // ── Ticket Category Schema ──
 const ticketTypeSchema = new mongoose.Schema({
-  category:    {
-    type: String,
-    enum: ['platinum', 'gold', 'silver', 'fanfit', 'family'],
-    required: true,
-  },
+  category:    { type: String, required: true },   // free-text name e.g. "VIP", "Gold", "Family"
+  name:        { type: String, default: '' },       // display name (same as category or custom)
+  color:       { type: String, default: '#6A0DAD' }, // hex color chosen by admin
   price:       { type: Number, required: true },
-  ageLimit:    { type: Number, default: 18 },
+  ageLimit:    { type: Number, default: 0 },
   ticketType:  { type: String, enum: ['single', 'multiple'], default: 'single' },
-  // family = combo of 4 tickets, filled by user at booking
-  isCombo:     { type: Boolean, default: false },  // true only for family
-  comboCount:  { type: Number, default: 1 },       // 4 for family, 1 for others
+  isCombo:     { type: Boolean, default: false },
+  comboCount:  { type: Number, default: 1 },
   totalSeats:  { type: Number, required: true },
   bookedSeats: { type: Number, default: 0 },
-  terms:       { type: String, default: '' },      // terms & conditions
+  terms:       { type: String, default: '' },
   isActive:    { type: Boolean, default: true },
 });
 
@@ -33,18 +28,6 @@ ticketTypeSchema.virtual('availableSeats').get(function() {
 });
 ticketTypeSchema.virtual('isSoldOut').get(function() {
   return this.bookedSeats >= this.totalSeats;
-});
-
-// Colors per category
-const CATEGORY_COLORS = {
-  platinum: '#9D4EDD',
-  gold:     '#f5c842',
-  silver:   '#c0c8d8',
-  fanfit:   '#00FF88',
-  family:   '#FF6B6B',
-};
-ticketTypeSchema.virtual('color').get(function() {
-  return CATEGORY_COLORS[this.category] || '#6A0DAD';
 });
 
 // ── Main Event Schema ──
@@ -73,10 +56,9 @@ const eventSchema = new mongoose.Schema({
 
   // Tickets
   ticketTypes:       [ticketTypeSchema],
-  convenienceFee:    { type: Number, default: 20 },
+  convenienceFee:    { type: Number, default: 0 },
 
   // Meta
-  dressCode:         { type: String, default: 'All Black' },
   isActive:          { type: Boolean, default: true },
   isFeatured:        { type: Boolean, default: false },
 

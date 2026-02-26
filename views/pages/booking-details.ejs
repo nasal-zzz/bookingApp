@@ -165,6 +165,7 @@
           </div>
           <!-- Hidden input carries the category value for JS -->
           <input type="hidden" id="hiddenTicketType" value=""/>
+          <div id="qtySectionWrap">
           <div class="qty-sep"></div>
           <span class="qty-lbl">Number of Tickets</span>
           <div class="qty-row">
@@ -177,7 +178,7 @@
               <div style="font-size:0.68rem;color:#555;margin-top:0.15rem;">Max 10 per booking</div>
             </div>
           </div>
-          <div class="qty-chips" id="qtyChips">
+          <div class="qty-chips" id="qtyChips" style="display:none;">
             <div class="tix-chip"><i class="bi bi-ticket-perforated-fill"></i> TICKET #1</div>
           </div>
         </div>
@@ -190,6 +191,15 @@
           <div style="display:flex;align-items:flex-start;gap:0.55rem;background:rgba(106,13,173,0.06);border:1px solid rgba(106,13,173,0.14);border-radius:6px;padding:0.75rem;font-size:0.78rem;color:#B3B3B3;margin-bottom:1.3rem;">
             <i class="bi bi-info-circle-fill" style="color:var(--accent);flex-shrink:0;margin-top:2px;"></i>
             Each ticket requires a name — printed on the QR pass and checked at entry.
+          </div>
+          </div><!-- /qtySectionWrap -->
+          <!-- Group ticket note (hidden by default) -->
+          <div id="groupTicketNote" style="display:none;align-items:center;gap:0.8rem;background:rgba(106,13,173,0.08);border:1px solid rgba(106,13,173,0.22);border-radius:10px;padding:0.8rem 1.1rem;margin-bottom:1rem;">
+            <div style="font-size:1.3rem;">👥</div>
+            <div>
+              <div style="font-family:var(--font-display);font-size:0.9rem;letter-spacing:1px;color:#fff;margin-bottom:0.1rem;">GROUP TICKET — <span class="gtn-count">2</span> PEOPLE</div>
+              <div style="font-size:0.72rem;color:var(--muted);">This is a group entry. Fill in details for each person below. Each will get their own QR code.</div>
+            </div>
           </div>
           <div id="attendeeForms"></div>
         </div>
@@ -251,11 +261,13 @@
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   <script>
   const EVENT_DATA = <%- JSON.stringify(event) %>;
-  const CONV_FEE   = <%= event.convenienceFee||20 %>;
+  const CONV_FEE   = <%= event.convenienceFee||0 %>;
   const USER       = <%- JSON.stringify(user?{name:(user.firstName||'')+' '+(user.lastName||''),phone:user.phone||'',email:user.email||''}:{name:'',phone:'',email:''}) %>;
-  const TCOLORS    = {platinum:'#9D4EDD',gold:'#f5c842',silver:'#c0c8d8',fanfit:'#00FF88',family:'#FF6B6B'};
+  // Dynamic colors from ticket type data
+  const TCOLORS = Object.fromEntries((EVENT_DATA.ticketTypes||[]).map(t=>[t.category, t.color||'#6A0DAD']));
 
   let qty = 1, price = 0, selTypeName = '', discAmt = 0, couponApplied = false, couponCode = null;
+  let selTicketData = null, isMultiEntry = false, multiCount = 1;
   let selZone = '', selZoneCategory = '';
 
   // ─── READ ZONE/CATEGORY FROM STEP 1 ─────────────────────────────
@@ -278,24 +290,39 @@
       const tt=EVENT_DATA.ticketTypes.find(t=>t.category===urlCat);
       if(tt && tt.bookedSeats < tt.totalSeats){
         price=tt.price; selTypeName=tt.category;
+        selTicketData=tt; // store full ticket data for comboCount
       } else {
         // Fallback to first available
         const fallback=EVENT_DATA.ticketTypes.find(t=>t.bookedSeats<t.totalSeats);
-        if(fallback){price=fallback.price; selTypeName=fallback.category; urlCat=fallback.category;}
+        if(fallback){price=fallback.price; selTypeName=fallback.category; urlCat=fallback.category; selTicketData=fallback;}
+      }
+
+      // Multiple-entry / combo: lock qty=1, attendee count = comboCount
+      // Triggers for: ticketType==='multiple' OR isCombo===true (covers family + any combo)
+      const isComboTicket = selTicketData && (selTicketData.ticketType==='multiple' || selTicketData.isCombo===true);
+      if(isComboTicket){
+        isMultiEntry=true;
+        multiCount=selTicketData.comboCount||2;
+        qty=1; // 1 ticket purchase = comboCount people
+        // Hide quantity controls
+        const qtySection=document.getElementById('qtySectionWrap');
+        if(qtySection){qtySection.style.display='none';}
+        // Show group ticket note
+        const note=document.getElementById('groupTicketNote');
+        if(note){note.style.display='flex'; note.querySelector('.gtn-count').textContent=multiCount;}
       }
 
       // Set hidden input
       document.getElementById('hiddenTicketType').value=selTypeName;
 
       // Display selected ticket info (no grid — just a summary box)
-      const CAT_COLORS_JS={platinum:'#9D4EDD',gold:'#f5c842',silver:'#c0c8d8',fanfit:'#00FF88',family:'#FF6B6B'};
-      const c=CAT_COLORS_JS[selTypeName]||'#6A0DAD';
+      const c=TCOLORS[selTypeName]||'#6A0DAD';
       const displayEl=document.getElementById('selTicketDisplay');
       if(displayEl){displayEl.style.borderColor=c+'44';}
       const colorEl=document.getElementById('selTicketColor');
       if(colorEl){colorEl.style.background=c+'22';colorEl.style.border='1px solid '+c+'44';colorEl.textContent='🎟️';}
       const catEl=document.getElementById('selTicketCat');
-      if(catEl){catEl.textContent=(selZone?selZone+' · ':'')+selTypeName.toUpperCase();catEl.style.color=c;}
+      const ttName=selTicketData?.name||selTypeName;if(catEl){catEl.textContent=(selZone?selZone+' · ':'')+ttName.toUpperCase();catEl.style.color=c;}
       const priceEl=document.getElementById('selTicketPrice');
       if(priceEl){priceEl.textContent='₹'+price.toLocaleString('en-IN')+' per person';}
 
@@ -330,8 +357,9 @@
   // ─── ATTENDEE FORMS ──────────────────────────────────────────────
   function updateAttendeeForms(){
     const con=document.getElementById('attendeeForms');
-    while(con.children.length>qty)con.removeChild(con.lastChild);
-    for(let i=con.children.length+1;i<=qty;i++)con.appendChild(mkAtt(i));
+    const total=isMultiEntry?multiCount:qty;
+    while(con.children.length>total)con.removeChild(con.lastChild);
+    for(let i=con.children.length+1;i<=total;i++)con.appendChild(mkAtt(i));
   }
   function mkAtt(n){
     const isFirst=n===1,el=document.createElement('div');
@@ -350,7 +378,7 @@
         <div>
           <label class="form-label">Age *</label>
           <input type="number" class="form-inp" id="a-${n}" placeholder="25" min="0" max="99" inputmode="numeric"/>
-          <div class="field-err" id="ae-${n}"><i class="bi bi-exclamation-circle"></i>1</div>
+          <div class="field-err" id="ae-${n}"><i class="bi bi-exclamation-circle"></i> Age is required</div>
         </div>
         ${isFirst?`
         <div>
@@ -384,19 +412,31 @@
     return total;
   }
 
-  // ─── COUPON ───────────────────────────────────────────────────────
-  const COUPONS={'PARTY10':100,'NIGHT20':200,'FIRST50':50};
-  function applyCoupon(){
+  // ─── COUPON (live DB validation) ──────────────────────────────────
+  async function applyCoupon(){
     const code=document.getElementById('couponInp').value.trim().toUpperCase();
     const msgEl=document.getElementById('couponMsg');
-    if(COUPONS[code]){couponApplied=true;discAmt=COUPONS[code];couponCode=code;
-      msgEl.innerHTML=`<i class="bi bi-check-circle-fill" style="color:#00FF88;"></i><span style="color:#00FF88;">${code} applied — ₹${COUPONS[code]} off!</span>`;
-      msgEl.classList.add('show');document.getElementById('couponInp').style.borderColor='#00FF88';
-    }else{couponApplied=false;discAmt=0;couponCode=null;
-      msgEl.innerHTML=`<i class="bi bi-x-circle-fill" style="color:#FF4444;"></i><span style="color:#FF4444;">Invalid coupon code</span>`;
-      msgEl.classList.add('show');document.getElementById('couponInp').style.borderColor='#FF4444';
-      setTimeout(()=>{msgEl.classList.remove('show');document.getElementById('couponInp').style.borderColor='';},3000);
-    }
+    if(!code)return;
+    const btn=document.querySelector('.coupon-btn');
+    btn.textContent='...';btn.disabled=true;
+    try{
+      const sub=qty*price;
+      const res=await fetch('/superadmin/api/validate-coupon',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify({code,orderAmount:sub})});
+      const d=await res.json();
+      if(d.success){
+        couponApplied=true;discAmt=d.discount;couponCode=d.code;
+        msgEl.innerHTML=`<i class="bi bi-check-circle-fill" style="color:#00FF88;"></i><span style="color:#00FF88;">${d.code} applied — ₹${d.discount.toLocaleString('en-IN')} off!</span>`;
+        msgEl.classList.add('show');document.getElementById('couponInp').style.borderColor='#00FF88';
+      }else{
+        couponApplied=false;discAmt=0;couponCode=null;
+        msgEl.innerHTML=`<i class="bi bi-x-circle-fill" style="color:#FF4444;"></i><span style="color:#FF4444;">${d.message||'Invalid coupon'}</span>`;
+        msgEl.classList.add('show');document.getElementById('couponInp').style.borderColor='#FF4444';
+        setTimeout(()=>{msgEl.classList.remove('show');document.getElementById('couponInp').style.borderColor='';},3000);
+      }
+    }catch(e){
+      msgEl.innerHTML=`<i class="bi bi-x-circle-fill" style="color:#FF4444;"></i><span style="color:#FF4444;">Could not validate coupon</span>`;
+      msgEl.classList.add('show');
+    }finally{btn.textContent='APPLY';btn.disabled=false;}
     updateSummary();
   }
   document.getElementById('couponInp').addEventListener('keydown',e=>{if(e.key==='Enter')applyCoupon();});
@@ -404,13 +444,14 @@
   // ─── VALIDATE ─────────────────────────────────────────────────────
   function validate(){
     let ok=true;
-    for(let i=1;i<=qty;i++){
+    const total=isMultiEntry?multiCount:qty;
+    for(let i=1;i<=total;i++){
       const n=document.getElementById('n-'+i),a=document.getElementById('a-'+i);
       document.getElementById('ne-'+i).classList.remove('show');n.classList.remove('err');
       document.getElementById('ae-'+i).classList.remove('show');a.classList.remove('err');
       if(!n.value.trim()||n.value.trim().length<2){n.classList.add('err');document.getElementById('ne-'+i).classList.add('show');n.scrollIntoView({behavior:'smooth',block:'center'});ok=false;}
       const age=parseInt(a.value);
-      if(!a.value||isNaN(age)||age<18){a.classList.add('err');document.getElementById('ae-'+i).classList.add('show');ok=false;}
+      if(!a.value||isNaN(age)||age<1||age>120){a.classList.add('err');document.getElementById('ae-'+i).classList.add('show');ok=false;}
     }
     return ok;
   }
@@ -420,13 +461,16 @@
     if(!selTypeName){alert('Please select a ticket type.');return;}
     if(!validate())return;
     const attendees=[];
-    for(let i=1;i<=qty;i++){
+    const total=isMultiEntry?multiCount:qty;
+    for(let i=1;i<=total;i++){
       attendees.push({name:document.getElementById('n-'+i).value.trim(),age:document.getElementById('a-'+i).value,special:document.getElementById('sp-'+i)?.value||''});
     }
+    // For multiple-entry tickets, quantity sent to server = 1 ticket but attendees = comboCount
+    const submitQty = isMultiEntry ? 1 : qty;
     setLoading(true);
     try{
       const res=await fetch('/booking/create-order',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',
-        body:JSON.stringify({eventId:EVENT_DATA._id,ticketType:selTypeName,quantity:qty,couponCode,attendees,zone:selZone})});
+        body:JSON.stringify({eventId:EVENT_DATA._id,ticketType:selTypeName,quantity:submitQty,couponCode,attendees,zone:selZone,comboCount:isMultiEntry?multiCount:1})});
       const data=await res.json();
       if(!data.success){alert(data.message);setLoading(false);return;}
       const rzp=new Razorpay({

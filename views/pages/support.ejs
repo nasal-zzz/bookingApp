@@ -5,68 +5,318 @@
   <title>Help & Support — NightPass</title>
   <%- include('../partials/head') %>
   <style>
-    .pg-wrap{max-width:1060px;margin:0 auto;padding:3rem 1.5rem 5rem;position:relative;z-index:1;}
-    .pg-tag{font-family:var(--font-mono);font-size:0.62rem;letter-spacing:3px;color:var(--accent);margin-bottom:0.4rem;}
-    .pg-title{font-family:var(--font-display);font-size:clamp(2rem,5vw,3.2rem);letter-spacing:2px;color:#fff;line-height:1;margin-bottom:2.5rem;}
-    .pg-title span{color:var(--muted);}
+    /* ── PAGE WRAP ── */
+    .pg-wrap {
+      max-width: 1060px;
+      margin: 0 auto;
+      padding: 2rem 1rem 4rem;
+      position: relative;
+      z-index: 1;
+    }
+    @media(min-width: 600px) {
+      .pg-wrap { padding: 3rem 1.5rem 5rem; }
+    }
 
-    .sup-grid{display:grid;grid-template-columns:1fr 1.5fr;gap:2.5rem;align-items:start;}
-    @media(max-width:800px){.sup-grid{grid-template-columns:1fr;}}
+    .pg-tag {
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      letter-spacing: 3px;
+      color: var(--accent);
+      margin-bottom: 0.4rem;
+    }
+    .pg-title {
+      font-family: var(--font-display);
+      font-size: clamp(1.7rem, 6vw, 3.2rem);
+      letter-spacing: 2px;
+      color: #fff;
+      line-height: 1;
+      margin-bottom: 2rem;
+    }
+    .pg-title span { color: var(--muted); }
 
-    /* Company info card */
-    .company-card{background:var(--card,#14141C);border:1px solid rgba(255,255,255,0.07);border-radius:14px;overflow:hidden;position:sticky;top:80px;}
-    .company-card-top{height:4px;background:linear-gradient(90deg,#6A0DAD,#9D4EDD,#6A0DAD);}
-    .company-card-body{padding:1.8rem;}
-    .company-name{font-family:var(--font-display);font-size:1.05rem;letter-spacing:2px;color:#fff;margin-bottom:0.2rem;}
-    .company-tag{font-family:var(--font-mono);font-size:0.55rem;letter-spacing:2px;color:var(--accent);margin-bottom:1.5rem;}
-    .company-item{display:flex;align-items:flex-start;gap:0.85rem;padding:0.75rem 0;border-bottom:1px solid rgba(255,255,255,0.05);}
-    .company-item:last-child{border-bottom:none;}
-    .company-ico{width:34px;height:34px;border-radius:8px;background:rgba(106,13,173,0.12);border:1px solid rgba(106,13,173,0.22);display:flex;align-items:center;justify-content:center;color:var(--accent);font-size:0.85rem;flex-shrink:0;margin-top:1px;}
-    .company-lbl{font-family:var(--font-mono);font-size:0.52rem;letter-spacing:1px;color:#555;text-transform:uppercase;margin-bottom:0.2rem;}
-    .company-val{font-size:0.8rem;color:#ccc;line-height:1.6;}
-    .company-val a{color:var(--accent);text-decoration:none;}
-    .company-val a:hover{text-decoration:underline;}
+    /* ── GRID ── */
+    .sup-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+      align-items: start;
+    }
+    @media(min-width: 820px) {
+      .sup-grid {
+        grid-template-columns: 1fr 1.5fr;
+        gap: 2.5rem;
+      }
+    }
 
-    .wa-btn{display:flex;align-items:center;justify-content:center;gap:0.6rem;width:100%;margin-top:1.2rem;padding:0.8rem;background:rgba(37,211,102,0.1);border:1px solid rgba(37,211,102,0.3);border-radius:8px;color:#25d366;font-weight:700;font-size:0.82rem;text-decoration:none;transition:all 0.18s;}
-    .wa-btn:hover{background:rgba(37,211,102,0.2);color:#25d366;}
+    /* ── COMPANY CARD ── */
+    .company-card {
+      background: var(--card, #14141C);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 14px;
+      overflow: hidden;
+      /* Sticky only on desktop */
+    }
+    @media(min-width: 820px) {
+      .company-card { position: sticky; top: 80px; }
+    }
 
-    /* Form card */
-    .form-card{background:var(--card,#14141C);border:1px solid rgba(255,255,255,0.07);border-radius:14px;overflow:hidden;}
-    .form-card-top{height:4px;background:linear-gradient(90deg,#6A0DAD,#9D4EDD,#6A0DAD);}
-    .form-card-body{padding:1.8rem;}
-    .form-head{margin-bottom:1.5rem;}
-    .form-head h2{font-family:var(--font-display);font-size:1.2rem;letter-spacing:2px;color:#fff;margin-bottom:0.3rem;}
-    .form-head p{font-size:0.78rem;color:var(--muted);}
+    .company-card-top {
+      height: 4px;
+      background: linear-gradient(90deg, #6A0DAD, #9D4EDD, #6A0DAD);
+    }
+    .company-card-body { padding: 1.4rem 1.2rem; }
+    @media(min-width: 480px) {
+      .company-card-body { padding: 1.8rem; }
+    }
 
-    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;}
-    @media(max-width:480px){.form-row{grid-template-columns:1fr;}}
-    .form-grp{display:flex;flex-direction:column;gap:0.3rem;margin-bottom:1rem;}
-    .form-lbl{font-family:var(--font-mono);font-size:0.55rem;letter-spacing:1.5px;color:#555;text-transform:uppercase;}
-    .form-inp{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:7px;color:#fff;font-family:var(--font-body,sans-serif);font-size:0.88rem;padding:0.7rem 1rem;outline:none;transition:border-color 0.18s;width:100%;}
-    .form-inp:focus{border-color:rgba(106,13,173,0.45);}
-    .form-inp.err{border-color:#FF4444;}
-    textarea.form-inp{min-height:130px;resize:vertical;}
+    .company-name {
+      font-family: var(--font-display);
+      font-size: clamp(0.85rem, 2.5vw, 1.05rem);
+      letter-spacing: 1.5px;
+      color: #fff;
+      margin-bottom: 0.2rem;
+      line-height: 1.3;
+    }
+    .company-tag {
+      font-family: var(--font-mono);
+      font-size: 0.55rem;
+      letter-spacing: 2px;
+      color: var(--accent);
+      margin-bottom: 1.2rem;
+    }
 
-    .send-btn{width:100%;padding:0.95rem;background:var(--accent,#6A0DAD);color:#fff;border:none;border-radius:8px;font-family:var(--font-body,sans-serif);font-weight:700;font-size:0.95rem;cursor:pointer;letter-spacing:1px;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:0.5rem;}
-    .send-btn:hover:not(:disabled){box-shadow:0 0 30px rgba(106,13,173,0.45);transform:translateY(-1px);}
-    .send-btn:disabled{opacity:0.45;cursor:not-allowed;transform:none;}
+    .company-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      padding: 0.7rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .company-item:last-child { border-bottom: none; }
 
-    .msg-box{padding:0.75rem 1rem;border-radius:7px;font-size:0.82rem;margin-top:0.8rem;display:none;align-items:center;gap:0.5rem;}
-    .msg-box.ok{background:rgba(0,255,136,0.08);border:1px solid rgba(0,255,136,0.25);color:#00FF88;display:flex;}
-    .msg-box.err{background:rgba(255,68,68,0.08);border:1px solid rgba(255,68,68,0.28);color:#FF4444;display:flex;}
+    .company-ico {
+      width: 34px;
+      height: 34px;
+      min-width: 34px;          /* prevent squishing */
+      border-radius: 8px;
+      background: rgba(106,13,173,0.12);
+      border: 1px solid rgba(106,13,173,0.22);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent);
+      font-size: 0.85rem;
+      margin-top: 1px;
+    }
+    .company-lbl {
+      font-family: var(--font-mono);
+      font-size: 0.52rem;
+      letter-spacing: 1px;
+      color: #555;
+      text-transform: uppercase;
+      margin-bottom: 0.2rem;
+    }
+    .company-val {
+      font-size: 0.82rem;
+      color: #ccc;
+      line-height: 1.65;
+      word-break: break-word;   /* stop long emails/addresses overflowing */
+    }
+    .company-val a { color: var(--accent); text-decoration: none; }
+    .company-val a:hover { text-decoration: underline; }
 
-    /* FAQs */
-    .faq-section{margin-top:3rem;}
-    .faq-tag{font-family:var(--font-mono);font-size:0.6rem;letter-spacing:3px;color:var(--accent);margin-bottom:0.3rem;}
-    .faq-title{font-family:var(--font-display);font-size:1.5rem;letter-spacing:2px;color:#fff;margin-bottom:1.5rem;}
-    .faq-list{display:flex;flex-direction:column;gap:0.6rem;}
-    .faq-item{background:var(--card,#14141C);border:1px solid rgba(255,255,255,0.06);border-radius:10px;overflow:hidden;}
-    .faq-q{padding:1rem 1.2rem;display:flex;align-items:center;justify-content:space-between;cursor:pointer;font-weight:600;font-size:0.88rem;color:#fff;transition:background 0.15s;}
-    .faq-q:hover{background:rgba(255,255,255,0.02);}
-    .faq-q i{color:var(--accent);transition:transform 0.2s;flex-shrink:0;}
-    .faq-item.open .faq-q i{transform:rotate(180deg);}
-    .faq-a{font-size:0.82rem;color:var(--muted);line-height:1.7;padding:0 1.2rem;max-height:0;overflow:hidden;transition:max-height 0.3s ease,padding 0.3s;}
-    .faq-item.open .faq-a{max-height:300px;padding:0 1.2rem 1rem;}
+    .wa-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      width: 100%;
+      margin-top: 1.2rem;
+      padding: 0.9rem 1rem;     /* taller touch target */
+      background: rgba(37,211,102,0.1);
+      border: 1px solid rgba(37,211,102,0.3);
+      border-radius: 8px;
+      color: #25d366;
+      font-weight: 700;
+      font-size: 0.88rem;
+      text-decoration: none;
+      transition: all 0.18s;
+      min-height: 48px;         /* accessible touch target */
+    }
+    .wa-btn:hover { background: rgba(37,211,102,0.2); color: #25d366; }
+
+    /* ── FORM CARD ── */
+    .form-card {
+      background: var(--card, #14141C);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+    .form-card-top {
+      height: 4px;
+      background: linear-gradient(90deg, #6A0DAD, #9D4EDD, #6A0DAD);
+    }
+    .form-card-body { padding: 1.4rem 1.2rem; }
+    @media(min-width: 480px) {
+      .form-card-body { padding: 1.8rem; }
+    }
+
+    .form-head { margin-bottom: 1.3rem; }
+    .form-head h2 {
+      font-family: var(--font-display);
+      font-size: clamp(1rem, 3vw, 1.2rem);
+      letter-spacing: 2px;
+      color: #fff;
+      margin-bottom: 0.3rem;
+    }
+    .form-head p { font-size: 0.78rem; color: var(--muted); }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr;   /* single col on mobile */
+      gap: 0;
+      margin-bottom: 0;
+    }
+    @media(min-width: 520px) {
+      .form-row {
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-bottom: 1rem;
+      }
+      /* Cancel out individual bottom margin when in a 2-col row */
+      .form-row .form-grp { margin-bottom: 0; }
+    }
+
+    .form-grp {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+      margin-bottom: 1rem;
+    }
+    .form-lbl {
+      font-family: var(--font-mono);
+      font-size: 0.55rem;
+      letter-spacing: 1.5px;
+      color: #555;
+      text-transform: uppercase;
+    }
+    .form-inp {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 7px;
+      color: #fff;
+      font-family: var(--font-body, sans-serif);
+      font-size: 0.88rem;
+      padding: 0.75rem 1rem;     /* slightly taller for touch */
+      outline: none;
+      transition: border-color 0.18s;
+      width: 100%;
+      min-height: 48px;          /* accessible input height */
+      box-sizing: border-box;
+    }
+    .form-inp:focus { border-color: rgba(106,13,173,0.45); }
+    .form-inp.err { border-color: #FF4444; }
+    textarea.form-inp {
+      min-height: 130px;
+      resize: vertical;
+    }
+
+    .send-btn {
+      width: 100%;
+      padding: 1rem;
+      min-height: 52px;
+      background: var(--accent, #6A0DAD);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-family: var(--font-body, sans-serif);
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      letter-spacing: 1px;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+    .send-btn:hover:not(:disabled) {
+      box-shadow: 0 0 30px rgba(106,13,173,0.45);
+      transform: translateY(-1px);
+    }
+    .send-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+
+    .msg-box {
+      padding: 0.75rem 1rem;
+      border-radius: 7px;
+      font-size: 0.82rem;
+      margin-top: 0.8rem;
+      display: none;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .msg-box.ok  { background: rgba(0,255,136,0.08);  border: 1px solid rgba(0,255,136,0.25); color: #00FF88; display: flex; }
+    .msg-box.err { background: rgba(255,68,68,0.08);   border: 1px solid rgba(255,68,68,0.28);  color: #FF4444;  display: flex; }
+
+    /* ── FAQs ── */
+    .faq-section { margin-top: 2.5rem; }
+    .faq-tag {
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      letter-spacing: 3px;
+      color: var(--accent);
+      margin-bottom: 0.3rem;
+    }
+    .faq-title {
+      font-family: var(--font-display);
+      font-size: clamp(1.2rem, 4vw, 1.5rem);
+      letter-spacing: 2px;
+      color: #fff;
+      margin-bottom: 1.2rem;
+    }
+    .faq-list { display: flex; flex-direction: column; gap: 0.6rem; }
+
+    .faq-item {
+      background: var(--card, #14141C);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .faq-q {
+      padding: 1rem 1rem;
+      display: flex;
+      align-items: flex-start;    /* align-items: flex-start so icon stays top on wrap */
+      justify-content: space-between;
+      gap: 0.8rem;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: #fff;
+      line-height: 1.45;
+      transition: background 0.15s;
+      min-height: 52px;           /* touch target */
+    }
+    .faq-q:hover { background: rgba(255,255,255,0.02); }
+    .faq-q span { flex: 1; }     /* let text flex, keep icon fixed */
+    .faq-q i {
+      color: var(--accent);
+      transition: transform 0.2s;
+      flex-shrink: 0;
+      font-size: 0.9rem;
+      margin-top: 2px;
+    }
+    .faq-item.open .faq-q i { transform: rotate(180deg); }
+
+    .faq-a {
+      font-size: 0.82rem;
+      color: var(--muted);
+      line-height: 1.75;
+      padding: 0 1rem;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease, padding 0.3s;
+    }
+    .faq-item.open .faq-a { max-height: 300px; padding: 0 1rem 1rem; }
   </style>
 </head>
 <body>
@@ -128,7 +378,7 @@
         </div>
       </div>
 
-      <!-- RIGHT: Contact form -->
+      <!-- RIGHT: Contact form + FAQs -->
       <div>
         <div class="form-card">
           <div class="form-card-top"></div>
@@ -138,18 +388,20 @@
               <p>Fill in the form below and we'll get back to you within 24 hours.</p>
             </div>
 
+            <!-- Name + Phone: 2-col on tablet+, stacked on mobile -->
             <div class="form-row">
-              <div class="form-grp" style="margin-bottom:0;">
+              <div class="form-grp">
                 <label class="form-lbl">Your Name *</label>
                 <input class="form-inp" id="supName" type="text" placeholder="Full name"
                   value="<% if(locals.user && user){ %><%= (user.firstName+' '+(user.lastName||'')).trim() %><% } %>"/>
               </div>
-              <div class="form-grp" style="margin-bottom:0;">
+              <div class="form-grp">
                 <label class="form-lbl">Phone Number</label>
                 <input class="form-inp" id="supPhone" type="tel" placeholder="+91 XXXXX XXXXX"
                   value="<% if(locals.user && user && user.phone){ %><%= user.phone %><% } %>"/>
               </div>
             </div>
+
             <div class="form-grp">
               <label class="form-lbl">Email Address *</label>
               <input class="form-inp" id="supEmail" type="email" placeholder="you@email.com"
@@ -205,48 +457,48 @@
     const subject = document.getElementById('supSubject').value.trim();
     const message = document.getElementById('supMessage').value.trim();
 
-    const ok  = document.getElementById('supOk');
-    const err = document.getElementById('supErr');
+    const ok     = document.getElementById('supOk');
+    const err    = document.getElementById('supErr');
     const errTxt = document.getElementById('supErrText');
-    ok.className='msg-box'; err.className='msg-box';
+    ok.className = 'msg-box'; err.className = 'msg-box';
 
-    if(!name){ errTxt.textContent='Please enter your name.'; err.className='msg-box err'; return; }
-    if(!email||!/\S+@\S+\.\S+/.test(email)){ errTxt.textContent='Please enter a valid email.'; err.className='msg-box err'; return; }
-    if(!subject){ errTxt.textContent='Please enter a subject.'; err.className='msg-box err'; return; }
-    if(!message){ errTxt.textContent='Please write your message.'; err.className='msg-box err'; return; }
+    if(!name)                              { errTxt.textContent='Please enter your name.';          err.className='msg-box err'; return; }
+    if(!email||!/\S+@\S+\.\S+/.test(email)){ errTxt.textContent='Please enter a valid email.';      err.className='msg-box err'; return; }
+    if(!subject)                           { errTxt.textContent='Please enter a subject.';           err.className='msg-box err'; return; }
+    if(!message)                           { errTxt.textContent='Please write your message.';        err.className='msg-box err'; return; }
 
-    const btn=document.getElementById('sendBtn');
-    btn.disabled=true;
-    btn.innerHTML='<span style="width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite;display:inline-block;"></span> Sending…';
+    const btn = document.getElementById('sendBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span style="width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite;display:inline-block;"></span> Sending…';
 
-    try{
+    try {
       const res = await fetch('/support/send', {
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        credentials:'include',
-        body: JSON.stringify({name,phone,email,subject,message}),
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ name, phone, email, subject, message }),
       });
       const d = await res.json();
-      if(d.success){
-        ok.className='msg-box ok';
-        document.getElementById('supSubject').value='';
-        document.getElementById('supMessage').value='';
+      if(d.success) {
+        ok.className = 'msg-box ok';
+        document.getElementById('supSubject').value = '';
+        document.getElementById('supMessage').value = '';
       } else {
         errTxt.textContent = d.message || 'Failed to send. Please try WhatsApp.';
-        err.className='msg-box err';
+        err.className = 'msg-box err';
       }
-    }catch(e){
-      errTxt.textContent='Network error. Please try WhatsApp or email us directly.';
-      err.className='msg-box err';
+    } catch(e) {
+      errTxt.textContent = 'Network error. Please try WhatsApp or email us directly.';
+      err.className = 'msg-box err';
     }
-    btn.disabled=false;
-    btn.innerHTML='<i class="bi bi-send-fill"></i> Send Message';
+    btn.disabled = false;
+    btn.innerHTML = '<i class="bi bi-send-fill"></i> Send Message';
   }
 
-  function toggleFaq(el){
+  function toggleFaq(el) {
     el.classList.toggle('open');
   }
   </script>
-  <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+  <style>@keyframes spin { to { transform: rotate(360deg) } }</style>
 </body>
 </html>

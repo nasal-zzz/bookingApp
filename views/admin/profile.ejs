@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title><%= title %></title>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Outfit:wght@400;500;600;700&family=Space+Mono&display=swap" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet"/>
+  <style>
+    :root{--bg:#0B0B0F;--surface:#14141C;--border:rgba(255,255,255,0.08);--accent:#6A0DAD;--text:#FFFFFF;--muted:#B3B3B3;--error:#FF4444;}
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-height:100vh;}
+    body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(255,255,255,0.012) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.012) 1px,transparent 1px);background-size:50px 50px;pointer-events:none;}
+    .admin-layout{display:grid;grid-template-columns:220px 1fr;min-height:100vh;}
+    .sidebar{background:var(--surface);border-right:1px solid var(--border);padding:1.5rem 1rem;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:0.3rem;z-index:10;overflow-y:auto;}
+    .s-logo{display:block;padding:0 0.5rem 1.2rem;border-bottom:1px solid var(--border);margin-bottom:0.8rem;}
+    .s-section{font-family:'Space Mono',monospace;font-size:0.52rem;letter-spacing:2px;color:var(--muted);text-transform:uppercase;padding:0.5rem;margin-top:0.5rem;}
+    .s-link{display:flex;align-items:center;gap:0.7rem;padding:0.7rem 0.8rem;color:var(--muted);text-decoration:none;border-radius:6px;font-size:0.85rem;transition:all 0.15s;border:1px solid transparent;}
+    .s-link:hover,.s-link.active{background:rgba(106,13,173,0.07);border-color:rgba(106,13,173,0.15);color:#fff;}
+    .s-link i{color:var(--accent);width:18px;}
+    .s-logout{margin-top:auto;display:flex;align-items:center;gap:0.7rem;padding:0.7rem 0.8rem;color:var(--error);text-decoration:none;border-radius:6px;font-size:0.85rem;border:1px solid transparent;transition:all 0.15s;}
+    .s-logout:hover{background:rgba(255,92,92,0.08);border-color:rgba(255,92,92,0.2);}
+    .main{padding:2rem;position:relative;z-index:1;}
+    .page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem;}
+    .page-title{font-family:'Anton',sans-serif;font-size:2rem;letter-spacing:2px;}
+    /* Profile card */
+    .profile-wrap{max-width:680px;}
+    .profile-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:1.5rem;}
+    .profile-header{background:linear-gradient(135deg,rgba(106,13,173,0.2),rgba(157,78,221,0.08));padding:2rem;display:flex;align-items:center;gap:1.5rem;border-bottom:1px solid var(--border);}
+    .profile-avatar{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#3a0870,#6A0DAD);border:3px solid rgba(106,13,173,0.5);display:flex;align-items:center;justify-content:center;font-family:'Anton',sans-serif;font-size:1.8rem;color:#fff;flex-shrink:0;letter-spacing:1px;}
+    .profile-name{font-family:'Anton',sans-serif;font-size:1.5rem;letter-spacing:1px;margin-bottom:0.3rem;}
+    .profile-username{font-family:'Space Mono',monospace;font-size:0.72rem;color:var(--muted);margin-bottom:0.5rem;}
+    .role-badge{display:inline-flex;align-items:center;gap:0.35rem;font-family:'Space Mono',monospace;font-size:0.58rem;letter-spacing:2px;padding:0.2rem 0.7rem;border-radius:10px;}
+    .rb-superadmin{background:rgba(157,78,221,0.12);border:1px solid rgba(157,78,221,0.3);color:#9D4EDD;}
+    .rb-admin{background:rgba(106,13,173,0.1);border:1px solid rgba(106,13,173,0.3);color:#9D4EDD;}
+    .rb-staff{background:rgba(0,255,136,0.08);border:1px solid rgba(0,255,136,0.25);color:#00FF88;}
+    /* Info rows */
+    .info-section{padding:1.5rem;}
+    .info-title{font-family:'Space Mono',monospace;font-size:0.55rem;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:1rem;}
+    .info-row{display:flex;align-items:center;padding:0.75rem 0;border-bottom:1px solid rgba(255,255,255,0.04);}
+    .info-row:last-child{border:none;}
+    .info-icon{width:36px;height:36px;border-radius:8px;background:rgba(106,13,173,0.08);border:1px solid rgba(106,13,173,0.15);display:flex;align-items:center;justify-content:center;color:var(--accent);font-size:0.9rem;flex-shrink:0;margin-right:1rem;}
+    .info-label{font-family:'Space Mono',monospace;font-size:0.58rem;letter-spacing:1px;color:#555;margin-bottom:0.15rem;}
+    .info-value{font-size:0.9rem;color:var(--text);font-weight:500;}
+    .info-value.mono{font-family:'Space Mono',monospace;font-size:0.78rem;}
+    /* Permissions card */
+    .perms-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.7rem;padding:1rem 1.5rem 1.5rem;}
+    .perm-chip{display:flex;align-items:center;gap:0.5rem;padding:0.6rem 0.85rem;border-radius:8px;font-size:0.78rem;font-weight:600;}
+    .perm-on{background:rgba(0,255,136,0.07);border:1px solid rgba(0,255,136,0.2);color:#00FF88;}
+    .perm-off{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);color:#444;}
+    /* Actions */
+    .action-bar{display:flex;gap:0.7rem;flex-wrap:wrap;margin-top:1.5rem;}
+    .btn{display:inline-flex;align-items:center;gap:0.45rem;padding:0.7rem 1.3rem;border-radius:7px;font-family:'Outfit',sans-serif;font-weight:700;font-size:0.85rem;text-decoration:none;border:none;cursor:pointer;transition:all 0.18s;}
+    .btn-accent{background:var(--accent);color:#fff;}.btn-accent:hover{box-shadow:0 0 20px rgba(106,13,173,0.4);color:#fff;}
+    .btn-ghost{background:rgba(255,255,255,0.04);border:1px solid var(--border);color:var(--muted);}.btn-ghost:hover{color:#fff;border-color:rgba(255,255,255,0.15);}
+    .btn-danger{background:rgba(255,68,68,0.08);border:1px solid rgba(255,68,68,0.25);color:var(--error);}.btn-danger:hover{background:rgba(255,68,68,0.15);}
+    .btn-sa{background:rgba(157,78,221,0.1);border:1px solid rgba(157,78,221,0.3);color:#9D4EDD;}.btn-sa:hover{background:rgba(157,78,221,0.2);color:#9D4EDD;}
+    @media(max-width:900px){.admin-layout{grid-template-columns:1fr;}.sidebar{display:none;}}
+  </style>
+</head>
+<body>
+<div class="admin-layout">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <a href="/admin" class="s-logo"><img src="/img/mee-logo.png" alt="MEE" style="height:28px;width:auto;object-fit:contain;"/></a>
+    <div class="s-section">Main</div>
+    <a href="/admin"          class="s-link"><i class="bi bi-speedometer2"></i> Dashboard</a>
+    <a href="/admin/bookings" class="s-link"><i class="bi bi-ticket-perforated-fill"></i> Bookings</a>
+    <div class="s-section">Events</div>
+    <a href="/admin/events/new" class="s-link"><i class="bi bi-plus-circle-fill"></i> New Event</a>
+    <a href="/admin/reviews"    class="s-link"><i class="bi bi-star-fill"></i> Reviews</a>
+    <a href="/admin/banners"    class="s-link"><i class="bi bi-image-fill"></i> Banners</a>
+    <a href="/" class="s-link" target="_blank"><i class="bi bi-box-arrow-up-right"></i> View Site</a>
+    <a href="/admin/profile" class="s-link active"><i class="bi bi-person-circle"></i> My Profile</a>
+    <% if(locals.isSuperAdmin){ %>
+    <a href="/superadmin" class="s-link" style="color:#9D4EDD;border-color:rgba(157,78,221,0.2);background:rgba(157,78,221,0.06);"><i class="bi bi-shield-lock-fill" style="color:#9D4EDD;"></i> SuperAdmin Panel</a>
+    <% } %>
+    <a href="/admin/logout" class="s-logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
+  </aside>
+
+  <!-- Main content -->
+  <main class="main">
+    <div class="page-header">
+      <div class="page-title">MY PROFILE</div>
+    </div>
+
+    <div class="profile-wrap">
+      <!-- Profile header card -->
+      <div class="profile-card">
+        <div class="profile-header">
+          <div class="profile-avatar">
+            <%= (currentAdmin.name || currentAdmin.username || 'A').trim().charAt(0).toUpperCase() %>
+          </div>
+          <div>
+            <div class="profile-name"><%= (currentAdmin.name || currentAdmin.username || 'Admin').toUpperCase() %></div>
+            <div class="profile-username">@<%= currentAdmin.username || 'admin' %></div>
+            <span class="role-badge rb-<%= currentAdmin.role || 'admin' %>">
+              <i class="bi bi-<%= currentAdmin.role === 'superadmin' ? 'shield-lock-fill' : 'person-fill-gear' %>"></i>
+              <%= (currentAdmin.role || 'admin').toUpperCase() %>
+            </span>
+          </div>
+        </div>
+
+        <!-- Info rows -->
+        <div class="info-section">
+          <div class="info-title">Account Details</div>
+
+          <div class="info-row">
+            <div class="info-icon"><i class="bi bi-person-fill"></i></div>
+            <div>
+              <div class="info-label">FULL NAME</div>
+              <div class="info-value"><%= currentAdmin.name || currentAdmin.username || '—' %></div>
+            </div>
+          </div>
+
+          <div class="info-row">
+            <div class="info-icon"><i class="bi bi-at"></i></div>
+            <div>
+              <div class="info-label">USERNAME</div>
+              <div class="info-value mono"><%= currentAdmin.username || '—' %></div>
+            </div>
+          </div>
+
+          <% if(currentAdmin.email){ %>
+          <div class="info-row">
+            <div class="info-icon"><i class="bi bi-envelope-fill"></i></div>
+            <div>
+              <div class="info-label">EMAIL</div>
+              <div class="info-value"><%= currentAdmin.email %></div>
+            </div>
+          </div>
+          <% } %>
+
+          <% if(currentAdmin.phone){ %>
+          <div class="info-row">
+            <div class="info-icon"><i class="bi bi-phone-fill"></i></div>
+            <div>
+              <div class="info-label">PHONE</div>
+              <div class="info-value mono"><%= currentAdmin.phone %></div>
+            </div>
+          </div>
+          <% } %>
+
+          <div class="info-row">
+            <div class="info-icon"><i class="bi bi-shield-fill"></i></div>
+            <div>
+              <div class="info-label">ACCESS LEVEL</div>
+              <div class="info-value" style="color:<%= currentAdmin.role === 'superadmin' ? '#9D4EDD' : '#6A0DAD' %>">
+                <%= currentAdmin.role === 'superadmin' ? 'Full System Access' : currentAdmin.role === 'admin' ? 'Admin Panel Access' : 'Restricted Staff' %>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Permissions card (only for staff role) -->
+      <% if(currentAdmin.role === 'staff'){ %>
+      <div class="profile-card">
+        <div class="info-section">
+          <div class="info-title">My Permissions</div>
+        </div>
+        <div class="perms-grid">
+          <div class="perm-chip <%= currentAdmin.canScanQR ? 'perm-on' : 'perm-off' %>">
+            <i class="bi bi-qr-code-scan"></i> QR Scanner
+          </div>
+          <div class="perm-chip <%= currentAdmin.canViewBookings ? 'perm-on' : 'perm-off' %>">
+            <i class="bi bi-ticket-perforated-fill"></i> View Bookings
+          </div>
+          <div class="perm-chip <%= currentAdmin.canManageEvents ? 'perm-on' : 'perm-off' %>">
+            <i class="bi bi-calendar-event-fill"></i> Manage Events
+          </div>
+        </div>
+      </div>
+      <% } %>
+
+      <!-- Action bar -->
+      <div class="action-bar">
+        <a href="/admin" class="btn btn-ghost"><i class="bi bi-arrow-left"></i> Back to Dashboard</a>
+        <% if(locals.isSuperAdmin){ %>
+        <a href="/superadmin" class="btn btn-sa"><i class="bi bi-shield-lock-fill"></i> SuperAdmin Panel</a>
+        <% } %>
+        <a href="/admin/logout" class="btn btn-danger"><i class="bi bi-box-arrow-right"></i> Logout</a>
+      </div>
+
+      <p style="font-size:0.72rem;color:#333;margin-top:1.5rem;font-family:'Space Mono',monospace;">
+        To update your details or password, contact your Super Admin.
+      </p>
+    </div>
+  </main>
+</div>
+</body>
+</html>

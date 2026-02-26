@@ -7,7 +7,8 @@ const Event    = require('../models/Event');
 const Booking  = require('../models/Booking');
 const SeatMap  = require('../models/SeatMap');
 const User     = require('../models/User');
-const { generateTicketId, generateQRCode, buildQRPayload } = require('../utils/qrHelper');
+const { generateTicketId, generateQRCode, buildQRPayload, buildGroupQRPayload } = require('../utils/qrHelper');
+const { sendBookingConfirmation, sendPendingPaymentReminder, sendFailedPaymentNotice } = require('../utils/emailHelper');
 
 // ─────────────────────────────────────────────────────────────
 // STEP 1 — GET /booking/seatmap/:eventId
@@ -94,11 +95,13 @@ exports.createOrder = async (req, res) => {
 
     const available = ttype.totalSeats - ttype.bookedSeats;
     if (available <= 0) return res.json({ success: false, message: 'This ticket type is sold out.' });
-    if (qty > 10)       return res.json({ success: false, message: 'Max 10 tickets per booking.' });
-    if (available < qty) return res.json({ success: false, message: `Only ${available} seats left.` });
+    // For multiple-entry tickets qty=1 but attendees = comboCount
+    const effectiveQty = ttype.ticketType === 'multiple' ? 1 : qty;
+    if (effectiveQty > 10) return res.json({ success: false, message: 'Max 10 tickets per booking.' });
+    if (available < effectiveQty) return res.json({ success: false, message: `Only ${available} seats left.` });
 
     const pricePerTicket = ttype.price;
-    const subtotal = pricePerTicket * qty;
+    const subtotal = pricePerTicket * effectiveQty;
     const convFee  = event.convenienceFee || 20;
 
     const COUPONS = { 'PARTY10': 100, 'NIGHT20': 200, 'FIRST50': 50 };
@@ -123,7 +126,7 @@ exports.createOrder = async (req, res) => {
       eventId:        event._id.toString(),
       ticketType:     ttype.category,
       zone:           zone || '',
-      quantity:       qty,
+      quantity:       effectiveQty,
       pricePerTicket,
       subtotal,
       discount,
@@ -210,6 +213,24 @@ exports.savePending = async (req, res) => {
     req.session.save(() => {});
 
     console.log('💾 Pending booking saved:', booking.bookingRef);
+
+    // Send IMMEDIATE pending payment reminder (async, don't block response)
+    try {
+      const event = await require('../models/Event').findById(pending.eventId).lean();
+      const contactEmail = req.user.email || '';
+      const contactPhone = req.user.phone || '';
+      const name = req.user.firstName || 'there';
+      if (contactEmail) {
+        sendPendingPaymentReminder({ to: contactEmail, name, booking, event: event || {} }).catch(()=>{});
+      }
+      if (contactPhone) {
+        const { sendWhatsAppPending } = require('../utils/whatsappHelper');
+        sendWhatsAppPending({ phone: contactPhone, name, booking, event: event || {} }).catch(()=>{});
+      }
+      // Mark immediate reminder as sent
+      await Booking.findByIdAndUpdate(booking._id, { reminderImmediateSentAt: new Date() }).catch(()=>{});
+    } catch(notifErr) { console.warn('Pending notif error:', notifErr.message); }
+
     return res.json({ success: true, bookingId: booking._id });
   } catch(err) {
     console.error('savePending error:', err);
@@ -248,6 +269,23 @@ exports.saveFailed = async (req, res) => {
     });
     await User.findByIdAndUpdate(req.user._id, { $push: { bookings: booking._id } }).catch(() => {});
     console.log('❌ Failed booking saved:', booking.bookingRef);
+
+    // Send failed payment notification (async)
+    try {
+      const event = await require('../models/Event').findById(pending.eventId).lean();
+      const contactEmail = req.user.email || '';
+      const contactPhone = req.user.phone || '';
+      const name = req.user.firstName || 'there';
+      if (contactEmail) {
+        sendFailedPaymentNotice({ to: contactEmail, name, booking, event: event || {} }).catch(()=>{});
+      }
+      // WhatsApp notification for failed payment
+      if (contactPhone) {
+        const { sendWhatsAppPaymentFailed } = require('../utils/whatsappHelper');
+        sendWhatsAppPaymentFailed({ phone: contactPhone, name, booking, event: event || {} }).catch(()=>{});
+      }
+    } catch(notifErr) { console.warn('Failed notif error:', notifErr.message); }
+
     res.json({ success: true });
   } catch(err) {
     res.json({ success: false, message: err.message });
@@ -375,15 +413,55 @@ exports.verifyPayment = async (req, res) => {
     }
 
     // Generate tickets + QR codes (new booking)
+    // Multiple-entry: 1 GROUP QR shared by all attendees (scanned once at gate)
+    // Single-entry: 1 QR per ticket as before
     const tickets = [];
     const attendees = pending.attendees || [];
-    for (let i = 0; i < pending.quantity; i++) {
-      const ticketId = generateTicketId(i);
-      const attendee = attendees[i] || attendees[0] || { name: req.user.firstName, age: 25 };
-      const qrPayload = buildQRPayload({ ticketId, bookingRef: 'PENDING', eventId: pending.eventId, paymentId: razorpay_payment_id, attendeeName: attendee.name || req.user.firstName, ticketType: pending.ticketType });
-      let qrCode = '';
-      try { qrCode = await generateQRCode(qrPayload); } catch(e) {}
-      tickets.push({ ticketId, attendee: { name: attendee.name || req.user.firstName, age: parseInt(attendee.age) || 25, special: attendee.special || '' }, qrData: JSON.stringify(qrPayload), qrCode });
+    const isMultiple = pending.comboCount > 1 || (attendees.length > 1 && pending.quantity === 1);
+    const ticketCount = attendees.length > 0 ? attendees.length : pending.quantity;
+
+    // Helper: generate seat number like "gold_s1", "family_s2"
+    const makeSeatNum = (category, idx) => `${(category||'ticket').toLowerCase().replace(/[^a-z0-9]/g,'_')}_s${idx + 1}`;
+
+    if (isMultiple && attendees.length > 1) {
+      // Assign a seat number to each person in the group
+      const seatNumbers = attendees.map((_, i) => makeSeatNum(pending.ticketType, i));
+
+      // Build ONE group QR that encodes all attendees + seat numbers
+      const groupQRPayload = buildGroupQRPayload({
+        bookingRef:  'PENDING',
+        eventId:     pending.eventId,
+        paymentId:   razorpay_payment_id,
+        ticketType:  pending.ticketType,
+        attendees:   attendees,
+        groupSize:   attendees.length,
+        seatNumbers: seatNumbers,
+      });
+      let groupQRCode = '';
+      try { groupQRCode = await generateQRCode(groupQRPayload); } catch(e) {}
+      const groupQRData = JSON.stringify(groupQRPayload);
+      // Each attendee record gets the SAME group QR + their own seat number
+      for (let i = 0; i < attendees.length; i++) {
+        const att = attendees[i] || { name: req.user.firstName, age: 25 };
+        tickets.push({
+          ticketId:   generateTicketId(i),
+          attendee:   { name: att.name || req.user.firstName, age: parseInt(att.age) || 25, special: att.special || '' },
+          qrData:     groupQRData,
+          qrCode:     groupQRCode,   // shared group QR
+          seatNumber: seatNumbers[i],
+        });
+      }
+    } else {
+      // Single-entry: one QR per ticket, each with own seat number
+      for (let i = 0; i < ticketCount; i++) {
+        const ticketId  = generateTicketId(i);
+        const attendee  = attendees[i] || attendees[0] || { name: req.user.firstName, age: 25 };
+        const seatNumber = makeSeatNum(pending.ticketType, i);
+        const qrPayload = buildQRPayload({ ticketId, bookingRef: 'PENDING', eventId: pending.eventId, paymentId: razorpay_payment_id, attendeeName: attendee.name || req.user.firstName, ticketType: pending.ticketType, seatNumber });
+        let qrCode = '';
+        try { qrCode = await generateQRCode(qrPayload); } catch(e) {}
+        tickets.push({ ticketId, seatNumber, attendee: { name: attendee.name || req.user.firstName, age: parseInt(attendee.age) || 25, special: attendee.special || '' }, qrData: JSON.stringify(qrPayload), qrCode });
+      }
     }
 
     const booking = await Booking.create({
@@ -520,6 +598,56 @@ exports.getAllEvents = async (req, res) => {
     const events = await Event.find({ isActive: true }).sort({ isFeatured: -1, date: 1 });
     res.json({ success: true, events });
   } catch(err) {
+    res.json({ success: false, message: err.message });
+  }
+};
+// POST /booking/retry-payment-api/:bookingId — JSON version for profile Pay Now button
+exports.retryPaymentApi = async (req, res) => {
+  try {
+    const booking = await Booking.findOne({
+      _id: req.params.bookingId,
+      user: req.user._id,
+    }).populate('event');
+
+    if (!booking || !['pending','failed'].includes(booking.paymentStatus)) {
+      return res.json({ success: false, message: 'Booking not found or already paid.' });
+    }
+
+    // Re-populate session
+    req.session.pendingBooking = {
+      bookingId:      booking._id.toString(),
+      eventId:        booking.event._id.toString(),
+      ticketType:     booking.ticketType,
+      quantity:       booking.quantity,
+      pricePerTicket: booking.pricePerTicket,
+      subtotal:       booking.subtotal,
+      discount:       booking.discount || 0,
+      couponCode:     booking.couponCode || null,
+      convenienceFee: booking.convenienceFee,
+      totalAmount:    booking.totalAmount,
+      attendees:      booking.tickets.map(t => ({ name: t.attendee.name, age: t.attendee.age, special: t.attendee.special||'' })),
+    };
+
+    const razorpay = new Razorpay({ key_id: process.env.RAZORPAY_KEY_ID, key_secret: process.env.RAZORPAY_KEY_SECRET });
+    const order = await razorpay.orders.create({ amount: booking.totalAmount * 100, currency: 'INR', receipt: 'NP_PAYNOW_' + Date.now() });
+    req.session.pendingBooking.orderId = order.id;
+    await new Promise((resolve, reject) => { req.session.save(err => err ? reject(err) : resolve()); });
+
+    res.json({
+      success:     true,
+      key:         process.env.RAZORPAY_KEY_ID,
+      amount:      order.amount,
+      currency:    order.currency,
+      orderId:     order.id,
+      description: booking.ticketType + ' × ' + booking.quantity,
+      prefill: {
+        name:  req.user.firstName + ' ' + (req.user.lastName||''),
+        email: req.user.email || '',
+        contact: req.user.phone || '',
+      },
+    });
+  } catch(err) {
+    console.error('retryPaymentApi error:', err);
     res.json({ success: false, message: err.message });
   }
 };

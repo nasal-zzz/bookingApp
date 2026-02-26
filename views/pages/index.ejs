@@ -4,7 +4,7 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <meta name="theme-color" content="#0B0B0F"/>
-  <title>NightPass — Book Your Party Entry</title>
+  <title>MEE — Book Your Party Entry</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Poppins:wght@300;400;500;600;700&family=Space+Mono&display=swap" rel="stylesheet"/>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet"/>
   <style>
@@ -176,44 +176,28 @@
       background: var(--accent);
     }
 
-    /* ── SPONSORS BAR ── */
-    .sponsors-bar {
-      background: var(--surface);
-      border-top: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
-      padding: 0.7rem 2rem;
-      overflow: hidden;
-      position: relative; z-index: 1;
-    }
-    .sponsors-label {
-      text-align: center;
-      font-family: var(--font-mono);
-      font-size: var(--desc-max);
-      letter-spacing: 0.5px;
-      color: var(--muted);
-      margin-bottom: 0.6rem;
-    }
-    .sponsors-track-wrap { overflow: hidden; }
-    .sponsors-track {
-      display: flex; gap: 1.2rem;
-      animation: scrollSponsors 22s linear infinite;
-      width: max-content;
-    }
-    .sponsors-track:hover { animation-play-state: paused; }
-    @keyframes scrollSponsors { from{transform:translateX(0)} to{transform:translateX(-50%)} }
-    .sponsor-item {
-      height: 56px; min-width: 160px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid var(--border);
+    /* ── SPONSORS MARQUEE ── */
+    .sp-banner-item {
+      height: 72px;
+      min-width: 200px;
       border-radius: 8px;
-      display: flex; align-items: center; justify-content: center;
-      font-family: var(--font-mono);
-      font-size: var(--desc-max);
-      color: var(--muted);
-      flex-shrink: 0;
       overflow: hidden;
+      flex-shrink: 0;
+      cursor: pointer;
+      border: 1px solid rgba(255,255,255,0.07);
+      background: #0d0d15;
     }
-    .sponsor-item img { height: 100%; width: 100%; object-fit: contain; padding: 0.5rem 1rem; }
+    .sp-banner-item img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+      pointer-events: none;
+    }
+    #sponsorTrack:hover { animation-play-state: paused; }
+    @keyframes spScroll { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+    @media(max-width:600px){
+      .sp-banner-item { height: 56px; min-width: 150px; }
+    }
 
     /* ── EVENTS GRID ── */
     .section { max-width:1100px; margin:0 auto; padding:4rem 2rem; position:relative; z-index:1; }
@@ -371,15 +355,15 @@
   </div>
   <% } %>
 
-  <!-- ═══════════════ SPONSORS BAR ═══════════════ -->
-  <div class="sponsors-bar">
-    <div class="sponsors-label">SPONSORS</div>
-    <div class="sponsors-track-wrap">
-      <div class="sponsors-track" id="sponsorsTrack">
-        <!-- Duplicated for seamless scroll -->
-        <% [1,2,3,4,5,6,1,2,3,4,5,6].forEach(function(n){ %>
-        <div class="sponsor-item">Banner <%= n %></div>
-        <% }); %>
+  <!-- ═══════════════ SPONSORS ═══════════════ -->
+  <div id="sponsorSection" style="display:none;padding:2.5rem 1.5rem 0;position:relative;z-index:1;max-width:1100px;margin:0 auto;">
+    <div style="display:flex;align-items:center;gap:0.8rem;margin-bottom:1rem;">
+      <div style="height:1px;flex:1;background:rgba(255,255,255,0.07);"></div>
+      <span style="font-family:var(--font-mono);font-size:0.55rem;letter-spacing:3px;color:#555;text-transform:uppercase;white-space:nowrap;">Our Sponsors</span>
+      <div style="height:1px;flex:1;background:rgba(255,255,255,0.07);"></div>
+    </div>
+    <div style="overflow:hidden;border-radius:10px;border:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.02);">
+      <div id="sponsorTrack" style="display:flex;gap:0.8rem;padding:0.6rem;width:max-content;animation:spScroll 20s linear infinite;">
       </div>
     </div>
   </div>
@@ -528,35 +512,64 @@
 
   <!-- ═══════════════ REVIEWS SECTION ═══════════════ -->
   <div class="section" id="reviews" style="padding-top:2rem;">
-    <span class="section-tag">// what people say</span>
-    <div class="section-title">AUDIENCE <span style="color:var(--muted);">REVIEWS</span></div>
-    <div class="reviews-grid">
-      <% [
-        {name:'Arjun Menon',     stars:5, loc:'Kozhikode',  text:'Absolutely insane event! The energy was electric from the moment we walked in. NightPass made the booking so smooth — QR scan at gate was instant.'},
-        {name:'Fathima Nizar',   stars:5, loc:'Malappuram', text:'Best night of 2025! The zone layout was perfect, we had a clear view from our section. Will definitely book again for the next one.'},
-        {name:'Sreejith Kumar',  stars:4, loc:'Thrissur',   text:'Great experience overall. The app was easy to use and tickets arrived on WhatsApp within minutes. Venue management was excellent.'},
-        {name:'Amina Rashid',    stars:5, loc:'Manjeri',    text:'First time attending a Melattur Pattu event and Im already planning for the next. The traditional performances with modern staging was breathtaking.'},
-        {name:'Vishnu Prasad',   stars:4, loc:'Palakkad',   text:'Smooth booking process, no queues at entry. The QR code system was really efficient. Sound quality at the venue was outstanding.'},
-        {name:'Rahmath Beevi',   stars:5, loc:'Tirur',      text:'Incredible experience! The atmosphere was magical. Highly recommend buying Gold tier — the view is perfect and worth every rupee.'},
-      ].forEach(function(r){ %>
-      <div class="review-card">
-        <div class="review-top">
-          <div class="review-avatar"><%= r.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2) %></div>
-          <div>
-            <div class="review-name"><%= r.name %></div>
-            <div class="review-loc"><i class="bi bi-geo-alt-fill"></i> <%= r.loc %></div>
-          </div>
-          <div class="review-stars">
-            <% for(let s=0;s<5;s++){ %><i class="bi bi-star-fill" style="color:<%= s < r.stars ? '#f5c842' : '#333' %>;"></i><% } %>
-          </div>
-        </div>
-        <p class="review-text">"<%= r.text %>"</p>
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:1rem;margin-bottom:1.5rem;">
+      <div>
+        <span class="section-tag">// what people say</span>
+        <div class="section-title" style="margin-bottom:0;">AUDIENCE <span style="color:var(--muted);">REVIEWS</span></div>
       </div>
-      <% }); %>
+      <% if(locals.user && user){ %>
+      <button onclick="openReviewModal()" class="write-rev-btn"><i class="bi bi-star-fill"></i> Write a Review</button>
+      <% } else { %>
+      <a href="/auth/login" class="write-rev-btn"><i class="bi bi-star-fill"></i> Login to Review</a>
+      <% } %>
+    </div>
+    <div class="reviews-grid" id="reviewsGrid">
+      <div style="grid-column:1/-1;text-align:center;padding:2rem;color:#555;font-size:0.82rem;" id="reviewsLoading">
+        <i class="bi bi-hourglass-split"></i> Loading reviews...
+      </div>
     </div>
   </div>
 
-
+  <!-- Review Modal -->
+  <div id="reviewModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:1000;align-items:center;justify-content:center;padding:1rem;backdrop-filter:blur(6px);">
+    <div style="background:#14141C;border:1px solid rgba(255,255,255,0.09);border-radius:16px;width:100%;max-width:480px;overflow:hidden;">
+      <div style="height:3px;background:linear-gradient(90deg,#6A0DAD,#9D4EDD,#6A0DAD);"></div>
+      <div style="padding:1.4rem;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;">
+          <div style="font-family:var(--font-display);font-size:1rem;letter-spacing:2px;color:#fff;">WRITE A REVIEW</div>
+          <button onclick="closeReviewModal()" style="background:none;border:none;color:#555;font-size:1.4rem;cursor:pointer;line-height:1;">×</button>
+        </div>
+        <div style="margin-bottom:0.9rem;">
+          <label style="font-family:var(--font-mono);font-size:0.52rem;letter-spacing:1.5px;color:#555;text-transform:uppercase;display:block;margin-bottom:0.3rem;">Event</label>
+          <select id="revEventId" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:7px;color:#fff;font-size:0.85rem;padding:0.6rem 0.85rem;outline:none;">
+            <option value="">— Select an event —</option>
+            <% (events||[]).concat(pastEventsArr||[]).forEach(function(ev){ %>
+            <option value="<%= ev._id %>"><%= ev.name %> (<%= new Date(ev.date).getFullYear() %>)</option>
+            <% }); %>
+          </select>
+        </div>
+        <div style="margin-bottom:0.9rem;">
+          <label style="font-family:var(--font-mono);font-size:0.52rem;letter-spacing:1.5px;color:#555;text-transform:uppercase;display:block;margin-bottom:0.45rem;">Your Rating</label>
+          <div style="display:flex;gap:0.35rem;" id="starPicker">
+            <i class="bi bi-star-fill rev-star" data-val="1" style="font-size:1.7rem;color:#333;cursor:pointer;transition:color 0.12s;" onclick="setStar(1)" onmouseover="hoverStar(1)" onmouseout="resetStars()"></i>
+            <i class="bi bi-star-fill rev-star" data-val="2" style="font-size:1.7rem;color:#333;cursor:pointer;transition:color 0.12s;" onclick="setStar(2)" onmouseover="hoverStar(2)" onmouseout="resetStars()"></i>
+            <i class="bi bi-star-fill rev-star" data-val="3" style="font-size:1.7rem;color:#333;cursor:pointer;transition:color 0.12s;" onclick="setStar(3)" onmouseover="hoverStar(3)" onmouseout="resetStars()"></i>
+            <i class="bi bi-star-fill rev-star" data-val="4" style="font-size:1.7rem;color:#333;cursor:pointer;transition:color 0.12s;" onclick="setStar(4)" onmouseover="hoverStar(4)" onmouseout="resetStars()"></i>
+            <i class="bi bi-star-fill rev-star" data-val="5" style="font-size:1.7rem;color:#333;cursor:pointer;transition:color 0.12s;" onclick="setStar(5)" onmouseover="hoverStar(5)" onmouseout="resetStars()"></i>
+          </div>
+          <input type="hidden" id="revRating" value="0"/>
+        </div>
+        <div style="margin-bottom:1rem;">
+          <label style="font-family:var(--font-mono);font-size:0.52rem;letter-spacing:1.5px;color:#555;text-transform:uppercase;display:block;margin-bottom:0.3rem;">Your Review</label>
+          <textarea id="revText" rows="4" placeholder="Share your experience at the event..." style="width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:7px;color:#fff;font-size:0.85rem;padding:0.65rem 0.85rem;outline:none;resize:vertical;font-family:inherit;"></textarea>
+        </div>
+        <div id="revMsg" style="display:none;padding:0.55rem 0.85rem;border-radius:6px;font-size:0.78rem;margin-bottom:0.8rem;"></div>
+        <button id="revSubmitBtn" onclick="submitReview()" style="width:100%;padding:0.85rem;background:#6A0DAD;color:#fff;border:none;border-radius:8px;font-weight:700;font-size:0.88rem;cursor:pointer;letter-spacing:1px;display:flex;align-items:center;justify-content:center;gap:0.45rem;transition:all 0.18s;">
+          <i class="bi bi-send-fill"></i> Submit Review
+        </button>
+      </div>
+    </div>
+  </div>
   <!-- ═══════════════ RICH FOOTER ═══════════════ -->
   <footer class="site-footer" id="footer">
     <div class="footer-center">
@@ -642,6 +655,8 @@
     .review-loc i{color:var(--accent);font-size:0.6rem;}
     .review-stars{margin-left:auto;display:flex;gap:0.1rem;font-size:0.72rem;}
     .review-text{font-size:0.78rem;color:#B3B3B3;line-height:1.7;font-style:italic;}
+    .write-rev-btn{display:flex;align-items:center;gap:0.5rem;background:rgba(106,13,173,0.12);border:1px solid rgba(106,13,173,0.3);color:var(--accent);padding:0.6rem 1.2rem;border-radius:8px;font-size:0.82rem;font-weight:700;cursor:pointer;text-decoration:none;transition:all 0.18s;}
+    .write-rev-btn:hover{background:rgba(106,13,173,0.25);}
 
     /* Footer overrides */
 
@@ -786,6 +801,40 @@
   </script>
 
   <script>
+  // ── Sponsor Banners Marquee ──
+  (async function(){
+    try {
+      const res  = await fetch('/admin/api/banners');
+      const data = await res.json();
+      if (!data.success || !data.banners || !data.banners.length) return;
+
+      const banners = data.banners;
+      const track   = document.getElementById('sponsorTrack');
+      const section = document.getElementById('sponsorSection');
+
+      // Build items — duplicate for seamless infinite loop
+      const items = [...banners, ...banners];
+      items.forEach(b => {
+        const el = document.createElement('div');
+        el.className = 'sp-banner-item';
+        if (b.linkUrl) el.onclick = () => window.open(b.linkUrl, '_blank');
+        const img = document.createElement('img');
+        img.src = b.image;
+        img.alt = b.title || 'Sponsor';
+        el.appendChild(img);
+        track.appendChild(el);
+      });
+
+      // Adjust animation speed based on count (more banners = slower)
+      const duration = Math.max(12, banners.length * 5);
+      track.style.animationDuration = duration + 's';
+
+      section.style.display = 'block';
+    } catch(e) { console.warn('Sponsors load error', e); }
+  })();
+  </script>
+
+  <script>
     function handleContactForm(e) {
       e.preventDefault();
       const btn = e.target.querySelector('.cf-submit');
@@ -799,6 +848,133 @@
         if(ok){ ok.style.display='flex'; setTimeout(()=>ok.style.display='none', 5000); }
       }, 1500);
     }
+  </script>
+
+  <script>
+  // ── Load reviews ──
+  (async function loadReviews(){
+    try{
+      const r=await fetch('/user/reviews/all');
+      const d=await r.json();
+      const grid=document.getElementById('reviewsGrid');
+      const loading=document.getElementById('reviewsLoading');
+      if(loading) loading.remove();
+      if(!d.success||!d.reviews||d.reviews.length===0){
+        grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:3rem 1rem;color:#555;"><div style="font-size:2rem;margin-bottom:0.5rem;">⭐</div><p style="font-size:0.82rem;">No reviews yet — be the first!</p></div>';
+        return;
+      }
+      grid.innerHTML=d.reviews.map(r=>{
+        const initials=((r.user?.firstName||'?')[0]+(r.user?.lastName||'?')[0]).toUpperCase();
+        const name=(r.user?.firstName||'')+(r.user?.lastName?' '+r.user.lastName:'');
+        const stars=[1,2,3,4,5].map(s=>`<i class="bi bi-star-fill" style="color:${s<=r.rating?'#f5c842':'#333'};font-size:0.72rem;"></i>`).join('');
+        return `<div class="review-card">
+          <div class="review-top">
+            <div class="review-avatar">${initials}</div>
+            <div style="flex:1;min-width:0;">
+              <div class="review-name">${name}</div>
+              <div style="font-size:0.65rem;color:#555;">${r.event?.name||''}</div>
+            </div>
+            <div class="review-stars">${stars}</div>
+          </div>
+          <p class="review-text">"${r.text}"</p>
+        </div>`;
+      }).join('');
+    }catch(e){console.warn('Reviews load error',e);}
+  })();
+
+  // ── Review modal ──
+  let selectedStar=0;
+  function openReviewModal(){document.getElementById('reviewModal').style.display='flex';}
+  function closeReviewModal(){document.getElementById('reviewModal').style.display='none';}
+  function setStar(n){selectedStar=n;document.getElementById('revRating').value=n;updateStars(n);}
+  function hoverStar(n){updateStars(n);}
+  function resetStars(){updateStars(selectedStar);}
+  function updateStars(n){document.querySelectorAll('.rev-star').forEach((s,i)=>s.style.color=i<n?'#f5c842':'#333');}
+
+  async function submitReview(){
+    const eventId=document.getElementById('revEventId').value;
+    const rating=document.getElementById('revRating').value;
+    const text=document.getElementById('revText').value.trim();
+    const msg=document.getElementById('revMsg');
+    const btn=document.getElementById('revSubmitBtn');
+
+    if(!eventId){showRevMsg('Please select an event.','err');return;}
+    if(!rating||rating==='0'){showRevMsg('Please select a star rating.','err');return;}
+    if(!text||text.length<5){showRevMsg('Please write a review (min 5 chars).','err');return;}
+
+    btn.disabled=true;btn.innerHTML='<i class="bi bi-hourglass-split"></i> Submitting…';
+    try{
+      const res=await fetch('/user/review',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify({eventId,rating,text})});
+      const d=await res.json();
+      if(d.success){
+        showRevMsg('Review submitted! Thank you.','ok');
+        setTimeout(()=>{closeReviewModal();location.reload();},1500);
+      } else showRevMsg(d.message||'Error submitting.','err');
+    }catch(e){showRevMsg('Network error.','err');}
+    btn.disabled=false;btn.innerHTML='<i class="bi bi-send-fill"></i> Submit Review';
+  }
+  function showRevMsg(txt,type){
+    const m=document.getElementById('revMsg');
+    m.textContent=txt;m.style.display='block';
+    m.style.background=type==='ok'?'rgba(0,255,136,0.08)':'rgba(255,68,68,0.08)';
+    m.style.border=type==='ok'?'1px solid rgba(0,255,136,0.25)':'1px solid rgba(255,68,68,0.28)';
+    m.style.color=type==='ok'?'#00FF88':'#FF4444';
+  }
+  document.getElementById('reviewModal').addEventListener('click',function(e){if(e.target===this)closeReviewModal();});
+  </script>
+
+  <script>
+  (async function loadReviews(){
+    try{
+      const r=await fetch('/user/reviews/all');
+      const d=await r.json();
+      const grid=document.getElementById('reviewsGrid');
+      const loading=document.getElementById('reviewsLoading');
+      if(loading)loading.remove();
+      if(!d.success||!d.reviews||d.reviews.length===0){
+        grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:3rem 1rem;color:#555;"><div style="font-size:2rem;margin-bottom:0.5rem;">⭐</div><p style="font-size:0.82rem;">No reviews yet — be the first to share your experience!</p></div>';
+        return;
+      }
+      grid.innerHTML=d.reviews.map(rev=>{
+        const initials=((rev.user?.firstName||'?')[0]+(rev.user?.lastName||'?')[0]).toUpperCase();
+        const name=((rev.user?.firstName||'')+' '+(rev.user?.lastName||'')).trim();
+        const stars=[1,2,3,4,5].map(s=>`<i class="bi bi-star-fill" style="color:${s<=rev.rating?'#f5c842':'#2a2a2a'};font-size:0.72rem;"></i>`).join('');
+        const evName=rev.event?.name?`<div style="font-size:0.62rem;color:#555;margin-top:0.05rem;">${rev.event.name}</div>`:'';
+        return `<div class="review-card"><div class="review-top"><div class="review-avatar">${initials}</div><div style="flex:1;min-width:0;"><div class="review-name">${name}</div>${evName}</div><div class="review-stars">${stars}</div></div><p class="review-text">"${rev.text}"</p></div>`;
+      }).join('');
+    }catch(e){console.warn('Reviews load err',e);}
+  })();
+
+  let selectedStar=0;
+  function openReviewModal(){document.getElementById('reviewModal').style.display='flex';}
+  function closeReviewModal(){document.getElementById('reviewModal').style.display='none';selectedStar=0;updateStars(0);}
+  function setStar(n){selectedStar=n;document.getElementById('revRating').value=n;updateStars(n);}
+  function hoverStar(n){updateStars(n);}
+  function resetStars(){updateStars(selectedStar);}
+  function updateStars(n){document.querySelectorAll('.rev-star').forEach((s,i)=>s.style.color=i<n?'#f5c842':'#333');}
+
+  async function submitReview(){
+    const eventId=document.getElementById('revEventId').value;
+    const rating=parseInt(document.getElementById('revRating').value)||0;
+    const text=document.getElementById('revText').value.trim();
+    if(!eventId){showRevMsg('Please select an event.','err');return;}
+    if(!rating){showRevMsg('Please select a star rating.','err');return;}
+    if(text.length<5){showRevMsg('Please write a longer review.','err');return;}
+    const btn=document.getElementById('revSubmitBtn');
+    btn.disabled=true;btn.innerHTML='<i class="bi bi-hourglass-split"></i> Submitting…';
+    try{
+      const res=await fetch('/user/review',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify({eventId,rating,text})});
+      const d=await res.json();
+      if(d.success){showRevMsg('Review submitted! Thank you 🎉','ok');setTimeout(()=>{closeReviewModal();location.reload();},1800);}
+      else showRevMsg(d.message||'Error submitting.','err');
+    }catch(e){showRevMsg('Network error.','err');}
+    btn.disabled=false;btn.innerHTML='<i class="bi bi-send-fill"></i> Submit Review';
+  }
+  function showRevMsg(txt,type){
+    const m=document.getElementById('revMsg');m.textContent=txt;m.style.display='block';
+    m.style.cssText=`display:block;padding:0.55rem 0.85rem;border-radius:6px;font-size:0.78rem;margin-bottom:0.8rem;background:${type==='ok'?'rgba(0,255,136,0.08)':'rgba(255,68,68,0.08)'};border:1px solid ${type==='ok'?'rgba(0,255,136,0.25)':'rgba(255,68,68,0.28)'};color:${type==='ok'?'#00FF88':'#FF4444'};`;
+  }
+  document.getElementById('reviewModal').addEventListener('click',function(e){if(e.target===this)closeReviewModal();});
   </script>
 </body>
 </html>

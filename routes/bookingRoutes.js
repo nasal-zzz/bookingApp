@@ -37,7 +37,8 @@ router.post('/seatmap/:eventId/hold', async (req, res) => {
 router.get('/details/:eventId',       requireAuth, bc.getDetailsPage);
 
 // Step 3 — Retry payment (for pending/failed bookings)
-router.get('/retry-payment/:bookingId', requireAuth, bc.retryPayment);
+router.get('/retry-payment/:bookingId',      requireAuth, bc.retryPayment);
+router.post('/retry-payment-api/:bookingId', requireAuth, bc.retryPaymentApi);
 
 // ── API ROUTES ───────────────────────────────────────────────────────────────
 router.post('/create-order',      requireAuth, bc.createOrder);

@@ -28,8 +28,8 @@ const generateQRCode = async (data) => {
   }
 };
 
-// Build QR payload for a ticket
-const buildQRPayload = ({ ticketId, bookingRef, eventId, paymentId, attendeeName, ticketType }) => {
+// Build QR payload for a single-entry ticket
+const buildQRPayload = ({ ticketId, bookingRef, eventId, paymentId, attendeeName, ticketType, seatNumber }) => {
   return {
     t: ticketId,        // ticket ID
     b: bookingRef,      // booking reference
@@ -37,9 +37,27 @@ const buildQRPayload = ({ ticketId, bookingRef, eventId, paymentId, attendeeName
     p: paymentId,       // payment ID
     n: attendeeName,    // attendee name
     ty: ticketType,     // ticket type
+    sn: seatNumber || null,  // seat number e.g. "gold_s1"
     v: 1,               // version
     ts: Date.now(),     // timestamp
   };
 };
 
-module.exports = { generateTicketId, generateQRCode, buildQRPayload };
+// Build QR payload for a GROUP (multiple-entry) ticket — one QR for all attendees
+// Scanned once at gate, grants entry to the whole group
+const buildGroupQRPayload = ({ bookingRef, eventId, paymentId, ticketType, attendees, groupSize, seatNumbers }) => {
+  return {
+    grp: true,                          // flag: this is a group QR
+    b:   bookingRef,                    // booking reference
+    e:   eventId,                       // event ID
+    p:   paymentId,                     // payment ID
+    ty:  ticketType,                    // ticket type
+    gs:  groupSize,                     // number of people in group
+    ns:  attendees.map(a => a.name),   // all attendee names
+    sns: seatNumbers || [],             // seat numbers e.g. ["family_s1","family_s2"]
+    v:   1,
+    ts:  Date.now(),
+  };
+};
+
+module.exports = { generateTicketId, generateQRCode, buildQRPayload, buildGroupQRPayload };

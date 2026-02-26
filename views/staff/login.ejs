@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title><%= title %></title>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Outfit:wght@400;600;700&family=Space+Mono&display=swap" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet"/>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:#0B0B0F;color:#fff;font-family:'Outfit',sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1rem;}
+    body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(255,255,255,0.012) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.012) 1px,transparent 1px);background-size:50px 50px;pointer-events:none;}
+    .orb{position:fixed;top:-150px;left:50%;transform:translateX(-50%);width:700px;height:500px;border-radius:50%;background:radial-gradient(ellipse,rgba(106,13,173,0.12) 0%,transparent 65%);pointer-events:none;}
+    .card{background:#14141C;border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:2.5rem;width:100%;max-width:420px;position:relative;z-index:1;box-shadow:0 40px 80px rgba(0,0,0,0.6);}
+    .card-top{height:3px;background:linear-gradient(90deg,transparent,#6A0DAD,#9D4EDD,transparent);margin:-2.5rem -2.5rem 2rem;border-radius:16px 16px 0 0;}
+    .brand{text-align:center;margin-bottom:1.8rem;}
+    .brand img{height:52px;width:auto;object-fit:contain;}
+    .brand-sub{font-family:'Space Mono',monospace;font-size:0.55rem;letter-spacing:3px;color:#555;margin-top:0.35rem;}
+    .role-tabs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.35rem;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:8px;padding:0.3rem;margin-bottom:1.8rem;}
+    .rtab{padding:0.5rem;border-radius:5px;font-size:0.72rem;font-family:'Space Mono',monospace;letter-spacing:1px;color:#555;text-align:center;cursor:pointer;transition:all 0.18s;border:1px solid transparent;}
+    .rtab.active{background:#6A0DAD;color:#fff;border-color:#6A0DAD;}
+    .rtab:not(.active):hover{color:#B3B3B3;background:rgba(255,255,255,0.04);}
+    .role-hint{font-size:0.72rem;color:#555;text-align:center;margin-bottom:1.2rem;min-height:1rem;}
+    .field{margin-bottom:1.2rem;}
+    .lbl{font-family:'Space Mono',monospace;font-size:0.55rem;letter-spacing:2px;color:#B3B3B3;display:block;margin-bottom:0.45rem;text-transform:uppercase;}
+    .inp{width:100%;background:#0B0B0F;border:1.5px solid rgba(255,255,255,0.08);border-radius:8px;color:#fff;font-size:0.95rem;padding:0.85rem 1rem;font-family:'Outfit',sans-serif;outline:none;transition:border-color 0.2s;}
+    .inp:focus{border-color:#6A0DAD;box-shadow:0 0 0 3px rgba(106,13,173,0.1);}
+    .btn{width:100%;padding:0.95rem;background:#6A0DAD;color:#fff;font-family:'Outfit',sans-serif;font-weight:700;font-size:0.95rem;border:none;border-radius:8px;cursor:pointer;letter-spacing:1px;transition:box-shadow 0.2s,transform 0.15s;margin-top:0.5rem;display:flex;align-items:center;justify-content:center;gap:0.5rem;}
+    .btn:hover{box-shadow:0 0 30px rgba(106,13,173,0.45);transform:translateY(-1px);}
+    .err{background:rgba(255,68,68,0.08);border:1px solid rgba(255,68,68,0.3);border-radius:8px;padding:0.8rem 1rem;color:#FF4444;font-size:0.85rem;margin-bottom:1.2rem;display:flex;align-items:center;gap:0.5rem;}
+    .user-login{text-align:center;margin-top:1.5rem;font-size:0.78rem;color:#444;border-top:1px solid rgba(255,255,255,0.06);padding-top:1.2rem;}
+    .user-login a{color:#6A0DAD;text-decoration:none;}
+    .user-login a:hover{color:#9D4EDD;}
+    /* Role indicator pill */
+    .role-pill{display:inline-flex;align-items:center;gap:0.4rem;font-family:'Space Mono',monospace;font-size:0.55rem;letter-spacing:2px;padding:0.22rem 0.7rem;border-radius:10px;margin-bottom:0.5rem;}
+    .rp-sa{background:rgba(157,78,221,0.12);border:1px solid rgba(157,78,221,0.3);color:#9D4EDD;}
+    .rp-ad{background:rgba(106,13,173,0.12);border:1px solid rgba(106,13,173,0.3);color:#9D4EDD;}
+    .rp-st{background:rgba(0,255,136,0.08);border:1px solid rgba(0,255,136,0.25);color:#00FF88;}
+  </style>
+</head>
+<body>
+  <div class="orb"></div>
+  <div class="card">
+    <div class="card-top"></div>
+    <div class="brand">
+      <img src="/img/mee-logo.png" alt="Melattur Entertainment Events"/>
+      <div class="brand-sub">STAFF & ADMIN PORTAL</div>
+    </div>
+
+    <!-- Role selector tabs -->
+    <div class="role-tabs" id="roleTabs">
+      <div class="rtab active" onclick="setRole('staff')" id="tab-staff">STAFF</div>
+      <div class="rtab" onclick="setRole('admin')" id="tab-admin">ADMIN</div>
+      <div class="rtab" onclick="setRole('superadmin')" id="tab-sa">SUPER</div>
+    </div>
+    <div class="role-hint" id="roleHint">QR Scanner · Event check-in only</div>
+
+    <% if(error){ %>
+    <div class="err"><i class="bi bi-exclamation-triangle-fill"></i> <%= error %></div>
+    <% } %>
+
+    <form method="POST" action="/staff/login" id="loginForm">
+      <input type="hidden" name="selectedRole" id="selectedRole" value="staff"/>
+      <div class="field">
+        <label class="lbl">Username</label>
+        <input class="inp" type="text" name="username" id="usernameInp" placeholder="e.g. staff-rahul" autocomplete="username" required/>
+      </div>
+      <div class="field">
+        <label class="lbl">Password</label>
+        <input class="inp" type="password" name="password" placeholder="••••••••" autocomplete="current-password" required/>
+      </div>
+      <button class="btn" type="submit">
+        <i class="bi bi-box-arrow-in-right"></i>
+        <span id="btnText">LOGIN AS STAFF</span>
+      </button>
+    </form>
+
+    <div class="user-login">
+      Not staff? <a href="/auth/login">User login →</a>
+    </div>
+  </div>
+
+  <script>
+    const hints = {
+      staff:      'QR Scanner · Event check-in only',
+      admin:      'Admin Panel · Events, bookings, reports',
+      superadmin: 'Full system access · Staff, coupons, all data',
+    };
+    const labels = {
+      staff:      'LOGIN AS STAFF',
+      admin:      'LOGIN AS ADMIN',
+      superadmin: 'LOGIN AS SUPER ADMIN',
+    };
+    function setRole(role) {
+      ['staff','admin','superadmin'].forEach(r => {
+        const el = document.getElementById('tab-' + (r === 'superadmin' ? 'sa' : r));
+        if (el) el.classList.toggle('active', r === role);
+      });
+      document.getElementById('roleHint').textContent = hints[role] || '';
+      document.getElementById('btnText').textContent  = labels[role] || 'LOGIN';
+      document.getElementById('selectedRole').value   = role;
+      // Prefill placeholder
+      const uInp = document.getElementById('usernameInp');
+      if (role === 'superadmin') uInp.placeholder = 'superadmin';
+      else if (role === 'admin') uInp.placeholder  = 'admin-name';
+      else uInp.placeholder = 'staff-name';
+    }
+    // Auto detect role from URL hash
+    const hash = location.hash.replace('#','');
+    if (hash === 'admin' || hash === 'superadmin') setRole(hash);
+  </script>
+</body>
+</html>

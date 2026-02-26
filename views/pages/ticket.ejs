@@ -123,8 +123,62 @@
 
   <!-- TICKETS -->
   <div class="tickets-area">
-    <div class="area-label">// your tickets (<%= booking.tickets.length %> pass<%= booking.tickets.length>1?'es':'' %>)</div>
+    <%
+      // Detect group booking: all tickets share the same QR data and it has grp:true
+      let isGroupBooking = false;
+      try {
+        if (booking.tickets.length > 1 && booking.tickets[0].qrData) {
+          const firstQR = JSON.parse(booking.tickets[0].qrData);
+          isGroupBooking = firstQR.grp === true;
+        }
+      } catch(e) {}
+    %>
+    <div class="area-label">// your tickets (<%= booking.tickets.length %> pass<%= booking.tickets.length>1?'es':'' %>)<% if(isGroupBooking){ %> · GROUP ENTRY<% } %></div>
     <div class="tickets-grid">
+      <% if (isGroupBooking) { %>
+      <%   const ticket = booking.tickets[0]; %>
+      <%   const idx = 0; %>
+      <div class="ticket-card" id="tc-0">
+        <div class="ticket-header">
+          <div class="t-type-badge"><%= booking.ticketType.toUpperCase() %></div>
+          <div class="t-brand">NIGHTPASS · KOCHI</div>
+          <div class="t-name"><%= event.name.toUpperCase() %></div>
+        </div>
+        <div class="tear-line"><hr class="tear-dots"/></div>
+        <div class="ticket-body">
+          <div class="info-grid">
+            <div class="info-field"><label>Date</label><span><%= new Date(event.date).toDateString().toUpperCase() %></span></div>
+            <div class="info-field"><label>Time</label><span><%= event.doorsOpen %> – <%= event.endTime %></span></div>
+            <div class="info-field"><label>Venue</label><span><%= event.venue %></span></div>
+            <div class="info-field"><label>Dress Code</label><span><%= event.dressCode %></span></div>
+          </div>
+          <div class="qr-section">
+            <div class="qr-box">
+              <% if(ticket.qrCode){ %><img src="<%= ticket.qrCode %>" alt="QR" crossorigin="anonymous"/><% }else{ %>
+              <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#f0f0f0;font-size:0.6rem;color:#999;text-align:center;">QR<br/>CODE</div><% } %>
+            </div>
+            <div class="qr-details">
+              <div class="qr-id"><%= booking.bookingRef %></div>
+              <div style="font-size:0.72rem;font-weight:700;color:#111;margin:0.2rem 0 0.1rem;">GROUP · <%= booking.tickets.length %> PERSONS</div>
+              <% booking.tickets.forEach(function(t,ti){ %>
+              <div style="font-size:0.62rem;color:#444;line-height:1.6;display:flex;justify-content:space-between;gap:0.5rem;">
+                <span><%= ti+1 %>. <%= t.attendee.name %></span>
+                <% if(t.seatNumber){ %><span style="font-family:'Space Mono',monospace;color:#6A0DAD;font-weight:700;font-size:0.58rem;letter-spacing:0.5px;">⬡ <%= t.seatNumber %></span><% } %>
+              </div>
+              <% }); %>
+              <div class="qr-valid" style="margin-top:0.5rem;"><i class="bi bi-check-circle-fill"></i> VALID · GROUP ENTRY · SCAN ONCE</div>
+            </div>
+          </div>
+        </div>
+        <div class="ticket-footer">
+          <div class="t-footer-note">SCAN ONCE FOR ALL · 18+ · VALID ID</div>
+          <div class="t-footer-price">₹<%= booking.totalAmount.toLocaleString('en-IN') %></div>
+        </div>
+        <button class="btn-dl-single" id="dl-0" onclick="downloadSingle(0)">
+          <i class="bi bi-file-earmark-pdf-fill"></i> Download Group Pass as PDF
+        </button>
+      </div>
+      <% } else { %>
       <% booking.tickets.forEach(function(ticket,idx){ %>
       <div class="ticket-card" id="tc-<%= idx %>">
         <div class="ticket-header">
@@ -148,6 +202,9 @@
             <div class="qr-details">
               <div class="qr-id"><%= ticket.ticketId %></div>
               <div class="qr-name"><%= ticket.attendee.name %></div>
+              <% if(ticket.seatNumber){ %>
+              <div style="font-family:'Space Mono',monospace;font-size:0.62rem;letter-spacing:1px;color:#6A0DAD;font-weight:700;margin:0.12rem 0;text-transform:uppercase;">⬡ <%= ticket.seatNumber %></div>
+              <% } %>
               <div class="qr-sub">Ticket <%= idx+1 %> of <%= booking.tickets.length %> · <%= booking.ticketType %></div>
               <div class="qr-valid"><i class="bi bi-check-circle-fill"></i> VALID · ONE TIME ENTRY</div>
             </div>
@@ -162,6 +219,7 @@
         </button>
       </div>
       <% }); %>
+      <% } %>
     </div>
   </div>
 

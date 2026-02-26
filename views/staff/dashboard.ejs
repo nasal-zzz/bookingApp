@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title><%= title %></title>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Outfit:wght@400;600;700&family=Space+Mono&display=swap" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet"/>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:#0B0B0F;color:#fff;font-family:'Outfit',sans-serif;min-height:100vh;}
+    .topbar{background:#14141C;border-bottom:1px solid rgba(255,255,255,0.07);padding:0 1.5rem;height:56px;display:flex;align-items:center;justify-content:space-between;}
+    .tb-logo img{height:32px;width:auto;object-fit:contain;}
+    .tb-right{display:flex;align-items:center;gap:0.7rem;}
+    .tb-user{font-size:0.82rem;color:#B3B3B3;}
+    .tb-user strong{color:#fff;}
+    .role-badge{font-family:'Space Mono',monospace;font-size:0.52rem;letter-spacing:1px;padding:0.15rem 0.5rem;border-radius:10px;background:rgba(0,255,136,0.08);border:1px solid rgba(0,255,136,0.25);color:#00FF88;}
+    .logout-btn{display:flex;align-items:center;gap:0.4rem;padding:0.4rem 0.8rem;background:rgba(255,68,68,0.08);border:1px solid rgba(255,68,68,0.25);border-radius:6px;color:#FF4444;font-size:0.78rem;text-decoration:none;transition:all 0.15s;}
+    .logout-btn:hover{background:rgba(255,68,68,0.15);}
+    .main{padding:2rem;max-width:600px;margin:0 auto;}
+    .greeting{font-family:'Anton',sans-serif;font-size:1.8rem;letter-spacing:2px;margin-bottom:0.3rem;}
+    .sub{font-size:0.82rem;color:#555;margin-bottom:2rem;}
+    .actions{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+    .action-card{background:#14141C;border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:1.5rem;text-decoration:none;color:#fff;transition:all 0.18s;display:flex;flex-direction:column;align-items:center;gap:0.7rem;text-align:center;}
+    .action-card:hover{border-color:rgba(106,13,173,0.35);transform:translateY(-2px);color:#fff;}
+    .action-icon{width:52px;height:52px;border-radius:12px;background:rgba(106,13,173,0.1);border:1px solid rgba(106,13,173,0.2);display:flex;align-items:center;justify-content:center;font-size:1.4rem;color:#9D4EDD;}
+    .action-label{font-weight:700;font-size:0.88rem;}
+    .action-sub{font-size:0.72rem;color:#555;}
+    .no-access{text-align:center;padding:2rem;background:rgba(255,68,68,0.06);border:1px solid rgba(255,68,68,0.15);border-radius:10px;color:#888;font-size:0.85rem;}
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <a href="/" class="tb-logo"><img src="/img/mee-logo.png" alt="MEE"/></a>
+    <div class="tb-right">
+      <div class="tb-user">Logged in as <strong><%= staffUser.name %></strong></div>
+      <span class="role-badge"><%= staffUser.role.toUpperCase() %></span>
+      <a href="/staff/logout" class="logout-btn"><i class="bi bi-box-arrow-right"></i> Logout</a>
+    </div>
+  </div>
+  <div class="main">
+    <h1 class="greeting">WELCOME, <%= staffUser.name.split(' ')[0].toUpperCase() %></h1>
+    <p class="sub">Your access level: <strong style="color:#9D4EDD"><%= staffUser.role.toUpperCase() %></strong></p>
+
+    <div class="actions">
+      <% if(staffUser.canScanQR){ %>
+      <a href="/staff/scanner" class="action-card">
+        <div class="action-icon"><i class="bi bi-qr-code-scan"></i></div>
+        <div class="action-label">QR Scanner</div>
+        <div class="action-sub">Scan entry tickets</div>
+      </a>
+      <% } %>
+      <% if(staffUser.canViewBookings){ %>
+      <a href="/admin/bookings" class="action-card">
+        <div class="action-icon"><i class="bi bi-ticket-perforated-fill"></i></div>
+        <div class="action-label">View Bookings</div>
+        <div class="action-sub">Check booking status</div>
+      </a>
+      <% } %>
+      <% if(staffUser.canManageEvents){ %>
+      <a href="/admin" class="action-card">
+        <div class="action-icon"><i class="bi bi-grid-fill"></i></div>
+        <div class="action-label">Admin Panel</div>
+        <div class="action-sub">Manage events</div>
+      </a>
+      <% } %>
+      <% if(!staffUser.canScanQR && !staffUser.canViewBookings && !staffUser.canManageEvents){ %>
+      <div class="no-access" style="grid-column:1/-1;">
+        <i class="bi bi-lock-fill" style="font-size:2rem;display:block;margin-bottom:0.7rem;color:#FF4444;"></i>
+        No access permissions assigned yet.<br/>Contact your admin.
+      </div>
+      <% } %>
+    </div>
+  </div>
+</body>
+</html>

@@ -7,6 +7,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Anton&family=Outfit:wght@400;500;600;700&family=Space+Mono&display=swap" rel="stylesheet"/>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet"/>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   <style>
     :root{--bg:#0B0B0F;--surface:#14141C;--card:#14141C;--card2:#1a1a24;--border:rgba(255,255,255,0.08);--accent:#6A0DAD;--accent-dim:rgba(106,13,173,0.09);--text:#FFFFFF;--muted:#B3B3B3;--success:#00FF88;--error:#FF4444;}
     *{box-sizing:border-box;margin:0;padding:0;}
@@ -35,7 +36,8 @@
 
     /* Avatar */
     .avatar-section{text-align:center;margin-bottom:1.8rem;}
-    .avatar{width:90px;height:90px;border-radius:50%;background:linear-gradient(135deg,#1a0a2e,#2d0a5c);border:3px solid rgba(106,13,173,0.4);display:flex;align-items:center;justify-content:center;font-family:'Anton',sans-serif;font-size:2.2rem;color:var(--accent);margin:0 auto 1rem;position:relative;}
+    .avatar{width:90px;height:90px;border-radius:50%;background:linear-gradient(135deg,#1a0a2e,#2d0a5c);border:3px solid rgba(106,13,173,0.4);display:flex;align-items:center;justify-content:center;font-family:'Anton',sans-serif;font-size:2.2rem;color:var(--accent);margin:0 auto 0.4rem;position:relative;overflow:hidden;}
+    .avatar:hover .avatar-hover-overlay{opacity:1!important;}
     .avatar-verified{position:absolute;bottom:2px;right:2px;width:22px;height:22px;background:var(--success);border-radius:50%;border:2px solid var(--card);display:flex;align-items:center;justify-content:center;font-size:0.6rem;color:#000;}
     .profile-name{font-family:'Anton',sans-serif;font-size:1.6rem;letter-spacing:2px;color:#fff;margin-bottom:0.2rem;}
     .profile-phone{display:flex;align-items:center;justify-content:center;gap:0.4rem;font-family:'Space Mono',monospace;font-size:0.72rem;letter-spacing:1px;color:var(--muted);}
@@ -113,6 +115,13 @@
     .btn-dl-pdf:disabled{opacity:0.4;cursor:not-allowed;}
     .btn-view-ticket{display:flex;align-items:center;gap:0.4rem;padding:0.4rem 0.8rem;background:var(--accent);border:1px solid var(--accent);border-radius:5px;color:#000;font-size:0.76rem;font-family:'Outfit',sans-serif;font-weight:700;cursor:pointer;text-decoration:none;white-space:nowrap;transition:all 0.2s;}
     .btn-view-ticket:hover{box-shadow:0 0 15px rgba(106,13,173,0.4);}
+    .btn-pay-now{display:flex;align-items:center;gap:0.4rem;padding:0.5rem 1rem;background:linear-gradient(135deg,#6A0DAD,#9D4EDD);border:none;border-radius:6px;color:#fff;font-size:0.78rem;font-family:'Outfit',sans-serif;font-weight:700;cursor:pointer;white-space:nowrap;transition:all 0.2s;letter-spacing:0.5px;}
+    .btn-pay-now:hover{box-shadow:0 0 18px rgba(106,13,173,0.5);transform:translateY(-1px);}
+    .btn-retry{display:flex;align-items:center;gap:0.4rem;padding:0.5rem 1rem;background:rgba(245,200,66,0.12);border:1px solid rgba(245,200,66,0.35);border-radius:6px;color:#f5c842;font-size:0.78rem;font-family:'Outfit',sans-serif;font-weight:700;cursor:pointer;white-space:nowrap;transition:all 0.2s;text-decoration:none;}
+    .btn-retry:hover{background:rgba(245,200,66,0.2);}
+    .btn-delete-bk{display:flex;align-items:center;gap:0.35rem;padding:0.5rem 0.85rem;background:rgba(255,68,68,0.08);border:1px solid rgba(255,68,68,0.25);border-radius:6px;color:var(--error);font-size:0.76rem;font-family:'Outfit',sans-serif;cursor:pointer;white-space:nowrap;transition:all 0.2s;}
+    .btn-delete-bk:hover{background:rgba(255,68,68,0.16);}
+    .booking-actions-bar{display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.8rem;padding-top:0.8rem;border-top:1px solid rgba(255,255,255,0.05);}
 
     /* Empty state */
     .empty-state{text-align:center;padding:4rem 1rem;}
@@ -157,10 +166,19 @@
 
             <!-- Avatar & name -->
             <div class="avatar-section">
-              <div class="avatar">
-                <%= user.firstName.charAt(0).toUpperCase() %><% if(user.lastName) { %><%= user.lastName.charAt(0).toUpperCase() %><% } %>
+              <div class="avatar" id="avatarCircle" onclick="document.getElementById('avatarFileInput').click()" style="cursor:pointer;position:relative;">
+                <% if(user.avatar){ %>
+                  <img src="<%= user.avatar %>" id="avatarImg" style="width:100%;height:100%;object-fit:cover;border-radius:50%;position:absolute;inset:0;" alt="Avatar"/>
+                <% } else { %>
+                  <span id="avatarInitials"><%= user.firstName.charAt(0).toUpperCase() %><% if(user.lastName){ %><%= user.lastName.charAt(0).toUpperCase() %><% } %></span>
+                <% } %>
                 <% if (user.isVerified) { %><div class="avatar-verified"><i class="bi bi-check"></i></div><% } %>
+                <div style="position:absolute;inset:0;border-radius:50%;background:rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.18s;" class="avatar-hover-overlay">
+                  <i class="bi bi-camera-fill" style="color:#fff;font-size:1.2rem;"></i>
+                </div>
               </div>
+              <input type="file" id="avatarFileInput" accept="image/*" style="display:none;" onchange="openAvatarCrop(event)"/>
+              <div style="font-size:0.65rem;color:#555;margin-top:0.3rem;margin-bottom:0.5rem;">Tap avatar to change photo</div>
               <div class="profile-name"><%= (user.firstName + ' ' + (user.lastName||'')).trim().toUpperCase() %></div>
               <!-- Verification badges -->
               <div style="display:flex;gap:0.4rem;justify-content:center;flex-wrap:wrap;margin:0.4rem 0;">
@@ -317,6 +335,24 @@
                 </div>
               </div>
 
+              <% if (booking.paymentStatus === 'pending' || booking.paymentStatus === 'failed') { %>
+              <div class="booking-actions-bar">
+                <% if (booking.paymentStatus === 'pending') { %>
+                <button class="btn-pay-now" onclick="payNow('<%= booking._id %>', '<%= bi %>')">
+                  <i class="bi bi-lightning-charge-fill"></i> Pay Now
+                </button>
+                <% } %>
+                <% if (booking.paymentStatus === 'failed') { %>
+                <a href="/booking/retry-payment/<%= booking._id %>" class="btn-retry">
+                  <i class="bi bi-arrow-repeat"></i> Retry Payment
+                </a>
+                <% } %>
+                <button class="btn-delete-bk" onclick="deleteBooking('<%= booking._id %>', this)">
+                  <i class="bi bi-trash3-fill"></i> Delete
+                </button>
+              </div>
+              <% } %>
+
               <!-- Individual tickets -->
               <% if (booking.paymentStatus === 'paid' && booking.tickets && booking.tickets.length > 0) { %>
               <div class="tickets-strip">
@@ -469,6 +505,57 @@
       saveIcon.className = 'bi bi-check2-circle';
     }
 
+    // ── Pay Now (for pending bookings) ──
+    async function payNow(bookingId, bi) {
+      try {
+        const res = await fetch('/booking/retry-payment-api/' + bookingId, {
+          method: 'POST', credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await res.json();
+        if (!data.success) { alert(data.message || 'Unable to initiate payment.'); return; }
+        const rzp = new Razorpay({
+          key: data.key, amount: data.amount, currency: data.currency,
+          name: 'NightPass', description: data.description || 'Ticket Payment',
+          order_id: data.orderId, prefill: data.prefill,
+          theme: { color: '#6A0DAD', backdrop_color: '#0B0B0F' },
+          handler: async function(response) {
+            const vres = await fetch('/booking/verify-payment', {
+              method: 'POST', credentials: 'include',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_order_id:   response.razorpay_order_id,
+                razorpay_signature:  response.razorpay_signature,
+              })
+            });
+            const vd = await vres.json();
+            if (vd.success) { window.location.href = '/booking/success/' + vd.bookingId; }
+            else { alert('Payment verified but failed. ID: ' + response.razorpay_payment_id); }
+          },
+          modal: { ondismiss: () => {} }
+        });
+        rzp.open();
+      } catch(e) { alert('Error initiating payment. Please try again.'); }
+    }
+
+    // ── Delete booking ──
+    async function deleteBooking(bookingId, btnEl) {
+      if (!confirm('Delete this booking? This cannot be undone.')) return;
+      btnEl.disabled = true;
+      btnEl.innerHTML = '<i class="bi bi-hourglass-split"></i>';
+      try {
+        const res = await fetch('/user/delete-booking/' + bookingId, {
+          method: 'DELETE', credentials: 'include'
+        });
+        const data = await res.json();
+        if (data.success) {
+          const card = btnEl.closest('.booking-card');
+          if (card) { card.style.opacity = '0'; card.style.transform = 'scale(0.95)'; card.style.transition = '0.3s'; setTimeout(() => card.remove(), 300); }
+        } else { alert(data.message || 'Could not delete booking.'); btnEl.disabled = false; btnEl.innerHTML = '<i class="bi bi-trash3-fill"></i> Delete'; }
+      } catch(e) { alert('Error. Try again.'); btnEl.disabled = false; btnEl.innerHTML = '<i class="bi bi-trash3-fill"></i> Delete'; }
+    }
+
     // ── Download single ticket as PDF ──
     async function downloadTicketPDF(bi, ti, btnEl) {
       btnEl.disabled = true;
@@ -602,6 +689,189 @@
     if (window.history && window.history.replaceState) {
       window.history.replaceState(null, '', window.location.href);
     }
+  </script>
+
+  <!-- Avatar Crop Modal -->
+  <div id="cropModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:1100;align-items:center;justify-content:center;padding:1rem;backdrop-filter:blur(8px);">
+    <div style="background:#14141C;border:1px solid rgba(255,255,255,0.09);border-radius:16px;width:100%;max-width:420px;overflow:hidden;">
+      <div style="height:3px;background:linear-gradient(90deg,#6A0DAD,#9D4EDD,#6A0DAD);"></div>
+      <div style="padding:1.4rem;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+          <div style="font-family:var(--font-display);font-size:0.95rem;letter-spacing:2px;color:#fff;">CROP PHOTO</div>
+          <button onclick="closeCropModal()" style="background:none;border:none;color:#555;font-size:1.3rem;cursor:pointer;line-height:1;">×</button>
+        </div>
+        <!-- Canvas crop area -->
+        <div style="position:relative;width:100%;aspect-ratio:1;background:#0a0a12;border-radius:10px;overflow:hidden;margin-bottom:1rem;touch-action:none;" id="cropContainer">
+          <canvas id="cropCanvas" style="display:block;width:100%;height:100%;"></canvas>
+          <!-- Circular overlay mask -->
+          <div style="position:absolute;inset:0;pointer-events:none;">
+            <svg style="width:100%;height:100%;" viewBox="0 0 300 300">
+              <defs>
+                <mask id="circleMask">
+                  <rect width="300" height="300" fill="white"/>
+                  <circle cx="150" cy="150" r="135" fill="black"/>
+                </mask>
+              </defs>
+              <rect width="300" height="300" fill="rgba(0,0,0,0.55)" mask="url(#circleMask)"/>
+              <circle cx="150" cy="150" r="135" fill="none" stroke="rgba(106,13,173,0.8)" stroke-width="2"/>
+            </svg>
+          </div>
+        </div>
+        <!-- Controls -->
+        <div style="margin-bottom:0.8rem;">
+          <div style="font-family:var(--font-mono);font-size:0.5rem;letter-spacing:1px;color:#555;text-transform:uppercase;margin-bottom:0.4rem;">Zoom</div>
+          <input type="range" id="zoomSlider" min="0.5" max="3" step="0.01" value="1" style="width:100%;accent-color:#6A0DAD;" oninput="updateZoom(this.value)"/>
+        </div>
+        <div style="font-size:0.7rem;color:#555;text-align:center;margin-bottom:1rem;">Drag to reposition • Pinch or slider to zoom</div>
+        <div style="display:flex;gap:0.7rem;">
+          <button onclick="closeCropModal()" style="flex:1;padding:0.75rem;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#ccc;cursor:pointer;font-size:0.85rem;">Cancel</button>
+          <button id="cropSaveBtn" onclick="saveCroppedAvatar()" style="flex:2;padding:0.75rem;background:#6A0DAD;border:none;border-radius:8px;color:#fff;font-weight:700;cursor:pointer;font-size:0.85rem;letter-spacing:1px;">
+            <i class="bi bi-check-lg"></i> Save Photo
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  // ── Avatar Crop System ──
+  let cropImg = null, cropScale = 1, cropOffX = 0, cropOffY = 0;
+  let isDragging = false, lastX = 0, lastY = 0;
+  let initPinchDist = 0, initPinchScale = 1;
+
+  function openAvatarCrop(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { alert('Image too large. Max 5MB.'); return; }
+
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+      const img = new Image();
+      img.onload = function() {
+        cropImg = img; cropScale = 1; cropOffX = 0; cropOffY = 0;
+        document.getElementById('zoomSlider').value = 1;
+        document.getElementById('cropModal').style.display = 'flex';
+        setTimeout(drawCrop, 50);
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  }
+
+  function closeCropModal() {
+    document.getElementById('cropModal').style.display = 'none';
+    cropImg = null;
+  }
+
+  function drawCrop() {
+    const canvas = document.getElementById('cropCanvas');
+    const container = document.getElementById('cropContainer');
+    const size = container.offsetWidth;
+    canvas.width = size; canvas.height = size;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, size, size);
+    ctx.fillStyle = '#0a0a12';
+    ctx.fillRect(0, 0, size, size);
+    if (!cropImg) return;
+
+    // Fit image to canvas with scale
+    const aspect = cropImg.width / cropImg.height;
+    let baseW, baseH;
+    if (aspect > 1) { baseH = size; baseW = baseH * aspect; }
+    else            { baseW = size; baseH = baseW / aspect; }
+    const w = baseW * cropScale, h = baseH * cropScale;
+    const x = (size - w) / 2 + cropOffX;
+    const y = (size - h) / 2 + cropOffY;
+    ctx.drawImage(cropImg, x, y, w, h);
+  }
+
+  function updateZoom(v) {
+    cropScale = parseFloat(v);
+    drawCrop();
+  }
+
+  // Mouse drag
+  const cc = document.getElementById('cropContainer');
+  cc.addEventListener('mousedown', e => { isDragging = true; lastX = e.clientX; lastY = e.clientY; e.preventDefault(); });
+  window.addEventListener('mousemove', e => {
+    if (!isDragging) return;
+    cropOffX += e.clientX - lastX; cropOffY += e.clientY - lastY;
+    lastX = e.clientX; lastY = e.clientY;
+    drawCrop();
+  });
+  window.addEventListener('mouseup', () => { isDragging = false; });
+
+  // Touch drag + pinch
+  cc.addEventListener('touchstart', e => {
+    if (e.touches.length === 1) {
+      isDragging = true;
+      lastX = e.touches[0].clientX; lastY = e.touches[0].clientY;
+    } else if (e.touches.length === 2) {
+      isDragging = false;
+      initPinchDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+      initPinchScale = cropScale;
+    }
+    e.preventDefault();
+  }, { passive: false });
+  cc.addEventListener('touchmove', e => {
+    if (e.touches.length === 1 && isDragging) {
+      cropOffX += e.touches[0].clientX - lastX; cropOffY += e.touches[0].clientY - lastY;
+      lastX = e.touches[0].clientX; lastY = e.touches[0].clientY;
+      drawCrop();
+    } else if (e.touches.length === 2) {
+      const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+      cropScale = Math.min(3, Math.max(0.5, initPinchScale * (dist / initPinchDist)));
+      document.getElementById('zoomSlider').value = cropScale;
+      drawCrop();
+    }
+    e.preventDefault();
+  }, { passive: false });
+  cc.addEventListener('touchend', () => { isDragging = false; });
+
+  async function saveCroppedAvatar() {
+    const canvas = document.getElementById('cropCanvas');
+    const container = document.getElementById('cropContainer');
+    const size = container.offsetWidth;
+
+    // Export circular crop as 200x200 PNG
+    const outCanvas = document.createElement('canvas');
+    outCanvas.width = 200; outCanvas.height = 200;
+    const ctx = outCanvas.getContext('2d');
+    ctx.beginPath(); ctx.arc(100, 100, 100, 0, Math.PI * 2); ctx.clip();
+    ctx.drawImage(canvas, 0, 0, size, size, 0, 0, 200, 200);
+    const dataUrl = outCanvas.toDataURL('image/jpeg', 0.88);
+
+    const btn = document.getElementById('cropSaveBtn');
+    btn.disabled = true; btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Saving…';
+
+    try {
+      const res = await fetch('/user/avatar', {
+        method: 'POST', credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ avatar: dataUrl }),
+      });
+      const d = await res.json();
+      if (d.success) {
+        // Update avatar on page
+        let imgEl = document.getElementById('avatarImg');
+        const initials = document.getElementById('avatarInitials');
+        if (!imgEl) {
+          imgEl = document.createElement('img');
+          imgEl.id = 'avatarImg';
+          imgEl.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:50%;position:absolute;inset:0;';
+          imgEl.alt = 'Avatar';
+          document.getElementById('avatarCircle').prepend(imgEl);
+          if (initials) initials.style.display = 'none';
+        }
+        imgEl.src = dataUrl;
+        closeCropModal();
+      } else {
+        alert(d.message || 'Failed to save avatar.');
+      }
+    } catch(e) { alert('Network error.'); }
+    btn.disabled = false; btn.innerHTML = '<i class="bi bi-check-lg"></i> Save Photo';
+  }
   </script>
 </body>
 </html>

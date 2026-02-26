@@ -66,7 +66,7 @@ const sendWhatsAppTickets = async ({ phone, name, booking, event }) => {
 
   // ── Confirmation text message ──
   const confirmMsg =
-`🎟 *Booking Confirmed — NightPass!*
+`🎟 *Booking Confirmed — MEE!*
 
 Hi ${name}! Your tickets are ready. 🎉
 
@@ -148,3 +148,59 @@ Your QR passes are attached below 👇
 };
 
 module.exports = { sendWhatsAppTickets };
+
+// ── WhatsApp: Pending payment reminder ──
+const sendWhatsAppPending = async ({ phone, name, booking, event }) => {
+  try {
+    const appUrl = process.env.APP_URL || '';
+    const msg =
+      `⏳ *Booking Pending — MEE*\n\n` +
+      `Hi ${name}! Your booking for *${event.name || 'the event'}* is pending payment.\n\n` +
+      `📋 Ref: *${booking.bookingRef}*\n` +
+      `🎟️ ${booking.quantity} × ${booking.ticketType}\n` +
+      `💰 ₹${(booking.totalAmount||0).toLocaleString('en-IN')}\n\n` +
+      `Complete your payment here:\n${appUrl}/booking/retry-payment/${booking._id}\n\n` +
+      `Hurry — reserved seats may expire soon!`;
+
+    if (process.env.TWILIO_SID && process.env.TWILIO_TOKEN && process.env.TWILIO_WA_FROM) {
+      const client = require('twilio')(process.env.TWILIO_SID, process.env.TWILIO_TOKEN);
+      const to = phone.startsWith('+') ? phone : `+91${phone.replace(/\D/g,'')}`;
+      await client.messages.create({ from: process.env.TWILIO_WA_FROM, to: `whatsapp:${to}`, body: msg });
+    } else {
+      console.log(`📱 [WA Pending] → ${phone} :\n${msg.substring(0, 120)}...`);
+    }
+    return { success: true };
+  } catch(err) {
+    console.error('WA pending error:', err.message);
+    return { success: false };
+  }
+};
+
+// ── WhatsApp: Failed payment notice ──
+const sendWhatsAppPaymentFailed = async ({ phone, name, booking, event }) => {
+  try {
+    const appUrl = process.env.APP_URL || '';
+    const msg =
+      `❌ *Payment Failed — MEE*\n\n` +
+      `Hi ${name}, your payment for *${event.name || 'the event'}* could not be processed.\n\n` +
+      `📋 Ref: *${booking.bookingRef}*\n` +
+      `💰 ₹${(booking.totalAmount||0).toLocaleString('en-IN')}\n\n` +
+      `*No amount has been charged.* If money was deducted, it will be refunded in 5–7 business days.\n\n` +
+      `Try again here: ${appUrl}/booking/my-bookings\n\n` +
+      `Need help? Call +91 99958 43003`;
+
+    if (process.env.TWILIO_SID && process.env.TWILIO_TOKEN && process.env.TWILIO_WA_FROM) {
+      const client = require('twilio')(process.env.TWILIO_SID, process.env.TWILIO_TOKEN);
+      const to = phone.startsWith('+') ? phone : `+91${phone.replace(/\D/g,'')}`;
+      await client.messages.create({ from: process.env.TWILIO_WA_FROM, to: `whatsapp:${to}`, body: msg });
+    } else {
+      console.log(`📱 [WA Failed] → ${phone} :\n${msg.substring(0, 120)}...`);
+    }
+    return { success: true };
+  } catch(err) {
+    console.error('WA failed error:', err.message);
+    return { success: false };
+  }
+};
+
+module.exports = { sendWhatsAppTickets, sendWhatsAppPending, sendWhatsAppPaymentFailed };
