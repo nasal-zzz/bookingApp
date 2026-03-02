@@ -65,11 +65,15 @@
     <div class="s-section">Main</div>
     <a href="/admin" class="s-link active"><i class="bi bi-speedometer2"></i> Dashboard</a>
     <a href="/admin/bookings" class="s-link"><i class="bi bi-ticket-perforated-fill"></i> Bookings</a>
+    <a href="/admin/participants" class="s-link"><i class="bi bi-person-check-fill"></i> Participants</a>
+    <a href="/admin/entered-tickets" class="s-link"><i class="bi bi-door-open-fill"></i> Entered Tickets</a>
+    <a href="/admin/users-by-event" class="s-link"><i class="bi bi-people-fill"></i> Users by Event</a>
     <div class="s-section">Events</div>
     <a href="/admin/events/new" class="s-link"><i class="bi bi-plus-circle-fill"></i> New Event</a>
     <a href="/admin/reviews"      class="s-link"><i class="bi bi-star-fill"></i> Reviews</a>
     <a href="/admin/banners"       class="s-link"><i class="bi bi-image-fill"></i> Banners</a>
     <a href="/" class="s-link" target="_blank"><i class="bi bi-box-arrow-up-right"></i> View Site</a>
+    <a href="/admin/coupons"        class="s-link"><i class="bi bi-tag-fill"></i> Coupons</a>
     <a href="/admin/staff" class="s-link"><i class="bi bi-people-fill"></i> Staff</a>
         <a href="/admin/profile" class="s-link"><i class="bi bi-person-circle"></i> My Profile</a>
     <% if(locals.isSuperAdmin){ %>
@@ -154,6 +158,17 @@
               <div class="action-btns">
                 <button class="btn-sm" onclick="viewEvent('<%= ev._id %>')" style="background:rgba(106,13,173,0.1);color:#9D4EDD;border-color:rgba(106,13,173,0.2);"><i class="bi bi-eye-fill"></i> View</button>
                 <a href="/admin/events/<%= ev._id %>/edit" class="btn-sm"><i class="bi bi-pencil-fill"></i> Edit</a>
+                <%
+                  const allStopped = ev.ticketTypes.length > 0 && ev.ticketTypes.every(t => t.isActive === false);
+                  const anyStopped = ev.ticketTypes.some(t => t.isActive === false);
+                %>
+                <button class="btn-sm" id="stbtn-<%= ev._id %>"
+                  style="<%= allStopped ? 'border-color:rgba(0,255,136,0.3);color:#00FF88;background:rgba(0,255,136,0.07);' : 'border-color:rgba(255,68,68,0.3);color:#FF4444;background:rgba(255,68,68,0.07);' %>"
+                  title="<%= allStopped ? 'Resume all ticket selling' : 'Stop all ticket selling for this event' %>"
+                  onclick="toggleAllTickets('<%= ev._id %>', <%= allStopped ? 'false' : 'true' %>, this)">
+                  <i class="bi bi-<%= allStopped ? 'play-fill' : 'stop-fill' %>"></i>
+                  <%= allStopped ? 'Resume' : 'Stop All' %>
+                </button>
                 <a href="/admin/seatmap/<%= ev._id %>" class="btn-sm" style="background:rgba(0,255,136,0.1);color:#00FF88;border-color:rgba(0,255,136,0.2);"><i class="bi bi-grid-3x3-gap-fill"></i> Seat Map</a>
                 <form method="POST" action="/admin/events/<%= ev._id %>/toggle" style="display:inline;">
                   <button type="submit" class="btn-sm"><i class="bi bi-toggle-<%= ev.isActive ? 'on' : 'off' %>"></i> <%= ev.isActive ? 'Hide' : 'Show' %></button>
@@ -224,7 +239,7 @@ function viewEvent(id){
           ${ev.venueAddress?`<div style="margin-left:22px;font-size:0.75rem;">${ev.venueAddress}</div>`:''}
           ${ev.dressCode?`<div><i class="bi bi-star-fill" style="color:#9D4EDD;width:18px;display:inline-block;"></i> ${ev.dressCode}</div>`:''}
           ${ev.googleMapLink?`<div><a href="${ev.googleMapLink}" target="_blank" style="color:#9D4EDD;font-size:0.75rem;"><i class="bi bi-map"></i> View Map</a></div>`:''}
-          <div><i class="bi bi-currency-rupee" style="color:#9D4EDD;width:18px;display:inline-block;"></i> Conv. Fee: ₹${ev.convenienceFee||20}</div>
+          <div><i class="bi bi-currency-rupee" style="color:#9D4EDD;width:18px;display:inline-block;"></i> Conv. Fee: ₹${ev.convenienceFee||0}</div>
         </div>
       </div>
       <div style="background:#0B0B0F;border-radius:8px;padding:1rem;">
@@ -277,6 +292,49 @@ function closeModal(){
 document.getElementById('evModal').addEventListener('click',e=>{if(e.target===document.getElementById('evModal'))closeModal();});
 
 // Toggle individual ticket category selling on/off
+async function toggleAllTickets(eventId, stop, btn) {
+  btn.disabled = true;
+  const origHTML = btn.innerHTML;
+  btn.innerHTML = '<span style="width:10px;height:10px;border:2px solid rgba(255,255,255,0.2);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:inline-block;"></span>';
+  try {
+    const r = await fetch(`/admin/events/${eventId}/stop-all-tickets`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ stop: String(stop) }),
+      credentials: 'include'
+    });
+    const d = await r.json();
+    if (d.success) {
+      if (d.stopped) {
+        btn.innerHTML = '<i class="bi bi-play-fill"></i> Resume';
+        btn.style.cssText = 'border-color:rgba(0,255,136,0.3);color:#00FF88;background:rgba(0,255,136,0.07);';
+        btn.setAttribute('onclick', `toggleAllTickets('${eventId}', false, this)`);
+        // Update all tier pills to stopped state
+        document.querySelectorAll('[id^="tp-' + eventId + '-"]').forEach(el => {
+          el.style.color = '#FF4444';
+          el.style.borderColor = 'rgba(255,68,68,0.3)';
+          const txt = el.textContent.trim().replace(/^✓ /, '');
+          el.textContent = '⛔ ' + txt;
+        });
+      } else {
+        btn.innerHTML = '<i class="bi bi-stop-fill"></i> Stop All';
+        btn.style.cssText = 'border-color:rgba(255,68,68,0.3);color:#FF4444;background:rgba(255,68,68,0.07);';
+        btn.setAttribute('onclick', `toggleAllTickets('${eventId}', true, this)`);
+        // Update all tier pills to active state
+        document.querySelectorAll('[id^="tp-' + eventId + '-"]').forEach(el => {
+          el.style.color = '';
+          el.style.borderColor = '';
+          const txt = el.textContent.trim().replace(/^⛔ /, '');
+          el.textContent = '✓ ' + txt;
+        });
+      }
+      btn.disabled = false;
+    } else {
+      btn.innerHTML = origHTML; btn.disabled = false;
+    }
+  } catch(e) { btn.innerHTML = origHTML; btn.disabled = false; }
+}
+
 async function toggleTicketCat(eventId, category, el) {
   el.style.opacity='0.5';
   try {

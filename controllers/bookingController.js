@@ -103,7 +103,7 @@ exports.createOrder = async (req, res) => {
 
     const pricePerTicket = ttype.price;
     const subtotal = pricePerTicket * effectiveQty;
-    const convFee  = event.convenienceFee || 20;
+    const convFee  = event.convenienceFee || 0;  // use 0 if admin didn't set one
 
     let discount = 0;
 
@@ -112,18 +112,32 @@ exports.createOrder = async (req, res) => {
       discount = ttype.comboOfferDiscount;
     }
 
-    // ── Coupon code discount (stacks on top or replaces, use whichever is bigger) ──
+    // ── Coupon code discount ──
     if (couponCode) {
       try {
         const Coupon = require('../models/Coupon');
         const coupon = await Coupon.findOne({ code: couponCode.toUpperCase(), isActive: true });
-        if (coupon && new Date() <= new Date(coupon.expiresAt)) {
-          const couponDisc = coupon.type === 'percent'
-            ? Math.floor(subtotal * coupon.value / 100)
-            : coupon.value;
-          if (couponDisc > discount) discount = couponDisc; // use whichever is bigger
+        if (coupon) {
+          const now = new Date();
+          const validFrom  = coupon.validFrom  ? new Date(coupon.validFrom)  : null;
+          const validUntil = coupon.validUntil ? new Date(coupon.validUntil) : null;
+          if (validUntil) validUntil.setHours(23,59,59,999);
+          const notYet  = validFrom  && now < validFrom;
+          const expired = validUntil && now > validUntil;
+          const maxedOut = coupon.maxUses > 0 && coupon.usedCount >= coupon.maxUses;
+          const belowMin = coupon.minOrder > 0 && subtotal < coupon.minOrder;
+          if (!notYet && !expired && !maxedOut && !belowMin) {
+            const couponDisc = coupon.type === 'percent'
+              ? Math.round(subtotal * coupon.value / 100)
+              : coupon.value;
+            // Use coupon if bigger than combo discount, or add to it
+            discount = Math.max(discount, couponDisc);
+            console.log('✅ Coupon applied in createOrder:', coupon.code, '→ discount:', discount);
+          } else {
+            console.warn('⚠ Coupon skipped in createOrder:', coupon.code, {notYet, expired, maxedOut, belowMin});
+          }
         }
-      } catch(e) { /* ignore coupon errors */ }
+      } catch(e) { console.warn('Coupon error in createOrder:', e.message); }
     }
 
     const totalAmount = Math.max(subtotal - discount + convFee, 0);
@@ -188,9 +202,21 @@ exports.savePending = async (req, res) => {
 
     const { orderId } = req.body;
 
-    // Check if already saved (don't duplicate)
+    // Check if already saved by orderId
     const existing = await Booking.findOne({ orderId: orderId || pending.orderId });
     if (existing) return res.json({ success: true, bookingId: existing._id });
+
+    // Also check: if a PAID booking exists for same user+event, don't create pending duplicate
+    // This handles the race where verifyPayment wins and ondismiss fires after
+    const paidExists = await Booking.findOne({
+      user:          req.user._id,
+      event:         pending.eventId,
+      paymentStatus: 'paid',
+    });
+    if (paidExists) {
+      console.log('ℹ️  savePending skipped — paid booking already exists for this user+event');
+      return res.json({ success: true, bookingId: paidExists._id });
+    }
 
     // Minimal attendee placeholders
     const tickets = [];
@@ -214,7 +240,7 @@ exports.savePending = async (req, res) => {
       subtotal:       pending.subtotal,
       discount:       pending.discount || 0,
       couponCode:     pending.couponCode || null,
-      convenienceFee: pending.convenienceFee || 20,
+      convenienceFee: pending.convenienceFee || 0,
       totalAmount:    pending.totalAmount,
       tickets,
       paymentStatus:  'pending',
@@ -279,7 +305,7 @@ exports.saveFailed = async (req, res) => {
     const booking = await Booking.create({
       user: req.user._id, event: pending.eventId, ticketType: pending.ticketType,
       pricePerTicket: pending.pricePerTicket, quantity: pending.quantity, subtotal: pending.subtotal,
-      discount: pending.discount||0, couponCode: pending.couponCode||null, convenienceFee: pending.convenienceFee||20,
+      discount: pending.discount||0, couponCode: pending.couponCode||null, convenienceFee: pending.convenienceFee||0,
       totalAmount: pending.totalAmount, tickets, paymentStatus: 'failed',
       orderId: pending.orderId, contactPhone: req.user.phone||'', contactEmail: req.user.email||'',
     });
@@ -428,6 +454,70 @@ exports.verifyPayment = async (req, res) => {
       }
     }
 
+    // ── CHECK: if a pending/failed booking already exists for this orderId, update it ──
+    const existingByOrder = await Booking.findOne({ orderId: razorpay_order_id });
+    if (existingByOrder && existingByOrder.paymentStatus !== 'paid') {
+      // Regenerate QR codes for existing tickets
+      const { generateQRCode, buildQRPayload, buildGroupQRPayload } = require('../utils/qrHelper');
+      const isGrp = existingByOrder.tickets.length > 1;
+      if (isGrp) {
+        const seatNums = existingByOrder.tickets.map(t => t.seatNumber || t.ticketId);
+        const grpPayload = buildGroupQRPayload({ bookingRef: existingByOrder.bookingRef, eventId: pending.eventId, paymentId: razorpay_payment_id, attendees: existingByOrder.tickets.map(t=>({name:t.attendee.name,ticketId:t.ticketId,seatNumber:t.seatNumber})), ticketType: pending.ticketType });
+        const grpQR = await generateQRCode(grpPayload).catch(()=>'');
+        const grpData = JSON.stringify(grpPayload);
+        existingByOrder.tickets.forEach(t => { t.qrData = grpData; if(grpQR) t.qrCode = grpQR; });
+      } else {
+        for (let i = 0; i < existingByOrder.tickets.length; i++) {
+          const t = existingByOrder.tickets[i];
+          const qrP = buildQRPayload({ ticketId: t.ticketId, bookingRef: existingByOrder.bookingRef, eventId: pending.eventId, paymentId: razorpay_payment_id, attendeeName: t.attendee.name, ticketType: pending.ticketType });
+          try { t.qrCode = await generateQRCode(qrP); t.qrData = JSON.stringify(qrP); } catch(e) { t.qrCode = ''; }
+        }
+      }
+      existingByOrder.paymentStatus = 'paid';
+      existingByOrder.paymentId     = razorpay_payment_id;
+      existingByOrder.signature     = razorpay_signature;
+      await existingByOrder.save();
+      await Event.updateOne(
+        { _id: pending.eventId, 'ticketTypes.category': pending.ticketType },
+        { $inc: { 'ticketTypes.$.bookedSeats': pending.quantity } }
+      ).catch(()=>{});
+      if (pending.zone) {
+        await SeatMap.updateOne(
+          { event: pending.eventId, 'sections.name': pending.zone },
+          { $inc: { 'sections.$.bookedSeats': pending.quantity } }
+        ).catch(()=>{});
+      }
+      // Apply coupon usage if any
+      if (pending.couponCode) {
+        const Coupon = require('../models/Coupon');
+        await Coupon.findOneAndUpdate({ code: pending.couponCode }, { $inc: { usedCount: 1 } }).catch(()=>{});
+      }
+      delete req.session.pendingBooking;
+      req.session.save(()=>{});
+      console.log('✅ Updated existing booking to paid:', existingByOrder.bookingRef);
+      // Send success email/whatsapp
+      try {
+        const ev2 = await require('../models/Event').findById(pending.eventId).lean();
+        if (req.user.email) sendBookingConfirmation({ to: req.user.email, name: req.user.firstName, booking: existingByOrder, event: ev2||{} }).catch(()=>{});
+        if (req.user.phone) { const {sendWhatsAppConfirmation} = require('../utils/whatsappHelper'); sendWhatsAppConfirmation({ phone: req.user.phone, name: req.user.firstName, booking: existingByOrder, event: ev2||{} }).catch(()=>{}); }
+      } catch(ne) { console.warn('Notif err:', ne.message); }
+      return res.json({ success: true, bookingId: existingByOrder._id, bookingRef: existingByOrder.bookingRef });
+    }
+
+    // ── DEDUP: check if a paid booking was already created (double-submit guard) ──
+    const alreadyPaid = await Booking.findOne({
+      user:          req.user._id,
+      event:         pending.eventId,
+      paymentStatus: 'paid',
+      paymentId:     razorpay_payment_id,
+    });
+    if (alreadyPaid) {
+      console.log('ℹ️  verifyPayment: already paid booking found, returning it');
+      delete req.session.pendingBooking;
+      req.session.save(() => {});
+      return res.json({ success: true, bookingId: alreadyPaid._id, bookingRef: alreadyPaid.bookingRef });
+    }
+
     // ── STEP 1: Build ticket stubs (QR generated after save, once bookingRef is known) ──
     const tickets = [];
     const attendees = pending.attendees || [];
@@ -458,7 +548,7 @@ exports.verifyPayment = async (req, res) => {
       subtotal:       pending.subtotal,
       discount:       pending.discount || 0,
       couponCode:     pending.couponCode || null,
-      convenienceFee: pending.convenienceFee || 20,
+      convenienceFee: pending.convenienceFee || 0,
       totalAmount:    pending.totalAmount,
       tickets,
       paymentStatus:  'paid',

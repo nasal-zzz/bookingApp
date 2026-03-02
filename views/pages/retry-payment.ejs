@@ -6,58 +6,112 @@
   <%- include('../partials/head') %>
   <style>
     .pay-wrap{max-width:520px;margin:3rem auto;padding:0 1.5rem 5rem;}
-    .pay-card{background:var(--card,#14141C);border:1px solid rgba(255,255,255,0.07);border-radius:12px;overflow:hidden;}
+    .pay-card{background:var(--card,#14141C);border:1px solid rgba(255,255,255,0.07);border-radius:14px;overflow:hidden;}
     .pay-top{height:3px;background:linear-gradient(90deg,transparent,var(--accent),transparent);}
     .pay-body{padding:2rem;}
-    .pay-title{font-family:var(--font-display);font-size:1.5rem;letter-spacing:2px;color:#fff;margin-bottom:0.5rem;}
-    .pay-sub{font-size:0.82rem;color:var(--muted);margin-bottom:2rem;line-height:1.6;}
-    .info-row{display:flex;justify-content:space-between;padding:0.55rem 0;border-bottom:1px solid rgba(255,255,255,0.06);font-size:0.82rem;}
-    .info-row .lbl{color:var(--muted);}.info-row .val{color:#fff;font-weight:500;}
-    .total-row{display:flex;justify-content:space-between;padding:0.9rem 0;margin-top:0.5rem;}
+    .pay-title{font-family:var(--font-display);font-size:1.4rem;letter-spacing:2px;color:#fff;margin-bottom:0.4rem;}
+    .pay-sub{font-size:0.82rem;color:var(--muted);margin-bottom:1.8rem;line-height:1.6;}
+    .info-row{display:flex;justify-content:space-between;align-items:center;padding:0.55rem 0;border-bottom:1px solid rgba(255,255,255,0.06);font-size:0.82rem;}
+    .info-row .lbl{color:var(--muted);}
+    .info-row .val{color:#fff;font-weight:500;}
+    .total-row{display:flex;justify-content:space-between;align-items:center;padding:1rem 0 0.5rem;}
     .total-lbl{font-family:var(--font-display);font-size:0.95rem;letter-spacing:1px;color:#fff;}
     .total-val{font-family:var(--font-display);font-size:2rem;color:var(--accent);letter-spacing:2px;}
     .attendees-list{margin:1.2rem 0;padding:1rem;background:rgba(255,255,255,0.025);border-radius:8px;border:1px solid rgba(255,255,255,0.06);}
     .att-item{display:flex;align-items:center;gap:0.55rem;font-size:0.8rem;color:var(--muted);margin-bottom:0.4rem;}
     .att-item:last-child{margin-bottom:0;}
     .att-item i{color:var(--accent);}
-    .btn-pay{width:100%;padding:1.05rem;background:var(--accent);color:#fff;font-family:var(--font-body);font-weight:700;font-size:0.95rem;letter-spacing:1px;border:none;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:0.55rem;transition:0.18s;box-shadow:0 0 26px rgba(106,13,173,0.22);margin-top:1.2rem;}
+    .btn-pay{width:100%;padding:1rem;background:var(--accent);color:#fff;font-family:var(--font-body);font-weight:700;font-size:0.95rem;letter-spacing:1px;border:none;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:0.55rem;transition:0.18s;box-shadow:0 0 26px rgba(106,13,173,0.22);margin-top:1.2rem;}
     .btn-pay:hover{transform:translateY(-2px);box-shadow:0 0 48px rgba(106,13,173,0.48);}
     .btn-pay:disabled{opacity:0.38;cursor:not-allowed;transform:none;box-shadow:none;}
-    .btn-cancel{display:block;text-align:center;margin-top:1rem;color:var(--muted);font-size:0.8rem;text-decoration:none;}
-    .btn-cancel:hover{color:#fff;}
+    .btn-back{display:flex;align-items:center;justify-content:center;gap:0.45rem;text-align:center;margin-top:0.8rem;color:var(--muted);font-size:0.82rem;text-decoration:none;padding:0.7rem;border:1px solid rgba(255,255,255,0.08);border-radius:8px;transition:all 0.18s;}
+    .btn-back:hover{color:#fff;border-color:rgba(255,255,255,0.2);background:rgba(255,255,255,0.04);}
     .spin{width:18px;height:18px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:sp 0.7s linear infinite;display:none;}
     @keyframes sp{to{transform:rotate(360deg)}}
+    #toast-container{position:fixed;top:1.2rem;right:1.2rem;z-index:9999;display:flex;flex-direction:column;gap:0.6rem;pointer-events:none;}
+    .toast-msg{display:flex;align-items:flex-start;gap:0.7rem;padding:0.9rem 1.1rem;border-radius:10px;font-size:0.83rem;min-width:260px;max-width:360px;box-shadow:0 8px 32px rgba(0,0,0,0.45);pointer-events:all;animation:tIn 0.3s ease;}
+    @keyframes tIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+    @keyframes tOut{from{opacity:1}to{opacity:0;transform:translateX(20px)}}
+    .toast-msg.success{background:rgba(0,20,10,0.95);border:1px solid rgba(0,255,136,0.3);color:#00FF88;}
+    .toast-msg.error{background:rgba(20,0,0,0.95);border:1px solid rgba(255,68,68,0.35);color:#FF6B6B;}
+    .toast-msg.info{background:rgba(10,8,25,0.95);border:1px solid rgba(106,13,173,0.4);color:#bf80ff;}
+    .toast-icon{font-size:1rem;flex-shrink:0;margin-top:0.05rem;}
+    .toast-body{flex:1;line-height:1.45;}
+    .toast-title{font-weight:700;font-size:0.8rem;margin-bottom:0.1rem;}
+    .toast-sub{font-size:0.75rem;opacity:0.85;}
+    #payFailedOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:8888;align-items:center;justify-content:center;padding:1rem;backdrop-filter:blur(8px);}
+    #payFailedOverlay.show{display:flex;}
+    .pf-card{background:#14141C;border:1px solid rgba(255,68,68,0.25);border-radius:16px;width:100%;max-width:420px;overflow:hidden;text-align:center;animation:tIn 0.3s ease;}
+    .pf-bar{height:4px;background:linear-gradient(90deg,#FF4444,#ff8800,#FF4444);}
+    .pf-body{padding:2.2rem 2rem 2rem;}
+    .pf-icon{font-size:3.2rem;display:block;margin-bottom:1rem;}
+    .pf-title{font-family:var(--font-display);font-size:1.3rem;letter-spacing:2px;color:#fff;margin-bottom:0.6rem;}
+    .pf-desc{font-size:0.82rem;color:#B3B3B3;line-height:1.65;margin-bottom:1.2rem;}
+    .pf-error-box{background:rgba(255,68,68,0.07);border:1px solid rgba(255,68,68,0.2);border-radius:8px;padding:0.7rem 1rem;font-size:0.78rem;color:#ff9999;margin-bottom:1.6rem;font-family:var(--font-mono);line-height:1.5;}
+    .pf-btns{display:flex;flex-direction:column;gap:0.7rem;}
+    .pf-retry{display:flex;align-items:center;justify-content:center;gap:0.5rem;width:100%;padding:0.9rem;background:#6A0DAD;color:#fff;border:none;border-radius:8px;font-weight:700;font-size:0.9rem;cursor:pointer;letter-spacing:0.5px;transition:all 0.18s;}
+    .pf-retry:hover{box-shadow:0 0 28px rgba(106,13,173,0.55);transform:translateY(-1px);}
+    .pf-back{display:flex;align-items:center;justify-content:center;gap:0.4rem;padding:0.8rem;background:transparent;color:#B3B3B3;border:1px solid rgba(255,255,255,0.1);border-radius:8px;font-size:0.85rem;text-decoration:none;transition:all 0.18s;}
+    .pf-back:hover{border-color:rgba(255,255,255,0.25);color:#fff;}
   </style>
 </head>
 <body>
   <%- include('../partials/navbar') %>
+  <div id="toast-container"></div>
+
+  <!-- Payment Failed Overlay -->
+  <div id="payFailedOverlay">
+    <div class="pf-card">
+      <div class="pf-bar"></div>
+      <div class="pf-body">
+        <span class="pf-icon">&#10060;</span>
+        <div class="pf-title">PAYMENT FAILED</div>
+        <p class="pf-desc">Your payment could not be processed. No amount has been deducted from your account.</p>
+        <div class="pf-error-box" id="pfErrMsg">Please try again or use a different payment method.</div>
+        <div class="pf-btns">
+          <button class="pf-retry" id="pfRetryBtn"><i class="bi bi-arrow-clockwise"></i> Try Again</button>
+          <a href="/booking/seatmap/<%= event._id %>" class="pf-back"><i class="bi bi-arrow-left"></i> Back to Seat Selection</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="pay-wrap">
     <div class="pay-card">
       <div class="pay-top"></div>
       <div class="pay-body">
         <div class="pay-title">COMPLETE PAYMENT</div>
-        <div class="pay-sub">Your previous payment was incomplete. Resume to confirm your booking for <%= event.name %>.</div>
+        <div class="pay-sub">Your previous payment was incomplete. Resume below to confirm your booking for <strong style="color:#fff;"><%= event.name %></strong>.</div>
+
         <div class="info-row"><span class="lbl">Event</span><span class="val"><%= event.name.toUpperCase() %></span></div>
-        <div class="info-row"><span class="lbl">Date</span><span class="val"><%= new Date(event.date).toDateString() %></span></div>
+        <div class="info-row"><span class="lbl">Date</span><span class="val"><%= new Date(event.date).toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'long',year:'numeric'}) %></span></div>
         <div class="info-row"><span class="lbl">Ticket Type</span><span class="val"><%= booking.ticketType.toUpperCase() %></span></div>
         <div class="info-row"><span class="lbl">Quantity</span><span class="val"><%= booking.quantity %> ticket<%= booking.quantity>1?'s':'' %></span></div>
-        <div class="info-row"><span class="lbl">Ref</span><span class="val" style="font-family:var(--font-mono);font-size:0.75rem;"><%= booking.bookingRef %></span></div>
-        <!-- Attendees -->
+        <div class="info-row"><span class="lbl">Booking Ref</span><span class="val" style="font-family:var(--font-mono);font-size:0.73rem;color:#9D4EDD;"><%= booking.bookingRef %></span></div>
+
         <div class="attendees-list">
           <% booking.tickets.forEach(function(t,i){ %>
-          <div class="att-item"><i class="bi bi-person-fill"></i> <%= t.attendee.name %><span style="font-size:0.72rem;margin-left:0.3rem;color:#555;">· Age <%= t.attendee.age %></span></div>
+          <div class="att-item">
+            <i class="bi bi-person-fill"></i>
+            <%= t.attendee.name %>
+            <span style="font-size:0.72rem;color:#555;"> &middot; Age <%= t.attendee.age %></span>
+          </div>
           <% }); %>
         </div>
+
         <div class="total-row">
-          <div class="total-lbl">TOTAL</div>
-          <div class="total-val">₹<%= booking.totalAmount.toLocaleString('en-IN') %></div>
+          <div class="total-lbl">TOTAL DUE</div>
+          <div class="total-val">&#8377;<%= booking.totalAmount.toLocaleString('en-IN') %></div>
         </div>
+
         <button class="btn-pay" id="payBtn" onclick="doPay()">
           <i class="bi bi-lock-fill"></i>
-          <span id="payTxt">Pay ₹<%= booking.totalAmount.toLocaleString('en-IN') %></span>
+          <span id="payTxt">Pay &#8377;<%= booking.totalAmount.toLocaleString('en-IN') %></span>
           <div class="spin" id="spin"></div>
         </button>
-        <a href="/booking/my-bookings" class="btn-cancel">← Back to My Tickets</a>
+        <a href="/booking/my-bookings" class="btn-back">
+          <i class="bi bi-ticket-perforated"></i> View My Bookings
+        </a>
       </div>
     </div>
   </div>
@@ -65,29 +119,93 @@
   <%- include('../partials/scripts') %>
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   <script>
-  const ORDER  = <%- JSON.stringify({id: order.id, amount: booking.totalAmount*100, currency:'INR'}) %>;
-  const RZP_KEY = '<%= rzpKey %>';
-  const USER    = <%- JSON.stringify({name:(user.firstName||'')+' '+(user.lastName||''),email:user.email||'',phone:user.phone||''}) %>;
+  var ORDER   = <%- JSON.stringify({id: order.id, amount: booking.totalAmount*100, currency:'INR'}) %>;
+  var RZP_KEY = '<%= rzpKey %>';
+  var USER    = <%- JSON.stringify({name:(user.firstName||'')+' '+(user.lastName||''), email:user.email||'', phone:user.phone||''}) %>;
 
-  async function doPay(){
-    document.getElementById('payBtn').disabled=true;
-    document.getElementById('payTxt').style.display='none';
-    document.getElementById('spin').style.display='block';
-    const rzp = new Razorpay({
-      key:ORDER.id?RZP_KEY:RZP_KEY, amount:ORDER.amount, currency:ORDER.currency,
-      name:'NightPass', description:'Complete payment',
-      order_id:ORDER.id, prefill:USER,
-      theme:{color:'#6A0DAD',backdrop_color:'#0B0B0F'},
-      modal:{ondismiss:()=>{document.getElementById('payBtn').disabled=false;document.getElementById('payTxt').style.display='flex';document.getElementById('spin').style.display='none';}},
-      handler:async function(response){
-        const vres=await fetch('/booking/verify-payment',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',
-          body:JSON.stringify({razorpay_payment_id:response.razorpay_payment_id,razorpay_order_id:response.razorpay_order_id,razorpay_signature:response.razorpay_signature})});
-        const vdata=await vres.json();
-        if(vdata.success) window.location.href='/booking/success/'+vdata.bookingId;
-        else{alert('Payment verified but failed to update. Payment ID: '+response.razorpay_payment_id);document.getElementById('payBtn').disabled=false;document.getElementById('payTxt').style.display='flex';document.getElementById('spin').style.display='none';}
+  function showToast(title, msg, type, ms) {
+    ms = ms || 4500;
+    var icons = { success:'bi-check-circle-fill', error:'bi-x-circle-fill', info:'bi-info-circle-fill' };
+    var el = document.createElement('div');
+    el.className = 'toast-msg ' + (type || 'info');
+    el.innerHTML = '<i class="bi ' + (icons[type] || 'bi-info-circle-fill') + ' toast-icon"></i>' +
+      '<div class="toast-body"><div class="toast-title">' + title + '</div>' +
+      (msg ? '<div class="toast-sub">' + msg + '</div>' : '') + '</div>';
+    document.getElementById('toast-container').appendChild(el);
+    setTimeout(function(){
+      el.style.animation = 'tOut 0.3s ease forwards';
+      setTimeout(function(){ el.remove(); }, 300);
+    }, ms);
+  }
+
+  function showFailed(errMsg) {
+    document.getElementById('pfErrMsg').textContent = errMsg || 'Please try again or use a different payment method.';
+    document.getElementById('payFailedOverlay').classList.add('show');
+    resetBtn();
+  }
+
+  document.getElementById('pfRetryBtn').onclick = function() {
+    document.getElementById('payFailedOverlay').classList.remove('show');
+    setTimeout(doPay, 250);
+  };
+
+  function setLoading(on) {
+    document.getElementById('payBtn').disabled = on;
+    document.getElementById('payTxt').style.display = on ? 'none' : 'flex';
+    document.getElementById('spin').style.display   = on ? 'block' : 'none';
+  }
+
+  function resetBtn() {
+    document.getElementById('payBtn').disabled = false;
+    document.getElementById('payTxt').style.display = 'flex';
+    document.getElementById('spin').style.display = 'none';
+  }
+
+  function doPay() {
+    setLoading(true);
+    var rzp = new Razorpay({
+      key:         RZP_KEY,
+      amount:      ORDER.amount,
+      currency:    ORDER.currency,
+      name:        'Melattur Entertainment Events',
+      description: 'Complete pending booking',
+      order_id:    ORDER.id,
+      prefill:     USER,
+      theme:       { color: '#6A0DAD', backdrop_color: '#0B0B0F' },
+      modal:       { ondismiss: function(){ resetBtn(); } },
+      handler: function(response) {
+        showToast('Verifying payment', 'Please wait a moment...', 'info', 9000);
+        fetch('/booking/verify-payment', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_order_id:   response.razorpay_order_id,
+            razorpay_signature:  response.razorpay_signature
+          })
+        })
+        .then(function(r){ return r.json(); })
+        .then(function(vdata){
+          if(vdata.success){
+            window.location.href = '/booking/success/' + vdata.bookingId;
+          } else {
+            showToast('Confirmation failed', 'Payment ID: ' + response.razorpay_payment_id + '. Please contact support.', 'error', 12000);
+            resetBtn();
+          }
+        })
+        .catch(function(){
+          showToast('Network error', 'Could not verify. Contact support with payment ID: ' + response.razorpay_payment_id, 'error', 12000);
+          resetBtn();
+        });
       }
     });
-    rzp.on('payment.failed',r=>{alert('Payment failed: '+(r.error?.description||'Please try again'));document.getElementById('payBtn').disabled=false;document.getElementById('payTxt').style.display='flex';document.getElementById('spin').style.display='none';});
+
+    rzp.on('payment.failed', function(r) {
+      var errMsg = r.error && r.error.description ? r.error.description : 'Payment could not be processed.';
+      showFailed(errMsg);
+    });
+
     rzp.open();
   }
   </script>

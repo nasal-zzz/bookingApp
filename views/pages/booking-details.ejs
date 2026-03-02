@@ -118,6 +118,36 @@
     .mob-bar-lbl{font-size:0.65rem;color:#B3B3B3;font-family:var(--font-mono);}
     .btn-mob-pay{background:var(--accent);color:#fff;font-family:var(--font-body);font-weight:700;font-size:0.88rem;padding:0.8rem 1.6rem;border:none;border-radius:6px;cursor:pointer;white-space:nowrap;}
     @media(max-width:860px){.mob-bar{display:flex;}}
+
+    /* ── TOAST NOTIFICATION ── */
+    #toast-container{position:fixed;top:1.2rem;right:1.2rem;z-index:9999;display:flex;flex-direction:column;gap:0.6rem;pointer-events:none;}
+    .toast-msg{display:flex;align-items:flex-start;gap:0.7rem;padding:0.9rem 1.1rem;border-radius:10px;font-size:0.83rem;min-width:260px;max-width:360px;box-shadow:0 8px 32px rgba(0,0,0,0.45);pointer-events:all;animation:toastIn 0.3s ease;backdrop-filter:blur(10px);}
+    @keyframes toastIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+    @keyframes toastOut{from{opacity:1;transform:translateX(0)}to{opacity:0;transform:translateX(20px)}}
+    .toast-msg.success{background:rgba(0,20,10,0.92);border:1px solid rgba(0,255,136,0.3);color:#00FF88;}
+    .toast-msg.error{background:rgba(20,0,0,0.92);border:1px solid rgba(255,68,68,0.35);color:#FF6B6B;}
+    .toast-msg.warning{background:rgba(20,15,0,0.92);border:1px solid rgba(245,200,66,0.35);color:#f5c842;}
+    .toast-msg.info{background:rgba(10,8,25,0.92);border:1px solid rgba(106,13,173,0.4);color:#bf80ff;}
+    .toast-icon{font-size:1rem;flex-shrink:0;margin-top:0.05rem;}
+    .toast-body{flex:1;line-height:1.45;}
+    .toast-title{font-weight:700;font-size:0.8rem;margin-bottom:0.12rem;letter-spacing:0.3px;}
+    .toast-sub{font-size:0.75rem;opacity:0.85;}
+
+    /* ── PAYMENT FAILED OVERLAY ── */
+    #payFailedOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:8888;align-items:center;justify-content:center;padding:1rem;backdrop-filter:blur(8px);}
+    #payFailedOverlay.show{display:flex;}
+    .pf-card{background:#14141C;border:1px solid rgba(255,68,68,0.25);border-radius:16px;width:100%;max-width:420px;overflow:hidden;text-align:center;}
+    .pf-top{height:4px;background:linear-gradient(90deg,#FF4444,#ff8800,#FF4444);}
+    .pf-body{padding:2.2rem 2rem;}
+    .pf-icon{font-size:3rem;margin-bottom:1rem;display:block;}
+    .pf-title{font-family:var(--font-display);font-size:1.3rem;letter-spacing:2px;color:#fff;margin-bottom:0.5rem;}
+    .pf-desc{font-size:0.82rem;color:#B3B3B3;line-height:1.6;margin-bottom:1.8rem;}
+    .pf-error-msg{background:rgba(255,68,68,0.07);border:1px solid rgba(255,68,68,0.2);border-radius:8px;padding:0.65rem 1rem;font-size:0.78rem;color:#ff8888;margin-bottom:1.5rem;font-family:var(--font-mono);}
+    .pf-btns{display:flex;flex-direction:column;gap:0.7rem;}
+    .pf-btn-retry{display:flex;align-items:center;justify-content:center;gap:0.5rem;padding:0.85rem;background:#6A0DAD;color:#fff;border:none;border-radius:8px;font-weight:700;font-size:0.88rem;cursor:pointer;transition:all 0.18s;letter-spacing:0.5px;}
+    .pf-btn-retry:hover{box-shadow:0 0 24px rgba(106,13,173,0.5);transform:translateY(-1px);}
+    .pf-btn-back{display:flex;align-items:center;justify-content:center;gap:0.5rem;padding:0.75rem;background:transparent;color:#B3B3B3;border:1px solid rgba(255,255,255,0.1);border-radius:8px;font-size:0.85rem;cursor:pointer;transition:all 0.18s;text-decoration:none;}
+    .pf-btn-back:hover{border-color:rgba(255,255,255,0.25);color:#fff;}
   </style>
 </head>
 <body>
@@ -136,6 +166,30 @@
   </div>
 
   <%- include('../partials/navbar') %>
+
+  <!-- Toast container -->
+  <div id="toast-container"></div>
+
+  <!-- Payment Failed Overlay -->
+  <div id="payFailedOverlay">
+    <div class="pf-card">
+      <div class="pf-top"></div>
+      <div class="pf-body">
+        <span class="pf-icon">❌</span>
+        <div class="pf-title">PAYMENT FAILED</div>
+        <p class="pf-desc">Your payment could not be processed. No amount has been charged to your account.</p>
+        <div class="pf-error-msg" id="pfErrorMsg">Please try again or use a different payment method.</div>
+        <div class="pf-btns">
+          <button class="pf-btn-retry" onclick="retryFromOverlay()">
+            <i class="bi bi-arrow-clockwise"></i> Retry Payment
+          </button>
+          <a href="/booking/seatmap/<%= event._id %>" class="pf-btn-back">
+            <i class="bi bi-arrow-left"></i> Back to Seat Selection
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <div class="pg-wrap">
     <!-- LEFT -->
@@ -383,7 +437,17 @@
         <div>
           <label class="form-label">Age *</label>
           <input type="number" class="form-inp" id="a-${n}" placeholder="25" min="0" max="99" inputmode="numeric"/>
-          <div class="field-err" id="ae-${n}"><i class="bi bi-exclamation-circle"></i>1</div>
+          <div class="field-err" id="ae-${n}"><i class="bi bi-exclamation-circle"></i> Valid age required</div>
+        </div>
+        <div>
+          <label class="form-label">Gender *</label>
+          <select class="form-inp" id="g-${n}" style="cursor:pointer;">
+            <option value="">Select gender</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+            <option value="other">Other / Prefer not to say</option>
+          </select>
+          <div class="field-err" id="ge-${n}"><i class="bi bi-exclamation-circle"></i> Gender required</div>
         </div>
         ${isFirst?`
         <div>
@@ -450,33 +514,70 @@
   }
 
   // ─── COUPON (live DB validation) ──────────────────────────────────
-  async function applyCoupon(){
-    const code=document.getElementById('couponInp').value.trim().toUpperCase();
-    const msgEl=document.getElementById('couponMsg');
-    if(!code)return;
-    const btn=document.querySelector('.coupon-btn');
-    btn.textContent='...';btn.disabled=true;
-    try{
-      const sub=qty*price;
-      const res=await fetch('/superadmin/api/validate-coupon',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify({code,orderAmount:sub})});
-      const d=await res.json();
+  function applyCoupon(){
+    var code = document.getElementById('couponInp').value.trim().toUpperCase();
+    var msgEl = document.getElementById('couponMsg');
+    if(!code){ showCouponMsg('Enter a coupon code first.', false); return; }
+    if(!selTypeName){ showCouponMsg('Select a ticket type first.', false); return; }
+    var btn = document.querySelector('.coupon-btn');
+    btn.textContent = '...'; btn.disabled = true;
+    var orderAmount = qty * price;
+    fetch('/superadmin/api/validate-coupon', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ code: code, orderAmount: orderAmount })
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(d){
       if(d.success){
-        couponApplied=true;discAmt=d.discount;couponCode=d.code;
-        msgEl.innerHTML=`<i class="bi bi-check-circle-fill" style="color:#00FF88;"></i><span style="color:#00FF88;">${d.code} applied — ₹${d.discount.toLocaleString('en-IN')} off!</span>`;
-        msgEl.classList.add('show');document.getElementById('couponInp').style.borderColor='#00FF88';
-      }else{
-        couponApplied=false;discAmt=0;couponCode=null;
-        msgEl.innerHTML=`<i class="bi bi-x-circle-fill" style="color:#FF4444;"></i><span style="color:#FF4444;">${d.message||'Invalid coupon'}</span>`;
-        msgEl.classList.add('show');document.getElementById('couponInp').style.borderColor='#FF4444';
-        setTimeout(()=>{msgEl.classList.remove('show');document.getElementById('couponInp').style.borderColor='';},3000);
+        couponApplied = true; discAmt = d.discount; couponCode = d.code;
+        showCouponMsg(d.code + ' applied — ' + formatRupee(d.discount) + ' off!', true);
+        document.getElementById('couponInp').style.borderColor = '#00FF88';
+        document.getElementById('couponInp').disabled = true;
+        btn.textContent = 'REMOVE'; btn.disabled = false;
+        btn.onclick = removeCoupon;
+      } else {
+        couponApplied = false; discAmt = 0; couponCode = null;
+        showCouponMsg(d.message || 'Invalid coupon code.', false);
+        document.getElementById('couponInp').style.borderColor = '#FF4444';
+        setTimeout(function(){ document.getElementById('couponInp').style.borderColor = ''; }, 3000);
       }
-    }catch(e){
-      msgEl.innerHTML=`<i class="bi bi-x-circle-fill" style="color:#FF4444;"></i><span style="color:#FF4444;">Could not validate coupon</span>`;
-      msgEl.classList.add('show');
-    }finally{btn.textContent='APPLY';btn.disabled=false;}
+      updateSummary();
+    })
+    .catch(function(){
+      showCouponMsg('Network error. Please try again.', false);
+    })
+    .finally(function(){ btn.textContent = 'APPLY'; btn.disabled = false; });
+  }
+
+  function removeCoupon(){
+    couponApplied = false; discAmt = 0; couponCode = null;
+    var inp = document.getElementById('couponInp');
+    inp.value = ''; inp.disabled = false; inp.style.borderColor = '';
+    var btn = document.querySelector('.coupon-btn');
+    btn.textContent = 'APPLY'; btn.onclick = applyCoupon;
+    document.getElementById('couponMsg').classList.remove('show');
     updateSummary();
   }
-  document.getElementById('couponInp').addEventListener('keydown',e=>{if(e.key==='Enter')applyCoupon();});
+
+  function showCouponMsg(text, isSuccess){
+    var msgEl = document.getElementById('couponMsg');
+    var icon = isSuccess
+      ? '<i class="bi bi-check-circle-fill" style="color:#00FF88;"></i><span style="color:#00FF88;">'
+      : '<i class="bi bi-x-circle-fill" style="color:#FF4444;"></i><span style="color:#FF4444;">';
+    msgEl.innerHTML = icon + text + '</span>';
+    msgEl.classList.add('show');
+    if(!isSuccess){
+      setTimeout(function(){ msgEl.classList.remove('show'); }, 4000);
+    }
+  }
+
+  function formatRupee(n){ return '\u20b9' + n.toLocaleString('en-IN'); }
+
+  document.getElementById('couponInp').addEventListener('keydown', function(e){
+    if(e.key === 'Enter') applyCoupon();
+  });
 
   // ─── VALIDATE ─────────────────────────────────────────────────────
   function validate(){
@@ -484,56 +585,152 @@
     const total=isMultiEntry?multiCount:qty;
     for(let i=1;i<=total;i++){
       const n=document.getElementById('n-'+i),a=document.getElementById('a-'+i);
+      const g=document.getElementById('g-'+i);
       document.getElementById('ne-'+i).classList.remove('show');n.classList.remove('err');
       document.getElementById('ae-'+i).classList.remove('show');a.classList.remove('err');
+      if(g){document.getElementById('ge-'+i).classList.remove('show');g.classList.remove('err');}
       if(!n.value.trim()||n.value.trim().length<2){n.classList.add('err');document.getElementById('ne-'+i).classList.add('show');n.scrollIntoView({behavior:'smooth',block:'center'});ok=false;}
       const age=parseInt(a.value);
       if(!a.value||isNaN(age)||age<1||age>120){a.classList.add('err');document.getElementById('ae-'+i).classList.add('show');ok=false;}
+      if(g&&!g.value){g.classList.add('err');document.getElementById('ge-'+i).classList.add('show');if(ok){g.scrollIntoView({behavior:'smooth',block:'center'});}ok=false;}
     }
     return ok;
   }
 
-  // ─── PAYMENT ──────────────────────────────────────────────────────
-  async function doPayment(){
-    if(!selTypeName){alert('Please select a ticket type.');return;}
-    if(!validate())return;
-    const attendees=[];
-    const total=isMultiEntry?multiCount:qty;
-    for(let i=1;i<=total;i++){
-      attendees.push({name:document.getElementById('n-'+i).value.trim(),age:document.getElementById('a-'+i).value,special:document.getElementById('sp-'+i)?.value||''});
+  // ─── TOAST NOTIFICATIONS ──────────────────────────────────────────
+  function showToast(title, msg, type, duration) {
+    duration = duration || 4000;
+    var icons = { success:'bi-check-circle-fill', error:'bi-x-circle-fill', warning:'bi-exclamation-triangle-fill', info:'bi-info-circle-fill' };
+    var container = document.getElementById('toast-container');
+    var el = document.createElement('div');
+    el.className = 'toast-msg ' + (type||'info');
+    el.innerHTML = '<i class="bi ' + (icons[type]||icons.info) + ' toast-icon"></i>' +
+      '<div class="toast-body"><div class="toast-title">' + title + '</div>' +
+      (msg ? '<div class="toast-sub">' + msg + '</div>' : '') + '</div>';
+    container.appendChild(el);
+    setTimeout(function(){
+      el.style.animation = 'toastOut 0.3s ease forwards';
+      setTimeout(function(){ el.remove(); }, 300);
+    }, duration);
+  }
+
+  // ─── PAYMENT FAILED OVERLAY ────────────────────────────────────────
+  var _lastOrderId = null;
+  var _lastPayData = null;
+
+  function showPayFailed(errMsg) {
+    document.getElementById('pfErrorMsg').textContent = errMsg || 'Please try again or use a different payment method.';
+    document.getElementById('payFailedOverlay').classList.add('show');
+    setLoading(false);
+  }
+
+  function retryFromOverlay() {
+    document.getElementById('payFailedOverlay').classList.remove('show');
+    if (_lastPayData) {
+      setTimeout(function(){ launchRazorpay(_lastPayData); }, 200);
+    } else {
+      setLoading(false);
     }
-    // For multiple-entry tickets, quantity sent to server = 1 ticket but attendees = comboCount
-    const submitQty = isMultiEntry ? 1 : qty;
+  }
+
+  // ─── PAYMENT ──────────────────────────────────────────────────────
+  function doPayment(){
+    if(!selTypeName){ showToast('Select a ticket type', 'Please choose a ticket category before proceeding.', 'warning'); return; }
+    if(!validate()) return;
+    var attendees = [];
+    var total = isMultiEntry ? multiCount : qty;
+    for(var i = 1; i <= total; i++){
+      var gEl = document.getElementById('g-'+i);
+      var spEl = document.getElementById('sp-'+i);
+      attendees.push({
+        name:    document.getElementById('n-'+i).value.trim(),
+        age:     document.getElementById('a-'+i).value,
+        gender:  gEl ? gEl.value : '',
+        special: spEl ? spEl.value : ''
+      });
+    }
+    var submitQty = isMultiEntry ? 1 : qty;
     setLoading(true);
-    try{
-      const res=await fetch('/booking/create-order',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',
-        body:JSON.stringify({eventId:EVENT_DATA._id,ticketType:selTypeName,quantity:submitQty,couponCode,attendees,zone:selZone,comboCount:isMultiEntry?multiCount:1})});
-      const data=await res.json();
-      if(!data.success){alert(data.message);setLoading(false);return;}
-      const rzp=new Razorpay({
-        key:data.key,amount:data.amount,currency:data.currency,
-        name:'Melattur Entertainment Events',description:selTypeName.toUpperCase()+' × '+qty,
-        order_id:data.orderId,prefill:data.prefill,
-        theme:{color:'#6A0DAD',backdrop_color:'#0B0B0F'},
-        modal:{ondismiss:async()=>{
-          // Save pending booking on dismiss
-          await fetch('/booking/save-pending',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify({orderId:data.orderId})});
+    fetch('/booking/create-order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({
+        eventId: EVENT_DATA._id, ticketType: selTypeName,
+        quantity: submitQty, couponCode: couponCode,
+        attendees: attendees, zone: selZone,
+        comboCount: isMultiEntry ? multiCount : 1
+      })
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      if(!data.success){
+        showToast('Order failed', data.message || 'Please try again.', 'error');
+        setLoading(false); return;
+      }
+      _lastPayData = data;
+      launchRazorpay(data);
+    })
+    .catch(function(){
+      showToast('Network error', 'Please check your connection and try again.', 'error');
+      setLoading(false);
+    });
+  }
+
+  function launchRazorpay(data) {
+    var rzp = new Razorpay({
+      key: data.key, amount: data.amount, currency: data.currency,
+      name: 'Melattur Entertainment Events',
+      description: selTypeName.toUpperCase() + ' x ' + qty,
+      order_id: data.orderId, prefill: data.prefill,
+      theme: { color: '#6A0DAD', backdrop_color: '#0B0B0F' },
+      modal: {
+        ondismiss: function(){
+          fetch('/booking/save-pending', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ orderId: data.orderId })
+          }).catch(function(){});
           setLoading(false);
-        }},
-        handler:async function(response){
-          const vres=await fetch('/booking/verify-payment',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',
-            body:JSON.stringify({razorpay_payment_id:response.razorpay_payment_id,razorpay_order_id:response.razorpay_order_id,razorpay_signature:response.razorpay_signature})});
-          const vdata=await vres.json();
-          if(vdata.success){sessionStorage.removeItem('np_sel');window.location.href='/booking/success/'+vdata.bookingId;}
-          else{alert('Payment verified but booking failed. Payment ID: '+response.razorpay_payment_id);setLoading(false);}
         }
-      });
-      rzp.on('payment.failed',async(r)=>{
-        await fetch('/booking/save-failed',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify({orderId:data.orderId,error:r.error?.description||'Failed'})});
-        alert('Payment failed: '+(r.error?.description||'Please try again'));setLoading(false);
-      });
-      rzp.open();
-    }catch(e){alert('Network error. Please try again.');setLoading(false);}
+      },
+      handler: function(response){
+        showToast('Verifying payment', 'Please wait a moment...', 'info', 9000);
+        fetch('/booking/verify-payment', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_order_id:   response.razorpay_order_id,
+            razorpay_signature:  response.razorpay_signature
+          })
+        })
+        .then(function(r){ return r.json(); })
+        .then(function(vdata){
+          if(vdata.success){
+            sessionStorage.removeItem('np_sel');
+            window.location.href = '/booking/success/' + vdata.bookingId;
+          } else {
+            showToast('Confirmation failed', 'Payment ID: ' + response.razorpay_payment_id + '. Contact support.', 'error', 12000);
+            setLoading(false);
+          }
+        })
+        .catch(function(){
+          showToast('Network error', 'Could not verify payment. Please contact support.', 'error', 12000);
+          setLoading(false);
+        });
+      }
+    });
+    rzp.on('payment.failed', function(r){
+      var errMsg = r.error && r.error.description ? r.error.description : 'Payment could not be processed.';
+      fetch('/booking/save-failed', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ orderId: data.orderId, error: errMsg })
+      }).catch(function(){});
+      showPayFailed(errMsg);
+    });
+    rzp.open();
   }
 
   function setLoading(on){

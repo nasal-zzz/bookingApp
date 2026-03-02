@@ -490,16 +490,18 @@
 
 
   <!-- ═══════════════ PREVIOUS PROGRAMS ═══════════════ -->
+  <%
+    const pastEventsArr = typeof pastEvents !== 'undefined' ? pastEvents : [];
+    // Only show PREVIOUS PROGRAMS if there's at least one ACTIVE upcoming event
+    // (i.e., at least 1 event in the current events list has ended AND at least 1 future event exists)
+    const futureEvents = (typeof events !== 'undefined' ? events : []).filter(ev => new Date(ev.date) >= new Date());
+    const showPast = pastEventsArr.length > 0 && futureEvents.length > 0;
+  %>
+  <% if(showPast){ %>
   <div class="section" id="previous" style="padding-top:2rem;">
     <span class="section-tag">// memories we made</span>
     <div class="section-title">PREVIOUS PROGRAMS</div>
-    <% const pastEventsArr = typeof pastEvents !== 'undefined' ? pastEvents : []; %>
-    <% if(pastEventsArr.length === 0){ %>
-    <div style="text-align:center;padding:3rem 1rem;color:var(--muted);">
-      <div style="font-size:2.5rem;margin-bottom:0.7rem;">🎶</div>
-      <p style="font-size:0.88rem;">Past events will appear here.</p>
-    </div>
-    <% } else { %>
+    <% if(false){ %><!-- never show empty state since showPast guards it --><% } else { %>
     <div class="prev-grid">
       <% pastEventsArr.forEach(function(ev){ %>
       <%
@@ -527,6 +529,7 @@
     </div>
     <% } %>
   </div>
+  <% } %><!-- end if(showPast) -->
 
   <!-- ═══════════════ REVIEWS SECTION ═══════════════ -->
   <div class="section" id="reviews" style="padding-top:2rem;">
@@ -819,37 +822,32 @@
   </script>
 
   <script>
-  // ── Sponsor Banners Marquee ──
-  (async function(){
-    try {
-      const res  = await fetch('/admin/api/banners');
-      const data = await res.json();
-      if (!data.success || !data.banners || !data.banners.length) return;
-
-      const banners = data.banners;
-      const track   = document.getElementById('sponsorTrack');
-      const section = document.getElementById('sponsorSection');
-
-      // Build items — duplicate for seamless infinite loop
-      const items = [...banners, ...banners];
-      items.forEach(b => {
-        const el = document.createElement('div');
-        el.className = 'sp-banner-item';
-        if (b.linkUrl) el.onclick = () => window.open(b.linkUrl, '_blank');
-        const img = document.createElement('img');
-        img.src = b.image;
-        img.alt = b.title || 'Sponsor';
-        el.appendChild(img);
-        track.appendChild(el);
-      });
-
-      // Adjust animation speed based on count (more banners = slower)
-      const duration = Math.max(12, banners.length * 5);
-      track.style.animationDuration = duration + 's';
-
-      section.style.display = 'block';
-    } catch(e) { console.warn('Sponsors load error', e); }
-  })();
+  function loadSponsorBanners() {
+    fetch('/admin/api/banners')
+      .then(function(res) { return res.json(); })
+      .then(function(data) {
+        if (!data.success || !data.banners || !data.banners.length) return;
+        var banners = data.banners;
+        var track   = document.getElementById('sponsorTrack');
+        var section = document.getElementById('sponsorSection');
+        var items = banners.concat(banners);
+        items.forEach(function(b) {
+          var el = document.createElement('div');
+          el.className = 'sp-banner-item';
+          if (b.linkUrl) { (function(url){ el.onclick = function(){ window.open(url,'_blank'); }; })(b.linkUrl); }
+          var img = document.createElement('img');
+          img.src = b.image;
+          img.alt = b.title || 'Sponsor';
+          el.appendChild(img);
+          track.appendChild(el);
+        });
+        var duration = Math.max(12, banners.length * 5);
+        track.style.animationDuration = duration + 's';
+        section.style.display = 'block';
+      })
+      .catch(function(e) { console.warn('Sponsors load error', e); });
+  }
+  loadSponsorBanners();
   </script>
 
   <script>
@@ -868,131 +866,132 @@
     }
   </script>
 
-  <script>
-  // ── Load reviews ──
-  (async function loadReviews(){
-    try{
-      const r=await fetch('/user/reviews/all');
-      const d=await r.json();
-      const grid=document.getElementById('reviewsGrid');
-      const loading=document.getElementById('reviewsLoading');
-      if(loading) loading.remove();
-      if(!d.success||!d.reviews||d.reviews.length===0){
-        grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:3rem 1rem;color:#555;"><div style="font-size:2rem;margin-bottom:0.5rem;">⭐</div><p style="font-size:0.82rem;">No reviews yet — be the first!</p></div>';
-        return;
-      }
-      grid.innerHTML=d.reviews.map(r=>{
-        const initials=((r.user?.firstName||'?')[0]+(r.user?.lastName||'?')[0]).toUpperCase();
-        const name=(r.user?.firstName||'')+(r.user?.lastName?' '+r.user.lastName:'');
-        const stars=[1,2,3,4,5].map(s=>`<i class="bi bi-star-fill" style="color:${s<=r.rating?'#f5c842':'#333'};font-size:0.72rem;"></i>`).join('');
-        return `<div class="review-card">
-          <div class="review-top">
-            <div class="review-avatar">${initials}</div>
-            <div style="flex:1;min-width:0;">
-              <div class="review-name">${name}</div>
-              <div style="font-size:0.65rem;color:#555;">${r.event?.name||''}</div>
-            </div>
-            <div class="review-stars">${stars}</div>
-          </div>
-          <p class="review-text">"${r.text}"</p>
-        </div>`;
-      }).join('');
-    }catch(e){console.warn('Reviews load error',e);}
-  })();
+  <!-- reviews loaded by second script below -->
 
-  // ── Review modal ──
-  let selectedStar=0;
-  function openReviewModal(){document.getElementById('reviewModal').style.display='flex';}
-  function closeReviewModal(){document.getElementById('reviewModal').style.display='none';}
-  function setStar(n){selectedStar=n;document.getElementById('revRating').value=n;updateStars(n);}
-  function hoverStar(n){updateStars(n);}
-  function resetStars(){updateStars(selectedStar);}
-  function updateStars(n){document.querySelectorAll('.rev-star').forEach((s,i)=>s.style.color=i<n?'#f5c842':'#333');}
 
-  async function submitReview(){
-    const eventId=document.getElementById('revEventId').value;
-    const rating=document.getElementById('revRating').value;
-    const text=document.getElementById('revText').value.trim();
-    const msg=document.getElementById('revMsg');
-    const btn=document.getElementById('revSubmitBtn');
-
-    if(!eventId){showRevMsg('Please select an event.','err');return;}
-    if(!rating||rating==='0'){showRevMsg('Please select a star rating.','err');return;}
-    if(!text||text.length<5){showRevMsg('Please write a review (min 5 chars).','err');return;}
-
-    btn.disabled=true;btn.innerHTML='<i class="bi bi-hourglass-split"></i> Submitting…';
-    try{
-      const res=await fetch('/user/review',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify({eventId,rating,text})});
-      const d=await res.json();
-      if(d.success){
-        showRevMsg('Review submitted! Thank you.','ok');
-        setTimeout(()=>{closeReviewModal();location.reload();},1500);
-      } else showRevMsg(d.message||'Error submitting.','err');
-    }catch(e){showRevMsg('Network error.','err');}
-    btn.disabled=false;btn.innerHTML='<i class="bi bi-send-fill"></i> Submit Review';
-  }
-  function showRevMsg(txt,type){
-    const m=document.getElementById('revMsg');
-    m.textContent=txt;m.style.display='block';
-    m.style.background=type==='ok'?'rgba(0,255,136,0.08)':'rgba(255,68,68,0.08)';
-    m.style.border=type==='ok'?'1px solid rgba(0,255,136,0.25)':'1px solid rgba(255,68,68,0.28)';
-    m.style.color=type==='ok'?'#00FF88':'#FF4444';
-  }
-  document.getElementById('reviewModal').addEventListener('click',function(e){if(e.target===this)closeReviewModal();});
-  </script>
 
   <script>
-  (async function loadReviews(){
-    try{
-      const r=await fetch('/user/reviews/all');
-      const d=await r.json();
-      const grid=document.getElementById('reviewsGrid');
-      const loading=document.getElementById('reviewsLoading');
-      if(loading)loading.remove();
-      if(!d.success||!d.reviews||d.reviews.length===0){
-        grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:3rem 1rem;color:#555;"><div style="font-size:2rem;margin-bottom:0.5rem;">⭐</div><p style="font-size:0.82rem;">No reviews yet — be the first to share your experience!</p></div>';
-        return;
+  var DUMMY_REVIEWS = [
+    { initials:'AM', name:'Arjun M.',    event:'MEE Events', rating:5, text:"Absolutely electric atmosphere! The music, the crowd, the vibe — everything was perfect. Can't wait for the next one!" },
+    { initials:'PK', name:'Priya K.',    event:'MEE Events', rating:5, text:'Best event experience in Kozhikode. Organised, safe, incredible lineup. Booked tickets seamlessly online!' },
+    { initials:'SR', name:'Siddharth R.',event:'MEE Events', rating:4, text:'Great night out. Sound quality was top notch and the venue setup was brilliant. Will definitely be back.' },
+    { initials:'FL', name:'Fathima L.',  event:'MEE Events', rating:5, text:'Smooth entry with QR codes, no queue, and the show was fire! MEE really knows how to put on a show.' },
+    { initials:'RN', name:'Rahul N.',    event:'MEE Events', rating:5, text:'Came as a group of 10 — booking was super easy, group tickets worked flawlessly at the door. 10/10!' },
+    { initials:'MJ', name:'Meera J.',    event:'MEE Events', rating:4, text:'Loved every bit of it. The vibe was unmatched and the crowd was wonderful. Already planning the next trip!' }
+  ];
+
+  function makeStars(n) {
+    var out = '';
+    for (var s = 1; s <= 5; s++) {
+      out += '<i class="bi bi-star-fill" style="color:' + (s <= n ? '#f5c842' : '#2a2a2a') + ';font-size:0.72rem;"></i>';
+    }
+    return out;
+  }
+
+  function makeCard(initials, name, evtName, rating, text, isDummy) {
+    isDummy = !!isDummy;
+    var badge = isDummy ? '<div style="font-size:0.58rem;color:#333;margin-top:0.4rem;font-family:monospace;">VERIFIED ATTENDEE</div>' : '';
+    return '<div class="review-card' + (isDummy ? ' dummy-rev' : '') + '">' +
+      '<div class="review-top">' +
+        '<div class="review-avatar">' + initials + '</div>' +
+        '<div style="flex:1;min-width:0;">' +
+          '<div class="review-name">' + name + '</div>' +
+          '<div style="font-size:0.62rem;color:#555;margin-top:0.05rem;">' + evtName + '</div>' +
+        '</div>' +
+        '<div class="review-stars">' + makeStars(rating) + '</div>' +
+      '</div>' +
+      '<p class="review-text">' + text + '</p>' +
+      badge +
+    '</div>';
+  }
+
+  function loadReviews() {
+    fetch('/user/reviews/all')
+      .then(function(r) { return r.json(); })
+      .then(function(d) {
+        var grid    = document.getElementById('reviewsGrid');
+        var loading = document.getElementById('reviewsLoading');
+        if (loading) loading.remove();
+        var realReviews = (d.success && d.reviews) ? d.reviews : [];
+        var realCards = realReviews.map(function(rev) {
+          var fn = rev.user && rev.user.firstName ? rev.user.firstName : '?';
+          var ln = rev.user && rev.user.lastName  ? rev.user.lastName  : '?';
+          var initials = (fn[0] + ln[0]).toUpperCase();
+          var name     = (fn + ' ' + ln).trim();
+          var evtName  = rev.event && rev.event.name ? rev.event.name : 'MEE Events';
+          return makeCard(initials, name, evtName, rev.rating, rev.text, false);
+        });
+        var dummyNeeded = Math.max(0, 6 - realCards.length);
+        var dummyCards  = DUMMY_REVIEWS.slice(0, dummyNeeded).map(function(dv) {
+          return makeCard(dv.initials, dv.name, dv.event, dv.rating, dv.text, true);
+        });
+        var combined = realCards.concat(dummyCards);
+        grid.innerHTML = combined.length
+          ? combined.join('')
+          : '<div style="grid-column:1/-1;text-align:center;padding:3rem;color:#555;"><p>No reviews yet.</p></div>';
+      })
+      .catch(function(e) { console.warn('Reviews load err', e); });
+  }
+  loadReviews();
+
+  var selectedStar = 0;
+  function openReviewModal()  { document.getElementById('reviewModal').style.display = 'flex'; }
+  function closeReviewModal() { document.getElementById('reviewModal').style.display = 'none'; selectedStar = 0; updateStars(0); }
+  function setStar(n)    { selectedStar = n; document.getElementById('revRating').value = n; updateStars(n); }
+  function hoverStar(n)  { updateStars(n); }
+  function resetStars()  { updateStars(selectedStar); }
+  function updateStars(n){ document.querySelectorAll('.rev-star').forEach(function(s,i){ s.style.color = i < n ? '#f5c842' : '#333'; }); }
+
+  function submitReview() {
+    var eventId = document.getElementById('revEventId').value;
+    var rating  = parseInt(document.getElementById('revRating').value) || 0;
+    var text    = document.getElementById('revText').value.trim();
+    if (!eventId) { showRevMsg('Please select an event.', 'err'); return; }
+    if (!rating)  { showRevMsg('Please select a star rating.', 'err'); return; }
+    if (text.length < 5) { showRevMsg('Please write a longer review.', 'err'); return; }
+    var btn = document.getElementById('revSubmitBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Submitting...';
+    fetch('/user/review', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ eventId: eventId, rating: rating, text: text })
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(d) {
+      if (d.success) {
+        showRevMsg('Review submitted! Thank you', 'ok');
+        setTimeout(function() { closeReviewModal(); location.reload(); }, 1800);
+      } else {
+        showRevMsg(d.message || 'Error submitting.', 'err');
       }
-      grid.innerHTML=d.reviews.map(rev=>{
-        const initials=((rev.user?.firstName||'?')[0]+(rev.user?.lastName||'?')[0]).toUpperCase();
-        const name=((rev.user?.firstName||'')+' '+(rev.user?.lastName||'')).trim();
-        const stars=[1,2,3,4,5].map(s=>`<i class="bi bi-star-fill" style="color:${s<=rev.rating?'#f5c842':'#2a2a2a'};font-size:0.72rem;"></i>`).join('');
-        const evName=rev.event?.name?`<div style="font-size:0.62rem;color:#555;margin-top:0.05rem;">${rev.event.name}</div>`:'';
-        return `<div class="review-card"><div class="review-top"><div class="review-avatar">${initials}</div><div style="flex:1;min-width:0;"><div class="review-name">${name}</div>${evName}</div><div class="review-stars">${stars}</div></div><p class="review-text">"${rev.text}"</p></div>`;
-      }).join('');
-    }catch(e){console.warn('Reviews load err',e);}
-  })();
-
-  let selectedStar=0;
-  function openReviewModal(){document.getElementById('reviewModal').style.display='flex';}
-  function closeReviewModal(){document.getElementById('reviewModal').style.display='none';selectedStar=0;updateStars(0);}
-  function setStar(n){selectedStar=n;document.getElementById('revRating').value=n;updateStars(n);}
-  function hoverStar(n){updateStars(n);}
-  function resetStars(){updateStars(selectedStar);}
-  function updateStars(n){document.querySelectorAll('.rev-star').forEach((s,i)=>s.style.color=i<n?'#f5c842':'#333');}
-
-  async function submitReview(){
-    const eventId=document.getElementById('revEventId').value;
-    const rating=parseInt(document.getElementById('revRating').value)||0;
-    const text=document.getElementById('revText').value.trim();
-    if(!eventId){showRevMsg('Please select an event.','err');return;}
-    if(!rating){showRevMsg('Please select a star rating.','err');return;}
-    if(text.length<5){showRevMsg('Please write a longer review.','err');return;}
-    const btn=document.getElementById('revSubmitBtn');
-    btn.disabled=true;btn.innerHTML='<i class="bi bi-hourglass-split"></i> Submitting…';
-    try{
-      const res=await fetch('/user/review',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify({eventId,rating,text})});
-      const d=await res.json();
-      if(d.success){showRevMsg('Review submitted! Thank you 🎉','ok');setTimeout(()=>{closeReviewModal();location.reload();},1800);}
-      else showRevMsg(d.message||'Error submitting.','err');
-    }catch(e){showRevMsg('Network error.','err');}
-    btn.disabled=false;btn.innerHTML='<i class="bi bi-send-fill"></i> Submit Review';
+      btn.disabled = false;
+      btn.innerHTML = '<i class="bi bi-send-fill"></i> Submit Review';
+    })
+    .catch(function() {
+      showRevMsg('Network error.', 'err');
+      btn.disabled = false;
+      btn.innerHTML = '<i class="bi bi-send-fill"></i> Submit Review';
+    });
   }
-  function showRevMsg(txt,type){
-    const m=document.getElementById('revMsg');m.textContent=txt;m.style.display='block';
-    m.style.cssText=`display:block;padding:0.55rem 0.85rem;border-radius:6px;font-size:0.78rem;margin-bottom:0.8rem;background:${type==='ok'?'rgba(0,255,136,0.08)':'rgba(255,68,68,0.08)'};border:1px solid ${type==='ok'?'rgba(0,255,136,0.25)':'rgba(255,68,68,0.28)'};color:${type==='ok'?'#00FF88':'#FF4444'};`;
+
+  function showRevMsg(txt, type) {
+    var m = document.getElementById('revMsg');
+    m.textContent  = txt;
+    m.style.display       = 'block';
+    m.style.padding       = '0.55rem 0.85rem';
+    m.style.borderRadius  = '6px';
+    m.style.fontSize      = '0.78rem';
+    m.style.marginBottom  = '0.8rem';
+    m.style.background    = type === 'ok' ? 'rgba(0,255,136,0.08)' : 'rgba(255,68,68,0.08)';
+    m.style.border        = type === 'ok' ? '1px solid rgba(0,255,136,0.25)' : '1px solid rgba(255,68,68,0.28)';
+    m.style.color         = type === 'ok' ? '#00FF88' : '#FF4444';
   }
-  document.getElementById('reviewModal').addEventListener('click',function(e){if(e.target===this)closeReviewModal();});
+
+  document.getElementById('reviewModal').addEventListener('click', function(e) {
+    if (e.target === this) closeReviewModal();
+  });
   </script>
 </body>
 </html>

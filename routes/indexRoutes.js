@@ -91,6 +91,13 @@ router.get('/event/:id', optionalAuth, async (req, res) => {
         .filter(t => userBookedCategories.includes(t.category) && t.ticketType === 'multiple')
         .length > 0;
     }
+    // Fetch real reviews for this event (visible only)
+    const Review = require('../models/Review');
+    const realReviews = await Review.find({ event: event._id, isVisible: true })
+      .populate('user', 'firstName lastName')
+      .sort({ createdAt: -1 })
+      .lean();
+
     res.render('pages/event-detail', {
       title: `${event.name} — MEE`,
       event,
@@ -98,6 +105,7 @@ router.get('/event/:id', optionalAuth, async (req, res) => {
       user: req.user || null,
       userBookedCategories,
       userHasMultipleEntry,
+      realReviews,
     });
   } catch (err) {
     console.error('Event detail error:', err);

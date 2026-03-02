@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title><%= title %></title>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Outfit:wght@400;500;600;700&family=Space+Mono&display=swap" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet"/>
+  <style>
+    :root{--bg:#0B0B0F;--surface:#14141C;--border:rgba(255,255,255,0.08);--accent:#6A0DAD;--text:#fff;--muted:#B3B3B3;--success:#00FF88;--error:#FF4444;}
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-height:100vh;}
+    .layout{display:grid;grid-template-columns:220px 1fr;min-height:100vh;}
+    .sidebar{background:var(--surface);border-right:1px solid var(--border);padding:1.5rem 1rem;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:0.3rem;overflow-y:auto;}
+    .s-logo{display:block;padding:0 0.5rem 1rem;border-bottom:1px solid var(--border);margin-bottom:0.5rem;}
+    .s-section{font-family:'Space Mono',monospace;font-size:0.48rem;letter-spacing:2px;color:#333;text-transform:uppercase;padding:0.6rem 0.8rem 0.2rem;}
+    .s-link{display:flex;align-items:center;gap:0.7rem;padding:0.7rem 0.8rem;color:var(--muted);text-decoration:none;border-radius:6px;font-size:0.85rem;transition:all 0.15s;border:1px solid transparent;}
+    .s-link:hover,.s-link.active{background:rgba(106,13,173,0.08);border-color:rgba(106,13,173,0.2);color:#fff;}
+    .s-link i{color:var(--accent);width:18px;}
+    .s-logout{margin-top:auto;display:flex;align-items:center;gap:0.7rem;padding:0.7rem 0.8rem;color:var(--error);text-decoration:none;border-radius:6px;font-size:0.85rem;border:1px solid transparent;transition:all 0.15s;}
+    .s-logout:hover{background:rgba(255,68,68,0.08);}
+    .main{padding:2rem;overflow-x:hidden;}
+    .page-title{font-family:'Anton',sans-serif;font-size:1.8rem;letter-spacing:2px;margin-bottom:0.3rem;}
+    .page-sub{font-size:0.78rem;color:var(--muted);margin-bottom:2rem;}
+    .filter-bar{display:flex;gap:1rem;align-items:flex-end;margin-bottom:2rem;flex-wrap:wrap;}
+    .f-grp{display:flex;flex-direction:column;gap:0.3rem;flex:1;min-width:260px;}
+    .f-lbl{font-family:'Space Mono',monospace;font-size:0.52rem;letter-spacing:1px;color:#555;text-transform:uppercase;}
+    .f-sel{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:7px;color:#fff;font-family:'Outfit',sans-serif;font-size:0.88rem;padding:0.65rem 0.85rem;outline:none;width:100%;}
+    .f-sel option{background:#1a1a2e;}
+    .filter-btn{padding:0.7rem 1.5rem;background:var(--accent);color:#fff;border:none;border-radius:7px;font-weight:700;font-size:0.85rem;cursor:pointer;white-space:nowrap;}
+    .ev-header{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.2rem 1.5rem;margin-bottom:1.5rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;}
+    .ev-name{font-family:'Anton',sans-serif;font-size:1.2rem;letter-spacing:2px;}
+    .ev-meta{font-size:0.78rem;color:var(--muted);margin-top:0.2rem;}
+    .ev-count{font-family:'Space Mono',monospace;font-size:0.7rem;letter-spacing:2px;color:var(--accent);}
+    .table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+    .table-scroll{overflow-x:auto;}
+    table{width:100%;border-collapse:collapse;}
+    th{font-family:'Space Mono',monospace;font-size:0.52rem;letter-spacing:2px;color:#555;text-transform:uppercase;padding:0.7rem 1rem;border-bottom:1px solid var(--border);text-align:left;white-space:nowrap;}
+    td{padding:0.85rem 1rem;border-bottom:1px solid rgba(255,255,255,0.04);font-size:0.84rem;vertical-align:middle;}
+    tr:last-child td{border-bottom:none;}
+    tr:hover td{background:rgba(255,255,255,0.015);}
+    .badge{font-family:'Space Mono',monospace;font-size:0.58rem;letter-spacing:1px;padding:0.18rem 0.55rem;border-radius:4px;}
+    .badge-ticket{background:rgba(106,13,173,0.12);border:1px solid rgba(106,13,173,0.3);color:#bf80ff;}
+    .search-bar{display:flex;gap:0.5rem;margin-bottom:1rem;}
+    .search-inp{flex:1;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:7px;color:#fff;font-family:'Outfit',sans-serif;font-size:0.85rem;padding:0.6rem 0.85rem;outline:none;}
+    .search-inp::placeholder{color:#444;}
+    .empty{text-align:center;padding:3rem;color:#555;}
+    .empty i{font-size:2.5rem;display:block;margin-bottom:0.8rem;}
+    .stat-row{display:flex;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap;}
+    .stat-box{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:0.9rem 1.2rem;display:flex;align-items:center;gap:0.8rem;}
+    .stat-box i{font-size:1.3rem;color:var(--accent);}
+    .stat-val{font-family:'Anton',sans-serif;font-size:1.3rem;letter-spacing:1px;}
+    .stat-lbl{font-size:0.68rem;color:var(--muted);}
+    @media(max-width:900px){.layout{grid-template-columns:1fr;}.sidebar{display:none;}}
+  </style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <a href="/admin" class="s-logo"><img src="/img/mee-logo.png" alt="MEE" style="height:28px;width:auto;object-fit:contain;"/></a>
+    <div class="s-section">Main</div>
+    <a href="/admin" class="s-link"><i class="bi bi-speedometer2"></i> Dashboard</a>
+    <a href="/admin/bookings" class="s-link"><i class="bi bi-ticket-perforated-fill"></i> Bookings</a>
+    <a href="/admin/participants" class="s-link"><i class="bi bi-person-check-fill"></i> Participants</a>
+    <a href="/admin/entered-tickets" class="s-link"><i class="bi bi-door-open-fill"></i> Entered Tickets</a>
+    <a href="/admin/users-by-event" class="s-link active"><i class="bi bi-people-fill"></i> Users by Event</a>
+    <div class="s-section">Events</div>
+    <a href="/admin/events/new" class="s-link"><i class="bi bi-plus-circle-fill"></i> New Event</a>
+    <a href="/admin/reviews" class="s-link"><i class="bi bi-star-fill"></i> Reviews</a>
+    <a href="/admin/banners" class="s-link"><i class="bi bi-image-fill"></i> Banners</a>
+    <a href="/admin/coupons" class="s-link"><i class="bi bi-tag-fill"></i> Coupons</a>
+    <a href="/admin/staff" class="s-link"><i class="bi bi-people-fill"></i> Staff</a>
+    <a href="/admin/profile" class="s-link"><i class="bi bi-person-circle"></i> My Profile</a>
+    <% if(locals.isSuperAdmin){ %>
+    <a href="/superadmin" class="s-link" style="color:#9D4EDD;border-color:rgba(157,78,221,0.2);background:rgba(157,78,221,0.06);"><i class="bi bi-shield-lock-fill" style="color:#9D4EDD;"></i> SuperAdmin Panel</a>
+    <% } %>
+    <a href="/admin/logout" class="s-logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
+  </aside>
+  <main class="main">
+    <h1 class="page-title">USERS BY EVENT</h1>
+    <p class="page-sub">View all paid bookings filtered by event.</p>
+
+    <form method="GET" action="/admin/users-by-event" class="filter-bar">
+      <div class="f-grp">
+        <label class="f-lbl">Select Event</label>
+        <select class="f-sel" name="eventId">
+          <option value="">— Choose an event —</option>
+          <% events.forEach(function(ev){ %>
+          <option value="<%= ev._id %>" <%= selectedEventId===ev._id.toString()?'selected':'' %>><%= ev.name %> — <%= new Date(ev.date).toLocaleDateString('en-IN') %></option>
+          <% }); %>
+        </select>
+      </div>
+      <button type="submit" class="filter-btn"><i class="bi bi-funnel-fill"></i> Filter</button>
+    </form>
+
+    <% if(selectedEvent && bookings){ %>
+    <div class="ev-header">
+      <div>
+        <div class="ev-name"><%= selectedEvent.name.toUpperCase() %></div>
+        <div class="ev-meta"><%= new Date(selectedEvent.date).toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'}) %></div>
+      </div>
+      <div class="ev-count"><%= bookings.length %> PAID BOOKINGS</div>
+    </div>
+
+    <% if(bookings.length > 0){ %>
+    <div class="stat-row">
+      <div class="stat-box"><i class="bi bi-people-fill"></i><div><div class="stat-val"><%= bookings.reduce(function(s,b){return s+b.quantity;},0) %></div><div class="stat-lbl">Total Tickets</div></div></div>
+      <div class="stat-box"><i class="bi bi-currency-rupee"></i><div><div class="stat-val">₹<%= bookings.reduce(function(s,b){return s+b.totalAmount;},0).toLocaleString('en-IN') %></div><div class="stat-lbl">Total Revenue</div></div></div>
+      <div class="stat-box"><i class="bi bi-ticket-perforated-fill"></i><div><div class="stat-val"><%= bookings.length %></div><div class="stat-lbl">Bookings</div></div></div>
+    </div>
+
+    <div class="search-bar">
+      <input class="search-inp" type="text" id="searchInp" placeholder="Search by name, email, phone or ref..." oninput="filterTable(this.value)"/>
+    </div>
+    <% } %>
+
+    <div class="table-wrap">
+      <div class="table-scroll">
+      <% if(bookings.length === 0){ %>
+      <div class="empty"><i class="bi bi-people"></i>No paid bookings for this event yet.</div>
+      <% } else { %>
+      <table id="ubTable">
+        <thead><tr>
+          <th>#</th><th>Name</th><th>Email</th><th>Phone</th><th>Ticket Type</th><th>Qty</th><th>Amount</th><th>Coupon</th><th>Booking Ref</th><th>Date</th>
+        </tr></thead>
+        <tbody>
+        <% bookings.forEach(function(b, i){ %>
+        <tr>
+          <td style="color:var(--muted);font-family:'Space Mono',monospace;font-size:0.72rem;"><%= i+1 %></td>
+          <td><strong><%= b.user ? (b.user.firstName+' '+(b.user.lastName||'')) : '—' %></strong></td>
+          <td style="font-size:0.8rem;color:var(--muted);"><%= b.user && b.user.email ? b.user.email : '—' %></td>
+          <td style="font-family:'Space Mono',monospace;font-size:0.75rem;"><%= b.user && b.user.phone ? b.user.phone : '—' %></td>
+          <td><span class="badge badge-ticket"><%= b.ticketType.toUpperCase() %></span></td>
+          <td style="text-align:center;"><%= b.quantity %></td>
+          <td style="font-family:'Space Mono',monospace;font-size:0.82rem;color:#00FF88;">₹<%= b.totalAmount.toLocaleString('en-IN') %></td>
+          <td style="font-family:'Space Mono',monospace;font-size:0.72rem;color:#f5c842;"><%= b.couponCode || '—' %></td>
+          <td style="font-family:'Space Mono',monospace;font-size:0.68rem;color:var(--muted);"><%= b.bookingRef %></td>
+          <td style="font-size:0.75rem;color:var(--muted);white-space:nowrap;"><%= new Date(b.createdAt).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) %></td>
+        </tr>
+        <% }); %>
+        </tbody>
+      </table>
+      <% } %>
+      </div>
+    </div>
+    <% } else if(!selectedEventId){ %>
+    <div class="empty"><i class="bi bi-funnel"></i>Select an event to view its bookings.</div>
+    <% } %>
+  </main>
+</div>
+<script>
+function filterTable(q){
+  q = q.toLowerCase();
+  var rows = document.querySelectorAll('#ubTable tbody tr');
+  rows.forEach(function(r){
+    r.style.display = r.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+</script>
+</body>
+</html>

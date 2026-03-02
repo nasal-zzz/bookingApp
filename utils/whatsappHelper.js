@@ -162,17 +162,25 @@ const sendWhatsAppPending = async ({ phone, name, booking, event }) => {
       `Complete your payment here:\n${appUrl}/booking/retry-payment/${booking._id}\n\n` +
       `Hurry — reserved seats may expire soon!`;
 
-    if (process.env.TWILIO_SID && process.env.TWILIO_TOKEN && process.env.TWILIO_WA_FROM) {
-      const client = require('twilio')(process.env.TWILIO_SID, process.env.TWILIO_TOKEN);
-      const to = phone.startsWith('+') ? phone : `+91${phone.replace(/\D/g,'')}`;
-      await client.messages.create({ from: process.env.TWILIO_WA_FROM, to: `whatsapp:${to}`, body: msg });
+    const rawPhone = String(phone).replace(/\D/g, '');
+    const normalised = rawPhone.startsWith('91') ? rawPhone : '91' + rawPhone;
+    const to = `whatsapp:+${normalised}`;
+    const client2 = getClient();
+    console.log('📱 [WA Pending] to:', to, '| client:', client2 ? 'ready' : 'sandbox/no-client');
+    if (client2) {
+      const result = await client2.messages.create({ from: WA_FROM(), to, body: msg });
+      console.log('✅ WA Pending sent, SID:', result.sid);
     } else {
-      console.log(`📱 [WA Pending] → ${phone} :\n${msg.substring(0, 120)}...`);
+      console.log(`📱 [WA Pending DEV] → ${to}:\n${msg}`);
     }
     return { success: true };
   } catch(err) {
-    console.error('WA pending error:', err.message);
-    return { success: false };
+    // Twilio sandbox error 63016 = number not opted in. Log clearly.
+    console.error('❌ WA pending error:', err.message, '| Code:', err.code);
+    if (err.code === 63016) {
+      console.warn('ℹ️  Twilio sandbox: recipient must send "join <keyword>" to', WA_FROM(), 'first.');
+    }
+    return { success: false, error: err.message };
   }
 };
 
@@ -189,17 +197,24 @@ const sendWhatsAppPaymentFailed = async ({ phone, name, booking, event }) => {
       `Try again here: ${appUrl}/booking/my-bookings\n\n` +
       `Need help? Call +91 99958 43003`;
 
-    if (process.env.TWILIO_SID && process.env.TWILIO_TOKEN && process.env.TWILIO_WA_FROM) {
-      const client = require('twilio')(process.env.TWILIO_SID, process.env.TWILIO_TOKEN);
-      const to = phone.startsWith('+') ? phone : `+91${phone.replace(/\D/g,'')}`;
-      await client.messages.create({ from: process.env.TWILIO_WA_FROM, to: `whatsapp:${to}`, body: msg });
+    const rawPhone = String(phone).replace(/\D/g, '');
+    const normalised = rawPhone.startsWith('91') ? rawPhone : '91' + rawPhone;
+    const to = `whatsapp:+${normalised}`;
+    const client3 = getClient();
+    console.log('📱 [WA Failed] to:', to, '| client:', client3 ? 'ready' : 'sandbox/no-client');
+    if (client3) {
+      const result = await client3.messages.create({ from: WA_FROM(), to, body: msg });
+      console.log('✅ WA Failed sent, SID:', result.sid);
     } else {
-      console.log(`📱 [WA Failed] → ${phone} :\n${msg.substring(0, 120)}...`);
+      console.log(`📱 [WA Failed DEV] → ${to}:\n${msg}`);
     }
     return { success: true };
   } catch(err) {
-    console.error('WA failed error:', err.message);
-    return { success: false };
+    console.error('❌ WA failed error:', err.message, '| Code:', err.code);
+    if (err.code === 63016) {
+      console.warn('ℹ️  Twilio sandbox: recipient must send "join <keyword>" to', WA_FROM(), 'first.');
+    }
+    return { success: false, error: err.message };
   }
 };
 

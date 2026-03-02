@@ -22,44 +22,23 @@
     .main{padding:2rem;overflow-x:hidden;}
     .page-title{font-family:'Anton',sans-serif;font-size:1.8rem;letter-spacing:2px;margin-bottom:0.3rem;}
     .page-sub{font-size:0.78rem;color:var(--muted);margin-bottom:2rem;}
-    .add-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:2rem;}
-    .card-bar{height:3px;background:linear-gradient(90deg,#9D4EDD,#6A0DAD);}
-    .card-body{padding:1.5rem;}
-    .card-head{font-family:'Anton',sans-serif;font-size:1rem;letter-spacing:2px;margin-bottom:1.2rem;}
-    .f-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;}
-    .f-grid.cols3{grid-template-columns:1fr 1fr 1fr;}
-    .f-grid.cols4{grid-template-columns:1fr 1fr 1fr 1fr;}
-    .f-grp{display:flex;flex-direction:column;gap:0.3rem;}
+    .select-bar{display:flex;gap:1rem;align-items:flex-end;margin-bottom:2rem;flex-wrap:wrap;}
+    .f-grp{display:flex;flex-direction:column;gap:0.3rem;flex:1;min-width:240px;}
     .f-lbl{font-family:'Space Mono',monospace;font-size:0.52rem;letter-spacing:1px;color:#555;text-transform:uppercase;}
-    .f-inp,.f-sel{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:7px;color:#fff;font-family:'Outfit',sans-serif;font-size:0.88rem;padding:0.62rem 0.85rem;outline:none;transition:border-color 0.18s;width:100%;}
-    .f-inp:focus,.f-sel:focus{border-color:rgba(157,78,221,0.45);}
+    .f-sel{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:7px;color:#fff;font-family:'Outfit',sans-serif;font-size:0.88rem;padding:0.62rem 0.85rem;outline:none;width:100%;}
+    .f-sel:focus{border-color:rgba(157,78,221,0.45);}
     .f-sel option{background:#1a1a2e;}
-    .submit-btn{display:flex;align-items:center;justify-content:center;gap:0.5rem;padding:0.8rem 2rem;background:var(--accent);color:#fff;border:none;border-radius:8px;font-weight:700;font-size:0.88rem;cursor:pointer;transition:all 0.18s;}
-    .submit-btn:hover{box-shadow:0 0 20px rgba(157,78,221,0.4);}
-    .toast{display:none;padding:0.7rem 1rem;border-radius:7px;font-size:0.82rem;margin-top:0.75rem;align-items:center;gap:0.5rem;}
-    .toast.ok{background:rgba(0,255,136,0.08);border:1px solid rgba(0,255,136,0.25);color:var(--success);display:flex;}
-    .toast.err{background:rgba(255,68,68,0.08);border:1px solid rgba(255,68,68,0.28);color:var(--error);display:flex;}
-    .coupons-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1rem;}
-    .coupon-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;transition:border-color 0.18s;}
-    .coupon-card.inactive{opacity:0.5;}
-    .coupon-card:hover{border-color:rgba(157,78,221,0.25);}
-    .cc-top{background:linear-gradient(135deg,rgba(157,78,221,0.1),rgba(106,13,173,0.05));padding:1rem 1.2rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
-    .cc-code{font-family:'Space Mono',monospace;font-size:1.1rem;letter-spacing:3px;color:var(--accent);font-weight:700;}
-    .cc-type{font-family:'Space Mono',monospace;font-size:0.55rem;letter-spacing:1px;color:#555;background:rgba(255,255,255,0.05);padding:0.15rem 0.5rem;border-radius:4px;}
-    .cc-body{padding:1rem 1.2rem;}
-    .cc-val{font-family:'Anton',sans-serif;font-size:1.8rem;letter-spacing:1px;color:#fff;margin-bottom:0.3rem;}
-    .cc-desc{font-size:0.78rem;color:var(--muted);margin-bottom:0.8rem;}
-    .cc-meta{display:flex;gap:0.8rem;flex-wrap:wrap;font-family:'Space Mono',monospace;font-size:0.6rem;color:#555;margin-bottom:0.8rem;}
-    .cc-actions{display:flex;gap:0.5rem;}
-    .btn-sm{display:inline-flex;align-items:center;gap:0.3rem;padding:0.32rem 0.65rem;border-radius:4px;font-size:0.72rem;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text);transition:all 0.15s;}
-    .btn-tog{color:#f5c842;border-color:rgba(245,200,66,0.3);}
-    .btn-tog:hover{background:rgba(245,200,66,0.1);}
-    .btn-del{color:var(--error);border-color:rgba(255,68,68,0.3);}
-    .btn-del:hover{background:rgba(255,68,68,0.1);}
-    .badge-on{background:rgba(0,255,136,0.08);border:1px solid rgba(0,255,136,0.3);color:var(--success);font-size:0.55rem;padding:0.1rem 0.45rem;border-radius:10px;font-family:'Space Mono',monospace;}
-    .badge-off{background:rgba(255,68,68,0.08);border:1px solid rgba(255,68,68,0.3);color:var(--error);font-size:0.55rem;padding:0.1rem 0.45rem;border-radius:10px;font-family:'Space Mono',monospace;}
+    .filter-btn{padding:0.7rem 1.5rem;background:var(--accent);color:#fff;border:none;border-radius:7px;font-family:'Outfit',sans-serif;font-weight:700;font-size:0.85rem;cursor:pointer;white-space:nowrap;}
+    .event-header{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.2rem;margin-bottom:1.5rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.8rem;}
+    .ev-name{font-family:'Anton',sans-serif;font-size:1.2rem;letter-spacing:2px;}
+    .ev-count{font-family:'Space Mono',monospace;font-size:0.65rem;letter-spacing:2px;color:var(--accent);}
+    .users-table{width:100%;border-collapse:collapse;}
+    .users-table th{font-family:'Space Mono',monospace;font-size:0.55rem;letter-spacing:2px;color:#555;text-transform:uppercase;padding:0.6rem 0.8rem;border-bottom:1px solid var(--border);text-align:left;}
+    .users-table td{padding:0.85rem 0.8rem;border-bottom:1px solid rgba(255,255,255,0.04);font-size:0.85rem;vertical-align:middle;}
+    .users-table tr:hover td{background:rgba(255,255,255,0.02);}
+    .ticket-chip{font-family:'Space Mono',monospace;font-size:0.6rem;letter-spacing:1px;background:rgba(157,78,221,0.1);border:1px solid rgba(157,78,221,0.25);color:var(--accent);padding:0.15rem 0.5rem;border-radius:4px;}
     .empty{text-align:center;padding:3rem;color:#555;}
-    @media(max-width:900px){.layout{grid-template-columns:1fr;}.sidebar{display:none;}.f-grid{grid-template-columns:1fr;}.f-grid.cols3,.f-grid.cols4{grid-template-columns:1fr 1fr;}}
+    @media(max-width:900px){.layout{grid-template-columns:1fr;}.sidebar{display:none;}}
   </style>
 </head>
 <body>
@@ -69,8 +48,9 @@
     <span class="s-badge">⬡ SUPER ADMIN</span>
     <a href="/superadmin"                class="s-link"><i class="bi bi-speedometer2"></i> Dashboard</a>
     <a href="/superadmin/staff"          class="s-link"><i class="bi bi-people-fill"></i> Staff & Admins</a>
-    <a href="/superadmin/coupons"        class="s-link active"><i class="bi bi-tag-fill"></i> Coupons</a>
-    <a href="/superadmin/users-by-event" class="s-link"><i class="bi bi-person-lines-fill"></i> Users by Event</a>
+    <a href="/superadmin/coupons"        class="s-link"><i class="bi bi-tag-fill"></i> Coupons</a>
+    <a href="/superadmin/users-by-event" class="s-link active"><i class="bi bi-person-lines-fill"></i> Users by Event</a>
+    <a href="/superadmin/entered-tickets"  class="s-link"><i class="bi bi-door-open-fill"></i> Entered Tickets</a>
     <a href="/admin"                     class="s-link"><i class="bi bi-grid-fill"></i> Admin Panel</a>
         <div style="margin-top:auto;border-top:1px solid rgba(255,255,255,0.06);padding-top:0.7rem;">
       <% if(locals.currentAdmin){ %>
@@ -101,107 +81,61 @@
     </div>
   </aside>
   <main class="main">
-    <h1 class="page-title">COUPONS</h1>
-    <p class="page-sub">Create discount codes — fixed ₹ or percentage off. Used at checkout.</p>
+    <h1 class="page-title">USERS BY EVENT</h1>
+    <p class="page-sub">View all attendees for a selected event.</p>
 
-    <div class="add-card">
-      <div class="card-bar"></div>
-      <div class="card-body">
-        <div class="card-head">CREATE NEW COUPON</div>
-        <div class="f-grid cols4">
-          <div class="f-grp"><label class="f-lbl">Coupon Code *</label><input class="f-inp" id="cpCode" placeholder="e.g. PARTY10" style="text-transform:uppercase;" oninput="this.value=this.value.toUpperCase()"/></div>
-          <div class="f-grp"><label class="f-lbl">Type *</label>
-            <select class="f-sel" id="cpType">
-              <option value="fixed">Fixed (₹)</option>
-              <option value="percent">Percentage (%)</option>
-            </select>
-          </div>
-          <div class="f-grp"><label class="f-lbl">Discount Value *</label><input class="f-inp" type="number" id="cpValue" placeholder="100"/></div>
-          <div class="f-grp"><label class="f-lbl">Min Order (₹)</label><input class="f-inp" type="number" id="cpMinOrder" placeholder="0"/></div>
+    <form method="GET" action="/superadmin/users-by-event">
+      <div class="select-bar">
+        <div class="f-grp">
+          <label class="f-lbl">Select Event</label>
+          <select class="f-sel" name="eventId">
+            <option value="">— Choose an event —</option>
+            <% events.forEach(function(ev){ %>
+            <option value="<%= ev._id %>" <%= selectedEventId===ev._id.toString()?'selected':'' %>><%= ev.name %> — <%= new Date(ev.date).toLocaleDateString('en-IN') %></option>
+            <% }); %>
+          </select>
         </div>
-        <div class="f-grid cols3">
-          <div class="f-grp"><label class="f-lbl">Max Uses (0=unlimited)</label><input class="f-inp" type="number" id="cpMaxUses" placeholder="0"/></div>
-          <div class="f-grp"><label class="f-lbl">Valid From</label><input class="f-inp" type="date" id="cpFrom"/></div>
-          <div class="f-grp"><label class="f-lbl">Valid Until</label><input class="f-inp" type="date" id="cpUntil"/></div>
-        </div>
-        <div class="f-grid" style="grid-template-columns:1fr;">
-          <div class="f-grp"><label class="f-lbl">Description (optional)</label><input class="f-inp" id="cpDesc" placeholder="e.g. Early bird discount"/></div>
-        </div>
-        <button class="submit-btn" onclick="createCoupon()"><i class="bi bi-tag-fill"></i> Create Coupon</button>
-        <div class="toast" id="cpToast"></div>
+        <button type="submit" class="filter-btn"><i class="bi bi-search"></i> View Users</button>
       </div>
+    </form>
+
+    <% if(selectedEvent && bookings){ %>
+    <div class="event-header">
+      <div>
+        <div class="ev-name"><%= selectedEvent.name.toUpperCase() %></div>
+        <div style="font-size:0.78rem;color:var(--muted);margin-top:0.2rem;"><%= new Date(selectedEvent.date).toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'}) %></div>
+      </div>
+      <div class="ev-count"><%= bookings.length %> BOOKINGS</div>
     </div>
 
-    <h2 style="font-family:'Anton',sans-serif;font-size:1.2rem;letter-spacing:2px;margin-bottom:1rem;">ALL COUPONS (<%= coupons.length %>)</h2>
-    <% if(coupons.length===0){ %>
-    <div class="empty"><i class="bi bi-tags" style="font-size:2.5rem;display:block;margin-bottom:0.8rem;"></i>No coupons yet.</div>
+    <% if(bookings.length===0){ %>
+    <div class="empty"><i class="bi bi-people" style="font-size:2.5rem;display:block;margin-bottom:0.8rem;"></i>No paid bookings for this event yet.</div>
     <% } else { %>
-    <div class="coupons-grid">
-      <% coupons.forEach(function(c){ %>
-      <div class="coupon-card <%= c.isActive?'':'inactive' %>" id="cc-<%= c._id %>">
-        <div class="cc-top">
-          <div class="cc-code"><%= c.code %></div>
-          <div style="display:flex;align-items:center;gap:0.5rem;">
-            <span class="cc-type"><%= c.type.toUpperCase() %></span>
-            <span class="<%= c.isActive?'badge-on':'badge-off' %>" id="cbadge-<%= c._id %>"><%= c.isActive?'ACTIVE':'OFF' %></span>
-          </div>
-        </div>
-        <div class="cc-body">
-          <div class="cc-val"><%= c.type==='percent'?c.value+'% OFF':'₹'+c.value+' OFF' %></div>
-          <% if(c.description){ %><div class="cc-desc"><%= c.description %></div><% } %>
-          <div class="cc-meta">
-            <% if(c.minOrder>0){ %><span>Min ₹<%= c.minOrder %></span><% } %>
-            <span>Used: <%= c.usedCount %><% if(c.maxUses>0){ %>/<%= c.maxUses %><% } %></span>
-            <% if(c.validUntil){ %><span>Expires <%= new Date(c.validUntil).toLocaleDateString('en-IN') %></span><% } %>
-          </div>
-          <div class="cc-actions">
-            <button class="btn-sm btn-tog" onclick="toggleCoupon('<%= c._id %>')">
-              <i class="bi bi-eye<%= c.isActive?'-slash':'' %>-fill" id="ceye-<%= c._id %>"></i>
-              <span id="ctxt-<%= c._id %>"><%= c.isActive?'Disable':'Enable' %></span>
-            </button>
-            <form method="POST" action="/superadmin/coupons/<%= c._id %>/delete" onsubmit="return confirm('Delete <%= c.code %>?')" style="display:inline;">
-              <button type="submit" class="btn-sm btn-del"><i class="bi bi-trash3-fill"></i> Delete</button>
-            </form>
-          </div>
-        </div>
-      </div>
+    <div style="overflow-x:auto;">
+    <table class="users-table">
+      <thead><tr>
+        <th>#</th><th>Name</th><th>Email</th><th>Phone</th><th>Ticket Type</th><th>Qty</th><th>Amount</th><th>Booking Ref</th><th>Date</th>
+      </tr></thead>
+      <tbody>
+      <% bookings.forEach(function(b, i){ %>
+      <tr>
+        <td style="color:var(--muted);font-family:'Space Mono',monospace;font-size:0.72rem;"><%= i+1 %></td>
+        <td><strong><%= b.user ? (b.user.firstName+' '+(b.user.lastName||'')) : '—' %></strong></td>
+        <td style="font-size:0.8rem;color:var(--muted);"><%= b.user?.email||'—' %></td>
+        <td style="font-family:'Space Mono',monospace;font-size:0.75rem;"><%= b.user?.phone||'—' %></td>
+        <td><span class="ticket-chip"><%= b.ticketType.toUpperCase() %></span></td>
+        <td style="text-align:center;"><%= b.quantity %></td>
+        <td style="font-family:'Space Mono',monospace;font-size:0.82rem;color:var(--accent);">₹<%= b.totalAmount.toLocaleString('en-IN') %></td>
+        <td style="font-family:'Space Mono',monospace;font-size:0.68rem;color:var(--muted);"><%= b.bookingRef %></td>
+        <td style="font-size:0.75rem;color:var(--muted);"><%= new Date(b.createdAt).toLocaleDateString('en-IN') %></td>
+      </tr>
       <% }); %>
+      </tbody>
+    </table>
     </div>
+    <% } %>
     <% } %>
   </main>
 </div>
-<script>
-async function createCoupon(){
-  const code=document.getElementById('cpCode').value.trim();
-  const type=document.getElementById('cpType').value;
-  const value=document.getElementById('cpValue').value;
-  const t=document.getElementById('cpToast');
-  if(!code||!value){t.textContent='Code and value are required.';t.className='toast err';setTimeout(()=>t.className='toast',4000);return;}
-  try{
-    const res=await fetch('/superadmin/coupons',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({code,type,value,minOrder:document.getElementById('cpMinOrder').value||0,
-        maxUses:document.getElementById('cpMaxUses').value||0,
-        validFrom:document.getElementById('cpFrom').value||null,
-        validUntil:document.getElementById('cpUntil').value||null,
-        description:document.getElementById('cpDesc').value})});
-    const d=await res.json();
-    if(d.success){t.textContent='✓ Coupon created!';t.className='toast ok';setTimeout(()=>location.reload(),1200);}
-    else{t.textContent=d.message||'Failed';t.className='toast err';}
-    setTimeout(()=>t.className='toast',4000);
-  }catch(e){t.textContent='Network error.';t.className='toast err';}
-}
-async function toggleCoupon(id){
-  const res=await fetch(`/superadmin/coupons/${id}/toggle`,{method:'POST',credentials:'include'});
-  const d=await res.json();
-  if(d.success){
-    const card=document.getElementById('cc-'+id);
-    const badge=document.getElementById('cbadge-'+id);
-    const eye=document.getElementById('ceye-'+id);
-    const txt=document.getElementById('ctxt-'+id);
-    if(d.isActive){card.classList.remove('inactive');badge.className='badge-on';badge.textContent='ACTIVE';eye.className='bi bi-eye-slash-fill';txt.textContent='Disable';}
-    else{card.classList.add('inactive');badge.className='badge-off';badge.textContent='OFF';eye.className='bi bi-eye-fill';txt.textContent='Enable';}
-  }
-}
-</script>
 </body>
 </html>

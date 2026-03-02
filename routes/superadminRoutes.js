@@ -4,6 +4,7 @@ const Staff   = require('../models/Staff');
 const Coupon  = require('../models/Coupon');
 const Booking = require('../models/Booking');
 const Event   = require('../models/Event');
+const ScanLog = require('../models/ScanLog');
 
 // ── Default superadmin credentials ──
 const SUPER_ADMIN = {
@@ -75,6 +76,29 @@ router.post('/login', async (req, res) => {
 
 router.get('/logout', (req, res) => {
   req.session.destroy(() => res.redirect('/staff/login'));
+});
+
+// ── PUBLIC: Coupon validation (used by checkout — no auth needed) ──
+router.post('/api/validate-coupon', async (req, res) => {
+  try {
+    const { code, orderAmount } = req.body;
+    if (!code) return res.json({ success: false, message: 'No coupon code provided.' });
+    const coupon = await Coupon.findOne({ code: code.toUpperCase().trim(), isActive: true });
+    if (!coupon) return res.json({ success: false, message: 'Invalid coupon code.' });
+    const now = new Date();
+    if (coupon.validFrom && now < new Date(coupon.validFrom)) return res.json({ success: false, message: 'Coupon not yet active.' });
+    if (coupon.validUntil) {
+      const expiry = new Date(coupon.validUntil); expiry.setHours(23,59,59,999);
+      if (now > expiry) return res.json({ success: false, message: 'Coupon has expired.' });
+    }
+    if (coupon.maxUses > 0 && coupon.usedCount >= coupon.maxUses) return res.json({ success: false, message: 'Coupon usage limit reached.' });
+    const amount = parseFloat(orderAmount) || 0;
+    if (coupon.minOrder > 0 && amount < coupon.minOrder) return res.json({ success: false, message: 'Min order ₹' + coupon.minOrder + ' required.' });
+    const discount = coupon.type === 'percent'
+      ? Math.round((amount * coupon.value) / 100)
+      : coupon.value;
+    res.json({ success: true, discount: Math.min(discount, amount), code: coupon.code, description: coupon.description });
+  } catch (err) { console.error('Coupon validate error:', err); res.json({ success: false, message: 'Server error.' }); }
 });
 
 router.use(superAuth);
@@ -181,6 +205,16 @@ router.get('/coupons', async (req, res) => {
 router.post('/coupons', async (req, res) => {
   try {
     const { code, type, value, minOrder, maxUses, validFrom, validUntil, description } = req.body;
+    // Validate: expiry date must not be in the past
+    if (validUntil) {
+      const expiry = new Date(validUntil);
+      expiry.setHours(23,59,59,999); // end of that day
+      if (expiry < new Date()) {
+        return res.json({ success: false, message: 'Expiry date cannot be in the past. Please choose a future date.' });
+      }
+    }
+    if (!code || !code.trim()) return res.json({ success: false, message: 'Coupon code is required.' });
+    if (!value || parseFloat(value) <= 0) return res.json({ success: false, message: 'Discount value must be greater than 0.' });
     const coupon = await Coupon.create({
       code: code.toUpperCase().trim(),
       type: type || 'fixed',
@@ -236,22 +270,7 @@ router.get('/users-by-event', async (req, res) => {
 
 // ── API: Validate coupon (used by booking page) ──
 // This replaces the hardcoded coupons in booking-details.ejs
-router.post('/api/validate-coupon', async (req, res) => {
-  try {
-    const { code, orderAmount } = req.body;
-    const coupon = await Coupon.findOne({ code: code.toUpperCase().trim(), isActive: true });
-    if (!coupon) return res.json({ success: false, message: 'Invalid coupon code.' });
-    const now = new Date();
-    if (coupon.validFrom && now < coupon.validFrom) return res.json({ success: false, message: 'Coupon not yet active.' });
-    if (coupon.validUntil && now > coupon.validUntil) return res.json({ success: false, message: 'Coupon has expired.' });
-    if (coupon.maxUses > 0 && coupon.usedCount >= coupon.maxUses) return res.json({ success: false, message: 'Coupon usage limit reached.' });
-    if (coupon.minOrder > 0 && orderAmount < coupon.minOrder) return res.json({ success: false, message: `Min order ₹${coupon.minOrder} required.` });
-    const discount = coupon.type === 'percent'
-      ? Math.round((orderAmount * coupon.value) / 100)
-      : coupon.value;
-    res.json({ success: true, discount: Math.min(discount, orderAmount), code: coupon.code, description: coupon.description });
-  } catch (err) { res.json({ success: false, message: 'Server error.' }); }
-});
+// validate-coupon moved to public routes above
 
 // ── ONE-TIME REPAIR: Fix existing bookings with "PENDING" in qrData ──
 router.post('/api/repair-qr', async (req, res) => {
@@ -296,6 +315,26 @@ router.post('/api/repair-qr', async (req, res) => {
 });
 
 // ── Superadmin error handler ──
+// ── Superadmin: Entered Tickets (Scan Log) ──
+router.get('/entered-tickets', async (req, res) => {
+  try {
+    const currentAdmin = req.session.staffUser || { username: req.session.superAdminUser || 'superadmin', name: 'Super Admin', role: 'superadmin' };
+    const events = await Event.find().sort({ date: -1 }).lean();
+    const selectedEventId = req.query.eventId || (events[0]?._id?.toString() || '');
+    let logs = [];
+    let selectedEvent = null;
+    if (selectedEventId) {
+      selectedEvent = await Event.findById(selectedEventId).lean();
+      logs = await ScanLog.find({ event: selectedEventId })
+        .populate('booking', 'bookingRef ticketType quantity totalAmount')
+        .sort({ scannedAt: -1 })
+        .lean();
+    }
+    res.render('superadmin/entered-tickets', { title: 'Entered Tickets — SuperAdmin', events, logs, selectedEvent, selectedEventId, currentAdmin });
+  } catch(err) { console.error(err); res.status(500).send('Error loading entered tickets'); }
+});
+
+
 router.use((err, req, res, next) => {
   console.error('[SUPERADMIN ERROR]', req.path, err.message);
   const isJson = req.headers['content-type']?.includes('application/json') || req.xhr;

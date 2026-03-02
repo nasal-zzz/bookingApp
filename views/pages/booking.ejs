@@ -312,8 +312,8 @@
           </div>
           <div>
             <label class="form-label-custom">Age *</label>
-            <input type="number" class="form-input" id="age-${num}" placeholder="25" min="18" max="65" inputmode="numeric"/>
-            <div class="field-error" id="ageErr-${num}"><i class="bi bi-exclamation-circle"></i> Must be 18+</div>
+            <input type="number" class="form-input" id="age-${num}" placeholder="25" min="1" max="100" inputmode="numeric"/>
+            <div class="field-error" id="ageErr-${num}"><i class="bi bi-exclamation-circle"></i>Enter a valid Age</div>
           </div>
           ${isFirst ? `
           <div>
@@ -403,7 +403,7 @@
         // Launch Razorpay
         const rzp = new Razorpay({
           key: data.key, amount: data.amount, currency: data.currency,
-          name: 'NightPass', description: selectedTypeName + ' × ' + qty,
+          name: 'Melattur Entertinment Events', description: selectedTypeName + ' × ' + qty,
           order_id: data.orderId,
           prefill: data.prefill,
           theme: { color: '#6A0DAD', backdrop_color: '#0B0B0F' },

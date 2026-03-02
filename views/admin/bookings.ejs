@@ -68,11 +68,15 @@
     <div class="s-section">Main</div>
     <a href="/admin"          class="s-link"><i class="bi bi-speedometer2"></i> Dashboard</a>
     <a href="/admin/bookings" class="s-link active"><i class="bi bi-ticket-perforated-fill"></i> Bookings</a>
+    <a href="/admin/participants" class="s-link"><i class="bi bi-person-check-fill"></i> Participants</a>
+    <a href="/admin/entered-tickets" class="s-link"><i class="bi bi-door-open-fill"></i> Entered Tickets</a>
+    <a href="/admin/users-by-event" class="s-link"><i class="bi bi-people-fill"></i> Users by Event</a>
     <div class="s-section">Events</div>
     <a href="/admin/events/new" class="s-link"><i class="bi bi-plus-circle-fill"></i> New Event</a>
     <a href="/admin/reviews"    class="s-link"><i class="bi bi-star-fill"></i> Reviews</a>
     <a href="/admin/banners"    class="s-link"><i class="bi bi-image-fill"></i> Banners</a>
     <a href="/" class="s-link" target="_blank"><i class="bi bi-box-arrow-up-right"></i> View Site</a>
+    <a href="/admin/coupons"        class="s-link"><i class="bi bi-tag-fill"></i> Coupons</a>
     <a href="/admin/staff" class="s-link"><i class="bi bi-people-fill"></i> Staff</a>
     <a href="/admin/profile" class="s-link"><i class="bi bi-person-circle"></i> My Profile</a>
     <% if(locals.isSuperAdmin){ %>
@@ -112,7 +116,7 @@
       <div style="overflow-x:auto;">
       <table id="bookingsTable">
         <thead><tr>
-          <th>Ref</th><th>User</th><th>Event</th><th>Tier</th><th>Qty</th><th>Amount</th><th>Date</th><th>Status</th><th>Action</th>
+          <th>Ref</th><th>User</th><th>Event</th><th>Tier</th><th>Qty</th><th>Subtotal</th><th>Discount</th><th>Fee</th><th>Total</th><th>Date</th><th>Status</th><th>Action</th>
         </tr></thead>
         <tbody>
           <% bookings.forEach(function(b) { %>
@@ -128,7 +132,13 @@
             </td>
             <td style="font-size:0.78rem;"><%= b.ticketType %></td>
             <td style="text-align:center;"><%= b.quantity %></td>
-            <td style="color:var(--accent);font-weight:700;">₹<%= b.totalAmount.toLocaleString('en-IN') %></td>
+            <td style="color:var(--muted);">₹<%= (b.subtotal||0).toLocaleString('en-IN') %></td>
+            <td>
+              <% if(b.discount>0){ %><span style="color:#00FF88;font-size:0.78rem;">-₹<%= b.discount.toLocaleString('en-IN') %></span><% if(b.couponCode){ %><div style="font-family:'Space Mono',monospace;font-size:0.58rem;color:#555;margin-top:1px;"><%= b.couponCode %></div><% } %>
+              <% }else{ %><span style="color:#333;">—</span><% } %>
+            </td>
+            <td style="color:var(--muted);font-size:0.78rem;">₹<%= (b.convenienceFee||0).toLocaleString('en-IN') %></td>
+            <td style="color:var(--accent);font-weight:700;">₹<%= (b.totalAmount||0).toLocaleString('en-IN') %></td>
             <td style="color:var(--muted);font-size:0.72rem;white-space:nowrap;"><%= new Date(b.createdAt).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) %></td>
             <td>
               <span class="badge b-<%= b.paymentStatus %>"><%= b.paymentStatus.toUpperCase() %></span>

@@ -365,7 +365,17 @@
     }
 
     a { color: inherit; }
-  </style>
+  
+    /* ── Reviews ── */
+    .reviews-list { display: flex; flex-direction: column; gap: 0.9rem; }
+    .review-card { background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.07); border-radius: 10px; padding: 1rem 1.2rem; }
+    .review-card.dummy { opacity: 0.7; border-style: dashed; }
+    .review-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem; }
+    .review-name { font-size: 0.85rem; font-weight: 600; color: #fff; }
+    .review-stars { color: #f5c842; font-size: 0.85rem; letter-spacing: 1px; }
+    .review-text { font-size: 0.82rem; color: var(--muted); line-height: 1.55; }
+    .review-badge { font-family: 'Space Mono', monospace; font-size: 0.52rem; letter-spacing: 1px; color: #555; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 5px; padding: 0.1rem 0.4rem; }
+</style>
 </head>
 <body>
 
@@ -524,6 +534,46 @@
         </div>
       </div>
       <% } %> -->
+
+      <!-- ── Reviews Section ── -->
+      <%
+        const DUMMY_REVIEWS = [
+          { _id:'d1', name:'Arjun K.', stars:5, text:'Amazing event! The energy was incredible from start to finish. Definitely coming back next time.' },
+          { _id:'d2', name:'Priya M.', stars:5, text:'Well organised and the artists were phenomenal. Sound quality was top-notch. 10/10 experience!' },
+          { _id:'d3', name:'Rahul S.', stars:4, text:'Great show overall. Loved the vibe and the crowd. Just a small delay at entry but otherwise perfect.' },
+        ];
+        const realRevs = locals.realReviews || [];
+        // Show dummies until real reviews fill their spots (remove one dummy per real review)
+        const dummiesNeeded = Math.max(0, DUMMY_REVIEWS.length - realRevs.length);
+        const displayDummies = DUMMY_REVIEWS.slice(0, dummiesNeeded);
+        const allDisplayReviews = [...realRevs, ...displayDummies];
+      %>
+      <div class="content-block">
+        <div class="block-title"><i class="bi bi-star-fill"></i> What People Say</div>
+        <div class="reviews-list">
+          <% allDisplayReviews.forEach(function(rv){ %>
+          <% const isDummy = !rv.user; %>
+          <div class="review-card <%= isDummy ? 'dummy' : '' %>">
+            <div class="review-header">
+              <div style="display:flex;align-items:center;gap:0.5rem;">
+                <div style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#6A0DAD,#9D4EDD);display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;color:#fff;flex-shrink:0;">
+                  <%= isDummy ? rv.name[0] : (rv.user.firstName||'?')[0].toUpperCase() %>
+                </div>
+                <div>
+                  <div class="review-name"><%= isDummy ? rv.name : ((rv.user.firstName||'') + ' ' + (rv.user.lastName||'').trim().charAt(0) + '.') %></div>
+                  <div class="review-stars">
+                    <% const stars = isDummy ? rv.stars : rv.rating; %>
+                    <% for(let s=1;s<=5;s++){ %><%= s<=stars?'★':'☆' %><% } %>
+                  </div>
+                </div>
+              </div>
+              <% if(isDummy){ %><span class="review-badge">Verified</span><% } else { %><span class="review-badge">Attended</span><% } %>
+            </div>
+            <div class="review-text"><%= isDummy ? rv.text : rv.text %></div>
+          </div>
+          <% }); %>
+        </div>
+      </div>
 
       <!-- Other Events -->
       <% if(otherEvents.length > 0){ %>

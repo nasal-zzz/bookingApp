@@ -1,7 +1,14 @@
 const express = require('express');
 const router  = express.Router();
 const adminController = require('../controllers/adminController');
-const Staff = require('../models/Staff');
+const Coupon  = require('../models/Coupon');
+const ScanLog = require('../models/ScanLog');
+const Staff   = require('../models/Staff');
+const Event   = require('../models/Event');
+const Booking = require('../models/Booking');
+const User    = require('../models/User');
+const Banner  = require('../models/Banner');
+const Review  = require('../models/Review');
 
 // ── Get current admin info for views ──
 function getCurrentAdmin(req) {
@@ -79,11 +86,26 @@ router.post('/events/:id',              adminController.postUpdateEvent);
 router.post('/events/:id/delete',       adminController.deleteEvent);
 router.post('/events/:id/toggle',       adminController.toggleEvent);
 
+// ── Stop ALL ticket categories for an event (close booking for entire event) ──
+router.post('/events/:id/stop-all-tickets', async (req, res) => {
+  try {
+    const event = await Event.findById(req.params.id);
+    if (!event) return res.json({ success: false, message: 'Event not found' });
+    const { stop } = req.body; // stop: 'true' or 'false'
+    const shouldStop = stop === 'true';
+    event.ticketTypes.forEach(t => { t.isActive = !shouldStop; });
+    await event.save();
+    res.json({ success: true, stopped: shouldStop, count: event.ticketTypes.length });
+  } catch(err) {
+    res.json({ success: false, message: err.message });
+  }
+});
+
 // ── Toggle individual ticket category on/off (stop selling) ──
 router.post('/events/:id/ticket-toggle', async (req, res) => {
   try {
     const { category } = req.body;
-    const event = await require('../models/Event').findById(req.params.id);
+    const event = await Event.findById(req.params.id);
     if (!event) return res.json({ success: false, message: 'Event not found' });
     const tt = event.ticketTypes.find(t => t.category === category);
     if (!tt) return res.json({ success: false, message: 'Category not found' });
@@ -100,8 +122,6 @@ router.get('/bookings',                 adminController.getBookings);
 router.post('/bookings/send-reminders', async (req, res) => {
   if (!req.session.adminLoggedIn) return res.json({ success: false, message: 'Not authorised' });
   try {
-    const Booking = require('../models/Booking');
-    const Event   = require('../models/Event');
     const { sendPendingPaymentReminder, sendFailedPaymentNotice } = require('../utils/emailHelper');
     const { sendWhatsAppPending, sendWhatsAppPaymentFailed } = require('../utils/whatsappHelper');
 
@@ -165,8 +185,6 @@ router.post('/bookings/send-reminders', async (req, res) => {
 // ── POST /admin/bookings/:id/send-message — send WhatsApp+email to single pending/failed booking ──
 router.post('/bookings/:id/send-message', async (req, res) => {
   try {
-    const Booking = require('../models/Booking');
-    const Event   = require('../models/Event');
     const { sendPendingPaymentReminder, sendFailedPaymentNotice } = require('../utils/emailHelper');
     const { sendWhatsAppPending, sendWhatsAppPaymentFailed } = require('../utils/whatsappHelper');
 
@@ -204,7 +222,6 @@ router.post('/seatmap/:eventId/toggle',  adminController.toggleSeatMap);
 
 
 // ── Sponsor Banners ──
-const Banner = require('../models/Banner');
 
 router.get('/banners', async (req, res) => {
   if (!req.session.adminLoggedIn && !(req.session.staffLoggedIn && ['admin','superadmin'].includes(req.session.staffUser?.role))) return res.redirect('/staff/login');
@@ -254,7 +271,6 @@ router.get('/api/banners', async (req, res) => {
 });
 
 // ── Reviews admin ──
-const Review = require('../models/Review');
 
 router.get('/reviews', async (req, res) => {
   if (!req.session.adminLoggedIn && !(req.session.staffLoggedIn && ['admin','superadmin'].includes(req.session.staffUser?.role))) return res.redirect('/staff/login');
@@ -356,5 +372,140 @@ router.use((err, req, res, next) => {
     errDetail:  process.env.NODE_ENV !== 'production' ? err.message : null,
   });
 });
+
+// ── Admin: Clean up duplicate pending bookings ──
+// Finds any pending/failed booking where a paid booking exists for same user+event
+router.post('/cleanup-duplicates', async (req, res) => {
+  try {
+    const paidBookings = await Booking.find({ paymentStatus: 'paid' }).lean();
+    let removed = 0;
+    for (const paid of paidBookings) {
+      // Find pending/failed bookings for same user + event
+      const dupes = await Booking.find({
+        user:          paid.user,
+        event:         paid.event,
+        paymentStatus: { $in: ['pending', 'failed'] },
+        _id:           { $ne: paid._id }
+      });
+      for (const dupe of dupes) {
+        await Booking.findByIdAndDelete(dupe._id);
+        await User.findByIdAndUpdate(paid.user, { $pull: { bookings: dupe._id } }).catch(()=>{});
+        removed++;
+        console.log('🧹 Removed duplicate booking:', dupe.bookingRef, '(pending/failed, paid exists)');
+      }
+    }
+    res.json({ success: true, removed, message: removed + ' duplicate pending/failed bookings removed.' });
+  } catch(err) {
+    res.json({ success: false, message: err.message });
+  }
+});
+
+
+// ── Admin Coupon Management ──
+router.get('/coupons', async (req, res) => {
+  try {
+    const coupons = await Coupon.find().sort({ createdAt: -1 });
+    const currentAdmin = req.session.staffUser || { username: req.session.adminUser || 'admin', name: 'Admin', role: 'admin' };
+    const isSuperAdmin = req.session.superAdminLoggedIn || (req.session.staffUser && req.session.staffUser.role === 'superadmin');
+    res.render('admin/coupons', { title: 'Coupons — Admin', coupons, currentAdmin, isSuperAdmin });
+  } catch(err) { res.status(500).send('Error loading coupons'); }
+});
+
+router.post('/coupons', async (req, res) => {
+  try {
+    const { code, type, value, minOrder, maxUses, validFrom, validUntil, description } = req.body;
+    if (validUntil) {
+      const expiry = new Date(validUntil); expiry.setHours(23,59,59,999);
+      if (expiry < new Date()) return res.json({ success: false, message: 'Expiry date cannot be in the past.' });
+    }
+    if (!code || !code.trim()) return res.json({ success: false, message: 'Coupon code required.' });
+    if (!value || parseFloat(value) <= 0) return res.json({ success: false, message: 'Value must be > 0.' });
+    const coupon = await Coupon.create({
+      code: code.toUpperCase().trim(), type: type||'fixed',
+      value: parseFloat(value), minOrder: parseFloat(minOrder)||0,
+      maxUses: parseInt(maxUses)||0, validFrom: validFrom||null,
+      validUntil: validUntil||null, description: description||'',
+    });
+    res.json({ success: true, couponId: coupon._id });
+  } catch(err) {
+    res.json({ success: false, message: err.code===11000 ? 'Coupon code already exists.' : err.message });
+  }
+});
+
+router.post('/coupons/:id/toggle', async (req, res) => {
+  try {
+    const c = await Coupon.findById(req.params.id);
+    if (!c) return res.json({ success: false });
+    c.isActive = !c.isActive; await c.save();
+    res.json({ success: true, isActive: c.isActive });
+  } catch(err) { res.json({ success: false }); }
+});
+
+router.post('/coupons/:id/delete', async (req, res) => {
+  try { await Coupon.findByIdAndDelete(req.params.id); res.redirect('/admin/coupons'); }
+  catch(err) { res.redirect('/admin/coupons'); }
+});
+
+// ── Participants (QR scan log) by event ──
+router.get('/participants', async (req, res) => {
+  try {
+    const currentAdmin = getCurrentAdmin(req);
+    const isSuperAdmin = req.session.superAdminLoggedIn || (req.session.staffUser && req.session.staffUser.role === 'superadmin');
+    const events = await Event.find().sort({ date: -1 }).lean();
+    const selectedId = req.query.event || (events[0]?._id?.toString() || '');
+    let logs = [];
+    if (selectedId) {
+      logs = await ScanLog.find({ event: selectedId })
+        .populate('booking', 'bookingRef ticketType quantity')
+        .sort({ scannedAt: -1 })
+        .lean();
+    }
+    res.render('admin/participants', { title: 'Participants — Admin', events, logs, selectedId, currentAdmin, isSuperAdmin });
+  } catch(err) { console.error(err); res.status(500).send('Error'); }
+});
+
+// ── Admin: Users by Event ──
+router.get('/users-by-event', async (req, res) => {
+  try {
+    const currentAdmin = getCurrentAdmin(req);
+    const isSuperAdmin = req.session.superAdminLoggedIn || (req.session.staffUser && req.session.staffUser.role === 'superadmin');
+    const events = await Event.find().sort({ date: -1 }).select('name date').lean();
+    const selectedEventId = req.query.eventId || '';
+    let bookings = [];
+    let selectedEvent = null;
+    if (selectedEventId) {
+      selectedEvent = await Event.findById(selectedEventId).select('name date').lean();
+      bookings = await Booking.find({ event: selectedEventId, paymentStatus: 'paid' })
+        .populate('user', 'firstName lastName email phone')
+        .sort({ createdAt: -1 })
+        .lean();
+    }
+    res.render('admin/users-by-event', { title: 'Users by Event — Admin', events, bookings, selectedEvent, selectedEventId, currentAdmin, isSuperAdmin });
+  } catch(err) {
+    console.error('/admin/users-by-event error:', err);
+    res.status(500).send('Error loading users by event');
+  }
+});
+
+// ── Admin: Entered Tickets (Scan Log) ──
+router.get('/entered-tickets', async (req, res) => {
+  try {
+    const currentAdmin = getCurrentAdmin(req);
+    const isSuperAdmin = req.session.superAdminLoggedIn || (req.session.staffUser && req.session.staffUser.role === 'superadmin');
+    const events = await Event.find().sort({ date: -1 }).lean();
+    const selectedEventId = req.query.eventId || (events[0]?._id?.toString() || '');
+    let logs = [];
+    let selectedEvent = null;
+    if (selectedEventId) {
+      selectedEvent = await Event.findById(selectedEventId).lean();
+      logs = await ScanLog.find({ event: selectedEventId })
+        .populate('booking', 'bookingRef ticketType quantity totalAmount')
+        .sort({ scannedAt: -1 })
+        .lean();
+    }
+    res.render('admin/entered-tickets', { title: 'Entered Tickets — Admin', events, logs, selectedEvent, selectedEventId, currentAdmin, isSuperAdmin });
+  } catch(err) { console.error(err); res.status(500).send('Error loading entered tickets'); }
+});
+
 
 module.exports = router;

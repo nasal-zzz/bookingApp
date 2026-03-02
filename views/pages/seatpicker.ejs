@@ -133,11 +133,17 @@
     <div class="map-legend">
       <span class="leg-lbl">Legend</span>
       <% event.ticketTypes.filter(t=>t.isActive).forEach(t=>{
-           const cc={platinum:'#9D4EDD',gold:'#f5c842',silver:'#c0c8d8',fanfit:'#00FF88',family:'#FF6B6B'}[t.category]||'#6A0DAD'; %>
-      <div class="leg-item" id="leg-<%= t.category %>" style="--zc:<%=cc%>" onclick="highlightCat('<%= t.category %>')">
-        <div class="leg-dot"></div>
-        <span style="color:<%=cc%>;font-weight:700;font-size:0.66rem;"><%= t.category.toUpperCase() %></span>
-        <span style="color:var(--muted);">₹<%= t.price.toLocaleString('en-IN') %></span>
+           const cc={platinum:'#9D4EDD',gold:'#f5c842',silver:'#c0c8d8',fanfit:'#00FF88',family:'#FF6B6B'}[t.category]||'#6A0DAD';
+           const catSoldOut = t.bookedSeats >= t.totalSeats && t.totalSeats > 0; %>
+      <div class="leg-item" id="leg-<%= t.category %>" style="--zc:<%=catSoldOut?'#FF4444':cc%>;<%=catSoldOut?'opacity:0.5;cursor:not-allowed;':'';%>" onclick="<%= catSoldOut?'':"highlightCat('" + t.category + "')" %>">
+        <div class="leg-dot" style="<%=catSoldOut?'background:#FF4444;':''%>"></div>
+        <span style="color:<%=catSoldOut?'#FF4444':cc%>;font-weight:700;font-size:0.66rem;"><%= t.category.toUpperCase() %></span>
+        <% if(catSoldOut){ %>
+          <span style="color:#FF4444;font-family:'Space Mono',monospace;font-size:0.55rem;">SOLD OUT</span>
+        <% } else { %>
+          <span style="color:var(--muted);">₹<%= t.price.toLocaleString('en-IN') %></span>
+          <% if(t.comboOfferMinQty>0&&t.comboOfferDiscount>0){ %><span style="color:#f5c842;font-size:0.55rem;">🎯<%=t.comboOfferMinQty%>+→₹<%=t.comboOfferDiscount%>off</span><% } %>
+        <% } %>
       </div>
       <% }); %>
     </div>
@@ -153,11 +159,10 @@
     </div>
     <div class="zone-list" id="zoneList"></div>
     <div class="qty-strip" id="qtyStrip">
-      <div class="qs-lbl">Tickets</div>
+      <div class="qs-lbl">Tickets price</div>
       <div class="qs-row">
-      
         <div class="qs-total">
-          <div class="qs-total-lbl">Ticket price </div>
+          <div class="qs-total-lbl">Per Ticket</div>
           <div class="qs-total-val" id="qTotal">—</div>
         </div>
       </div>
@@ -167,10 +172,10 @@
       <div class="sf-row"><span>Zone</span><span id="sfZone">—</span></div>
       <div class="sf-row"><span>Price / ticket</span><span id="sfPrice">—</span></div>
       <div class="sf-row"><span>Qty</span><span id="sfQty">0</span></div>
-      <div class="sf-row"><span>Convenience fee</span><span>₹<%= event.convenienceFee||20 %></span></div>
+      <div class="sf-row"><span>Convenience fee</span><span>₹<%= event.convenienceFee||0 %></span></div>
       <div class="sf-total">
         <div class="sf-tlbl">Total</div>
-        <div class="sf-tval" id="sfTotal">₹<%= event.convenienceFee||20 %></div>
+        <div class="sf-tval" id="sfTotal">₹<%= event.convenienceFee||0 %></div>
       </div>
       <button class="btn-next" id="btnNext" disabled onclick="goNext()">
         <span>Next — Attendee Details</span><i class="bi bi-arrow-right"></i>
@@ -186,7 +191,7 @@
 
 <script>
 const EVENT_ID  = '<%= event._id %>';
-const CONV_FEE  = <%= event.convenienceFee||20 %>;
+const CONV_FEE  = <%= event.convenienceFee||0 %>;
 const SEAT_MAP  = <%- JSON.stringify(seatMap) %>;
 const TT        = <%- JSON.stringify(event.ticketTypes) %>;
 const CAT_C     = {platinum:'#9D4EDD',gold:'#f5c842',silver:'#c0c8d8',fanfit:'#00FF88',family:'#FF6B6B'};
