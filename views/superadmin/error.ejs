@@ -35,16 +35,7 @@
 </head>
 <body>
 <div class="layout">
-  <aside class="sidebar">
-    <a href="/superadmin" class="s-logo"><img src="/img/mee-logo.png" alt="MEE" style="height:28px;width:auto;object-fit:contain;"/></a>
-    <div class="s-section">Navigation</div>
-    <a href="/superadmin"                  class="s-link"><i class="bi bi-speedometer2"></i> Dashboard</a>
-    <a href="/superadmin/staff"            class="s-link"><i class="bi bi-people-fill"></i> Staff & Admins</a>
-    <a href="/superadmin/coupons"          class="s-link"><i class="bi bi-tag-fill"></i> Coupons</a>
-    <a href="/superadmin/users-by-event"   class="s-link"><i class="bi bi-person-lines-fill"></i> Users by Event</a>
-    <a href="/admin"                       class="s-link"><i class="bi bi-grid-fill"></i> Admin Panel</a>
-    <a href="/superadmin/logout" class="s-logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
-  </aside>
+    <%- include('../partials/superadmin-sidebar', { activePage: 'error' }) %>
   <main class="main">
     <div class="err-card">
       <div class="err-icon"><i class="bi bi-exclamation-triangle-fill"></i></div>

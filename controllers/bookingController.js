@@ -151,8 +151,73 @@ exports.createOrder = async (req, res) => {
       currency: 'INR',
       receipt:  'MEE_' + Date.now(),
     });
+    // ── Save / upsert a pending booking so verifyPayment can upgrade it ──
+    // Reuse any existing pending/failed for same user+event to avoid duplicates
+    let pendingBookingDoc = null;
+    try {
+      const attArr = Array.isArray(attendees) ? attendees : (attendees ? [attendees] : []);
+      const ticketStubs = [];
+      const _qrH = require('../utils/qrHelper');
+      for (let i = 0; i < effectiveQty; i++) {
+        const att = attArr[i] || attArr[0] || {};
+        ticketStubs.push({
+          ticketId: _qrH.generateTicketId(i),
+          attendee: { name: att.name || req.user.firstName || 'Guest', age: parseInt(att.age) || 25, special: att.special || '' },
+          seatNumber: (ttype.category || 'ticket').toLowerCase().replace(/[^a-z0-9]/g, '_') + '_s' + (i + 1),
+          qrCode: '', qrData: ''
+        });
+      }
+      const existingStale = await Booking.findOne({
+        user: req.user._id,
+        event: event._id,
+        paymentStatus: { $in: ['pending', 'failed'] },
+      }).sort({ createdAt: -1 });
+
+      if (existingStale) {
+        existingStale.ticketType     = ttype.category;
+        existingStale.pricePerTicket = pricePerTicket;
+        existingStale.quantity       = effectiveQty;
+        existingStale.subtotal       = subtotal;
+        existingStale.discount       = discount;
+        existingStale.convenienceFee = convFee;
+        existingStale.totalAmount    = totalAmount;
+        existingStale.orderId        = order.id;
+        existingStale.couponCode     = couponCode ? couponCode.toUpperCase() : null;
+        existingStale.paymentStatus  = 'pending';
+        existingStale.tickets        = ticketStubs;
+        await existingStale.save();
+        pendingBookingDoc = existingStale;
+        console.log('🔄 Reused existing booking for retry:', existingStale.bookingRef);
+      } else {
+        pendingBookingDoc = await Booking.create({
+          user: req.user._id, event: event._id,
+          ticketType: ttype.category, pricePerTicket,
+          quantity: effectiveQty, subtotal, discount,
+          couponCode: couponCode ? couponCode.toUpperCase() : null,
+          convenienceFee: convFee, totalAmount,
+          tickets: ticketStubs, paymentStatus: 'pending',
+          orderId: order.id,
+          contactPhone: req.user.phone || '',
+          contactEmail: req.user.email || '',
+        });
+        await User.findByIdAndUpdate(req.user._id, { $push: { bookings: pendingBookingDoc._id } }).catch(() => {});
+        console.log('📝 New pending booking:', pendingBookingDoc.bookingRef);
+
+        // Send pending notifications only for brand-new bookings (not retries)
+        try {
+          const { sendPendingPaymentReminder } = require('../utils/emailHelper');
+          const { sendWhatsAppPending } = require('../utils/whatsappHelper');
+          if (req.user.email) sendPendingPaymentReminder({ to: req.user.email, name: req.user.firstName, booking: pendingBookingDoc, event }).catch(() => {});
+          if (req.user.phone) sendWhatsAppPending({ phone: req.user.phone, name: req.user.firstName, booking: pendingBookingDoc, event }).catch(() => {});
+          console.log('📨 Pending notifications queued for:', pendingBookingDoc.bookingRef);
+        } catch(ne) { console.warn('Pending notify error:', ne.message); }
+      }
+    } catch (pe) {
+      console.warn('⚠ Pending booking save failed (non-fatal):', pe.message);
+    }
 
     req.session.pendingBooking = {
+      bookingId:      pendingBookingDoc ? pendingBookingDoc._id.toString() : null,
       eventId:        event._id.toString(),
       ticketType:     ttype.category,
       zone:           zone || '',
@@ -192,149 +257,89 @@ exports.createOrder = async (req, res) => {
 };
 
 // ─────────────────────────────────────────────────────────────
-// POST /booking/save-pending  — user dismissed Razorpay modal
-// Save booking record with paymentStatus = 'pending'
+// POST /booking/save-pending  — user dismissed Razorpay without paying
+// No-op: the pending booking in DB is fine, user can retry.
 // ─────────────────────────────────────────────────────────────
 exports.savePending = async (req, res) => {
-  try {
-    const pending = req.session.pendingBooking;
-    if (!pending) return res.json({ success: false, message: 'No pending booking in session' });
-
-    const { orderId } = req.body;
-
-    // Check if already saved by orderId
-    const existing = await Booking.findOne({ orderId: orderId || pending.orderId });
-    if (existing) return res.json({ success: true, bookingId: existing._id });
-
-    // Also check: if a PAID booking exists for same user+event, don't create pending duplicate
-    // This handles the race where verifyPayment wins and ondismiss fires after
-    const paidExists = await Booking.findOne({
-      user:          req.user._id,
-      event:         pending.eventId,
-      paymentStatus: 'paid',
-    });
-    if (paidExists) {
-      console.log('ℹ️  savePending skipped — paid booking already exists for this user+event');
-      return res.json({ success: true, bookingId: paidExists._id });
-    }
-
-    // Minimal attendee placeholders
-    const tickets = [];
-    const attendees = pending.attendees || [];
-    for (let i = 0; i < pending.quantity; i++) {
-      const attendee = attendees[i] || attendees[0] || { name: req.user.firstName, age: 25 };
-      tickets.push({
-        ticketId: generateTicketId(i),
-        attendee: { name: attendee.name || req.user.firstName, age: parseInt(attendee.age) || 25, special: attendee.special || '' },
-        qrData: '',
-        qrCode: '',
-      });
-    }
-
-    const booking = await Booking.create({
-      user:           req.user._id,
-      event:          pending.eventId,
-      ticketType:     pending.ticketType,
-      pricePerTicket: pending.pricePerTicket,
-      quantity:       pending.quantity,
-      subtotal:       pending.subtotal,
-      discount:       pending.discount || 0,
-      couponCode:     pending.couponCode || null,
-      convenienceFee: pending.convenienceFee || 0,
-      totalAmount:    pending.totalAmount,
-      tickets,
-      paymentStatus:  'pending',
-      orderId:        pending.orderId,
-      contactPhone:   req.user.phone || '',
-      contactEmail:   req.user.email || '',
-    });
-
-    await User.findByIdAndUpdate(req.user._id, { $push: { bookings: booking._id } }).catch(() => {});
-    // Store booking id in session so retry-payment can pick it up
-    req.session.pendingBookingId = booking._id.toString();
-    req.session.save(() => {});
-
-    console.log('💾 Pending booking saved:', booking.bookingRef);
-
-    // Send IMMEDIATE pending payment reminder (async, don't block response)
-    try {
-      const event = await require('../models/Event').findById(pending.eventId).lean();
-      const contactEmail = req.user.email || '';
-      const contactPhone = req.user.phone || '';
-      const name = req.user.firstName || 'there';
-      if (contactEmail) {
-        sendPendingPaymentReminder({ to: contactEmail, name, booking, event: event || {} }).catch(()=>{});
-      }
-      if (contactPhone) {
-        const { sendWhatsAppPending } = require('../utils/whatsappHelper');
-        sendWhatsAppPending({ phone: contactPhone, name, booking, event: event || {} }).catch(()=>{});
-      }
-      // Mark immediate reminder as sent
-      await Booking.findByIdAndUpdate(booking._id, { reminderImmediateSentAt: new Date() }).catch(()=>{});
-    } catch(notifErr) { console.warn('Pending notif error:', notifErr.message); }
-
-    return res.json({ success: true, bookingId: booking._id });
-  } catch(err) {
-    console.error('savePending error:', err);
-    res.json({ success: false, message: err.message });
+  const pending = req.session.pendingBooking;
+  if (pending && pending.bookingId) {
+    console.log('ℹ️  savePending: user dismissed — booking stays pending:', pending.bookingId);
+  } else {
+    console.log('ℹ️  savePending: dismissed (no session)');
   }
+  return res.json({ success: true });
 };
 
 // ─────────────────────────────────────────────────────────────
+// GET /booking/check-existing?eventId=xxx
+// Returns any pending/failed booking the user has for the event
+// Used by booking page to show "resume payment" banner
+// ─────────────────────────────────────────────────────────────
+exports.checkExistingBooking = async (req, res) => {
+  try {
+    const { eventId } = req.query;
+    if (!eventId || !req.user) return res.json({ exists: false });
+    const existing = await Booking.findOne({
+      user:          req.user._id,
+      event:         eventId,
+      paymentStatus: { $in: ['pending', 'failed'] },
+    }).sort({ createdAt: -1 }).select('_id bookingRef paymentStatus totalAmount ticketType quantity createdAt');
+    if (existing) {
+      return res.json({ exists: true, booking: existing });
+    }
+    return res.json({ exists: false });
+  } catch(e) {
+    return res.json({ exists: false });
+  }
+};
+
+
+// ─────────────────────────────────────────────────────────────
 // POST /booking/save-failed  — payment.failed event
+// No-op: we don't persist failed payment records.
+// The overlay on the frontend shows the error and lets user retry or go back.
 // ─────────────────────────────────────────────────────────────
 exports.saveFailed = async (req, res) => {
   try {
     const pending = req.session.pendingBooking;
-    if (!pending) return res.json({ success: false });
+    let failedBooking = null;
 
-    const { orderId, error } = req.body;
-    const existing = await Booking.findOne({ orderId: orderId || pending.orderId });
-    if (existing) {
-      await Booking.findByIdAndUpdate(existing._id, { paymentStatus: 'failed' });
-      return res.json({ success: true });
-    }
-
-    const tickets = [];
-    const attendees = pending.attendees || [];
-    for (let i = 0; i < pending.quantity; i++) {
-      const attendee = attendees[i] || attendees[0] || { name: req.user.firstName, age: 25 };
-      tickets.push({ ticketId: generateTicketId(i), attendee: { name: attendee.name || req.user.firstName, age: parseInt(attendee.age)||25, special: attendee.special||'' }, qrData:'', qrCode:'' });
-    }
-
-    const booking = await Booking.create({
-      user: req.user._id, event: pending.eventId, ticketType: pending.ticketType,
-      pricePerTicket: pending.pricePerTicket, quantity: pending.quantity, subtotal: pending.subtotal,
-      discount: pending.discount||0, couponCode: pending.couponCode||null, convenienceFee: pending.convenienceFee||0,
-      totalAmount: pending.totalAmount, tickets, paymentStatus: 'failed',
-      orderId: pending.orderId, contactPhone: req.user.phone||'', contactEmail: req.user.email||'',
-    });
-    await User.findByIdAndUpdate(req.user._id, { $push: { bookings: booking._id } }).catch(() => {});
-    console.log('❌ Failed booking saved:', booking.bookingRef);
-
-    // Send failed payment notification (async)
-    try {
-      const event = await require('../models/Event').findById(pending.eventId).lean();
-      const contactEmail = req.user.email || '';
-      const contactPhone = req.user.phone || '';
-      const name = req.user.firstName || 'there';
-      if (contactEmail) {
-        sendFailedPaymentNotice({ to: contactEmail, name, booking, event: event || {} }).catch(()=>{});
+    if (pending && pending.bookingId) {
+      failedBooking = await Booking.findOneAndUpdate(
+        { _id: pending.bookingId, paymentStatus: { $in: ['pending', 'failed'] } },
+        { paymentStatus: 'failed' },
+        { new: true }
+      ).populate('event').catch(() => null);
+      if (failedBooking) {
+        console.log('❌ saveFailed: booking marked failed:', pending.bookingId);
+      } else {
+        console.log('⚠ saveFailed: not updated (may already be paid):', pending.bookingId);
       }
-      // WhatsApp notification for failed payment
-      if (contactPhone) {
+    } else if (pending && pending.orderId) {
+      failedBooking = await Booking.findOneAndUpdate(
+        { orderId: pending.orderId, paymentStatus: { $in: ['pending', 'failed'] } },
+        { paymentStatus: 'failed' },
+        { new: true }
+      ).populate('event').catch(() => null);
+      if (failedBooking) console.log('❌ saveFailed: marked failed by orderId:', pending.orderId);
+    } else {
+      console.log('ℹ️  saveFailed: no active booking to update');
+    }
+
+    // Send failed payment notifications
+    if (failedBooking && failedBooking.paymentStatus === 'failed') {
+      try {
+        const eventDoc = failedBooking.event || (pending && pending.eventId ? await require('../models/Event').findById(pending.eventId).lean() : null);
+        const { sendFailedPaymentNotice } = require('../utils/emailHelper');
         const { sendWhatsAppPaymentFailed } = require('../utils/whatsappHelper');
-        sendWhatsAppPaymentFailed({ phone: contactPhone, name, booking, event: event || {} }).catch(()=>{});
-      }
-    } catch(notifErr) { console.warn('Failed notif error:', notifErr.message); }
-
-    res.json({ success: true });
-  } catch(err) {
-    res.json({ success: false, message: err.message });
-  }
+        if (req.user && req.user.email) sendFailedPaymentNotice({ to: req.user.email, name: req.user.firstName, booking: failedBooking, event: eventDoc || {} }).catch(() => {});
+        if (req.user && req.user.phone) sendWhatsAppPaymentFailed({ phone: req.user.phone, name: req.user.firstName, booking: failedBooking, event: eventDoc || {} }).catch(() => {});
+        console.log('📨 Failed payment notifications queued for:', failedBooking.bookingRef);
+      } catch(ne) { console.warn('Failed notify error:', ne.message); }
+    }
+  } catch(e) { console.warn('saveFailed error:', e.message); }
+  return res.json({ success: true });
 };
-
-// ─────────────────────────────────────────────────────────────
 // GET /booking/retry-payment/:bookingId
 // Re-open payment for pending/failed booking with original details
 // ─────────────────────────────────────────────────────────────
@@ -450,6 +455,16 @@ exports.verifyPayment = async (req, res) => {
         delete req.session.pendingBooking;
         req.session.save(() => {});
 
+        // Send success notifications
+        try {
+          const evDoc = await require('../models/Event').findById(pending.eventId).lean();
+          const { sendBookingConfirmation } = require('../utils/emailHelper');
+          const { sendWhatsAppTickets } = require('../utils/whatsappHelper');
+          if (req.user.email && evDoc) sendBookingConfirmation({ to: req.user.email, name: req.user.firstName, booking: existingBooking, event: evDoc }).catch(() => {});
+          if (req.user.phone && evDoc) sendWhatsAppTickets({ phone: req.user.phone, name: req.user.firstName, booking: existingBooking, event: evDoc }).catch(() => {});
+          console.log('✅ Success notifications sent (retry branch 1):', existingBooking.bookingRef);
+        } catch(ne) { console.warn('Notify err (branch1):', ne.message); }
+
         return res.json({ success: true, bookingId: existingBooking._id, bookingRef: existingBooking.bookingRef });
       }
     }
@@ -495,12 +510,14 @@ exports.verifyPayment = async (req, res) => {
       delete req.session.pendingBooking;
       req.session.save(()=>{});
       console.log('✅ Updated existing booking to paid:', existingByOrder.bookingRef);
-      // Send success email/whatsapp
+      // Send success notifications (email + WhatsApp with QR tickets)
       try {
         const ev2 = await require('../models/Event').findById(pending.eventId).lean();
-        if (req.user.email) sendBookingConfirmation({ to: req.user.email, name: req.user.firstName, booking: existingByOrder, event: ev2||{} }).catch(()=>{});
-        if (req.user.phone) { const {sendWhatsAppConfirmation} = require('../utils/whatsappHelper'); sendWhatsAppConfirmation({ phone: req.user.phone, name: req.user.firstName, booking: existingByOrder, event: ev2||{} }).catch(()=>{}); }
-      } catch(ne) { console.warn('Notif err:', ne.message); }
+        const { sendWhatsAppTickets } = require('../utils/whatsappHelper');
+        if (req.user.email && ev2) sendBookingConfirmation({ to: req.user.email, name: req.user.firstName, booking: existingByOrder, event: ev2 }).catch(()=>{});
+        if (req.user.phone && ev2) sendWhatsAppTickets({ phone: req.user.phone, name: req.user.firstName, booking: existingByOrder, event: ev2 }).catch(()=>{});
+        console.log('📨 Success notifications sent (orderId branch):', existingByOrder.bookingRef);
+      } catch(ne) { console.warn('Notif err (branch2):', ne.message); }
       return res.json({ success: true, bookingId: existingByOrder._id, bookingRef: existingByOrder.bookingRef });
     }
 
@@ -516,6 +533,62 @@ exports.verifyPayment = async (req, res) => {
       delete req.session.pendingBooking;
       req.session.save(() => {});
       return res.json({ success: true, bookingId: alreadyPaid._id, bookingRef: alreadyPaid.bookingRef });
+    }
+
+    // ── UPSERT: if any pending/failed booking exists for this user+event, update it ──
+    // This prevents creating a new booking when user retried from booking-details page
+    const existingUnpaid = await Booking.findOne({
+      user:          req.user._id,
+      event:         pending.eventId,
+      paymentStatus: { $in: ['pending', 'failed'] },
+    }).sort({ createdAt: -1 });
+
+    if (existingUnpaid) {
+      console.log('🔄 verifyPayment: upgrading existing', existingUnpaid.paymentStatus, 'booking to paid:', existingUnpaid.bookingRef);
+      // Regenerate QR codes
+      const isGrp = existingUnpaid.tickets.length > 1;
+      if (isGrp) {
+        const grpPayload = buildGroupQRPayload({ bookingRef: existingUnpaid.bookingRef, eventId: pending.eventId, paymentId: razorpay_payment_id, attendees: existingUnpaid.tickets.map(t=>({name:t.attendee.name,ticketId:t.ticketId,seatNumber:t.seatNumber})), ticketType: pending.ticketType });
+        const grpQR = await generateQRCode(grpPayload).catch(()=>'');
+        const grpData = JSON.stringify(grpPayload);
+        existingUnpaid.tickets.forEach(t => { t.qrData = grpData; if(grpQR) t.qrCode = grpQR; });
+      } else {
+        for (let i = 0; i < existingUnpaid.tickets.length; i++) {
+          const t = existingUnpaid.tickets[i];
+          const qrP = buildQRPayload({ ticketId: t.ticketId, bookingRef: existingUnpaid.bookingRef, eventId: pending.eventId, paymentId: razorpay_payment_id, attendeeName: t.attendee.name, ticketType: pending.ticketType });
+          try { t.qrCode = await generateQRCode(qrP); t.qrData = JSON.stringify(qrP); } catch(e) { t.qrCode = ''; }
+        }
+      }
+      existingUnpaid.paymentStatus = 'paid';
+      existingUnpaid.paymentId     = razorpay_payment_id;
+      existingUnpaid.orderId       = razorpay_order_id;
+      existingUnpaid.signature     = razorpay_signature;
+      await existingUnpaid.save();
+      await Event.updateOne(
+        { _id: pending.eventId, 'ticketTypes.category': pending.ticketType },
+        { $inc: { 'ticketTypes.$.bookedSeats': pending.quantity } }
+      ).catch(()=>{});
+      if (pending.zone) {
+        await SeatMap.updateOne(
+          { event: pending.eventId, 'sections.name': pending.zone },
+          { $inc: { 'sections.$.bookedSeats': pending.quantity } }
+        ).catch(()=>{});
+      }
+      if (pending.couponCode) {
+        const Coupon = require('../models/Coupon');
+        await Coupon.findOneAndUpdate({ code: pending.couponCode }, { $inc: { usedCount: 1 } }).catch(()=>{});
+      }
+      delete req.session.pendingBooking;
+      req.session.save(() => {});
+      // Send success notifications (email + WhatsApp with QR tickets)
+      try {
+        const ev2 = await Event.findById(pending.eventId).lean();
+        const { sendWhatsAppTickets } = require('../utils/whatsappHelper');
+        if (req.user.email && ev2) sendBookingConfirmation({ to: req.user.email, name: req.user.firstName, booking: existingUnpaid, event: ev2 }).catch(()=>{});
+        if (req.user.phone && ev2) sendWhatsAppTickets({ phone: req.user.phone, name: req.user.firstName, booking: existingUnpaid, event: ev2 }).catch(()=>{});
+        console.log('📨 Success notifications sent (unpaid-upsert branch):', existingUnpaid.bookingRef);
+      } catch(ne) { console.warn('Notif err (branch3):', ne.message); }
+      return res.json({ success: true, bookingId: existingUnpaid._id, bookingRef: existingUnpaid.bookingRef });
     }
 
     // ── STEP 1: Build ticket stubs (QR generated after save, once bookingRef is known) ──
@@ -674,9 +747,48 @@ exports.getTicket = async (req, res) => {
 // ─────────────────────────────────────────────────────────────
 exports.getMyBookings = async (req, res) => {
   try {
-    const bookings = await Booking.find({ user: req.user._id })
+    const all = await Booking.find({ user: req.user._id })
       .populate('event')
       .sort({ createdAt: -1 });
+
+    // Build map: eventId → { paid: [], pending: [], failed: [] }
+    const byEvent = {};
+    const noEvent = []; // bookings where event was deleted
+    for (const b of all) {
+      const evId = b.event?._id?.toString();
+      if (!evId) { noEvent.push(b); continue; }
+      if (!byEvent[evId]) byEvent[evId] = { paid: [], pending: [], failed: [] };
+      const status = b.paymentStatus;
+      if (status === 'paid') byEvent[evId].paid.push(b);
+      else if (status === 'pending') byEvent[evId].pending.push(b);
+      else byEvent[evId].failed.push(b);
+    }
+
+    const bookings = [];
+
+    for (const evId of Object.keys(byEvent)) {
+      const group = byEvent[evId];
+
+      if (group.paid.length > 0) {
+        // Show only the latest paid booking for this event — suppress ALL pending/failed
+        const latest = group.paid.sort((a,b) => new Date(b.createdAt)-new Date(a.createdAt))[0];
+        bookings.push(latest);
+      } else if (group.pending.length > 0) {
+        // No paid — show only the latest pending (1 max), no failed alongside it
+        const latest = group.pending.sort((a,b) => new Date(b.createdAt)-new Date(a.createdAt))[0];
+        bookings.push(latest);
+      } else if (group.failed.length > 0) {
+        // Only failed exist — show only the latest one
+        const latest = group.failed.sort((a,b) => new Date(b.createdAt)-new Date(a.createdAt))[0];
+        bookings.push(latest);
+      }
+    }
+
+    // Add any orphaned bookings (event deleted)
+    for (const b of noEvent) bookings.push(b);
+
+    // Sort by createdAt desc
+    bookings.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
     res.render('pages/my-bookings', {
       title:    'My Tickets — MEE',

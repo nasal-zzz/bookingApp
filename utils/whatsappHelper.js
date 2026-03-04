@@ -147,7 +147,6 @@ Your QR passes are attached below 👇
   }
 };
 
-module.exports = { sendWhatsAppTickets };
 
 // ── WhatsApp: Pending payment reminder ──
 const sendWhatsAppPending = async ({ phone, name, booking, event }) => {
@@ -218,4 +217,5 @@ const sendWhatsAppPaymentFailed = async ({ phone, name, booking, event }) => {
   }
 };
 
-module.exports = { sendWhatsAppTickets, sendWhatsAppPending, sendWhatsAppPaymentFailed };
+const sendWhatsAppConfirmation = sendWhatsAppTickets; // alias used by bookingController
+module.exports = { sendWhatsAppTickets, sendWhatsAppConfirmation, sendWhatsAppPending, sendWhatsAppPaymentFailed };

@@ -1,0 +1,89 @@
+/* ============================================================
+   THEME.CSS — Central design token file
+   Change colors, accents, backgrounds here to retheme the
+   entire site. Every other CSS file reads from these variables.
+   ============================================================ */
+
+:root {
+  /* ── Brand Colors ── */
+  --accent:         #6A0DAD;          /* primary purple */
+  --accent-hover:   #7d1ac7;
+  --accent-dim:     rgba(106,13,173,0.15);
+  --accent-border:  rgba(106,13,173,0.3);
+  --accent-glow:    rgba(106,13,173,0.4);
+
+  /* ── Backgrounds ── */
+  --bg:             #0B0B0F;          /* page background */
+  --surface:        #14141C;          /* card/panel background */
+  --surface2:       #1a1a24;          /* elevated surface */
+  --overlay:        rgba(8,8,14,0.92);
+
+  /* ── Text ── */
+  --text:           #FFFFFF;
+  --muted:          #B3B3B3;
+  --muted2:         #666;
+  --placeholder:    #555;
+
+  /* ── Borders ── */
+  --border:         rgba(255,255,255,0.08);
+  --border-hover:   rgba(255,255,255,0.2);
+
+  /* ── Status Colors ── */
+  --success:        #00FF88;
+  --success-dim:    rgba(0,255,136,0.1);
+  --error:          #FF4444;
+  --error-dim:      rgba(255,68,68,0.1);
+  --warning:        #f5c842;
+  --warning-dim:    rgba(245,200,66,0.1);
+  --info:           #9D4EDD;
+  --info-dim:       rgba(157,78,221,0.1);
+
+  /* ── Admin Accent (slightly different from user side) ── */
+  --admin-accent:   #6A0DAD;
+  --sa-accent:      #9D4EDD;          /* superadmin purple */
+
+  /* ── Elevation shadows ── */
+  --shadow-sm:      0 4px 16px rgba(0,0,0,0.4);
+  --shadow-md:      0 20px 60px rgba(0,0,0,0.5);
+  --shadow-glow:    0 0 40px rgba(106,13,173,0.3);
+
+  /* ── Border radius ── */
+  --radius-sm:      6px;
+  --radius-md:      10px;
+  --radius-lg:      14px;
+  --radius-pill:    999px;
+
+  /* ── Transitions ── */
+  --transition:     0.18s ease;
+
+  /* ── Z-indices ── */
+  --z-overlay:      100;
+  --z-modal:        200;
+  --z-toast:        9999;
+}
+
+/* ── ALTERNATE THEMES ──
+   Uncomment one block below to switch the entire site theme.
+
+   [NEON GREEN THEME]
+:root {
+  --accent: #00FF88; --accent-hover: #00e07a; --accent-dim: rgba(0,255,136,0.12);
+  --accent-border: rgba(0,255,136,0.3); --accent-glow: rgba(0,255,136,0.35);
+  --bg: #060D08; --surface: #0d1a10; --surface2: #142016;
+}
+
+   [ELECTRIC BLUE THEME]
+:root {
+  --accent: #0D6EFD; --accent-hover: #1a7aff; --accent-dim: rgba(13,110,253,0.15);
+  --accent-border: rgba(13,110,253,0.35); --accent-glow: rgba(13,110,253,0.4);
+  --bg: #08090F; --surface: #0f1020; --surface2: #151630;
+}
+
+   [GOLD THEME]
+:root {
+  --accent: #F5C842; --accent-hover: #f0bc30; --accent-dim: rgba(245,200,66,0.12);
+  --accent-border: rgba(245,200,66,0.35); --accent-glow: rgba(245,200,66,0.4);
+  --bg: #0C0900; --surface: #181200; --surface2: #201800;
+  --text: #fff; --muted: #BBA96E;
+}
+── */

@@ -6,8 +6,14 @@
 <body>
   <div class="orb-tl"></div><div class="orb-br"></div>
 
-  <!-- NAV -->
-  <%- include('../partials/navbar') %>
+  <!-- BOOKING NAV — minimal, back only -->
+  <nav style="background:rgba(11,11,15,0.92);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.07);padding:0 1.5rem;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;">
+    <a href="javascript:history.back()" style="display:flex;align-items:center;gap:0.4rem;color:#B3B3B3;text-decoration:none;font-size:0.8rem;font-family:'Space Mono',monospace;letter-spacing:1px;transition:color 0.2s;">
+      <i class="bi bi-arrow-left"></i> BACK
+    </a>
+    <span style="font-family:'Anton',sans-serif;font-size:1rem;letter-spacing:3px;color:#fff;"><span style="color:#6A0DAD;">M</span>EE</span>
+    <span style="font-family:'Space Mono',monospace;font-size:0.65rem;letter-spacing:2px;color:#B3B3B3;">STEP 1 OF 4</span>
+  </nav>
 
   <div style="max-width:1100px;margin:0 auto;padding:2.5rem 1.5rem 5rem;position:relative;z-index:1;">
 
@@ -86,6 +92,11 @@
                     <span style="color:var(--muted);font-size:0.72rem;"><%= avail %> seats left</span>
                   <% } %>
                 </div>
+                <% if (!isSoldOut && ttype.comboOfferMinQty > 0 && ttype.comboOfferDiscount > 0) { %>
+                <div style="margin-top:0.4rem;font-size:0.6rem;color:#f5c842;font-family:var(--font-mono);background:rgba(245,200,66,0.08);border:1px solid rgba(245,200,66,0.2);border-radius:4px;padding:0.15rem 0.45rem;text-align:center;">
+                  🎯 Buy <%= ttype.comboOfferMinQty %>+ → ₹<%= ttype.comboOfferDiscount %> off
+                </div>
+                <% } %>
                 <% if (isSoldOut) { %>
                   <div style="position:absolute;inset:0;background:rgba(8,8,14,0.65);border-radius:10px;pointer-events:none;"></div>
                 <% } %>
@@ -157,6 +168,9 @@
               </div>
               <div class="coupon-success" id="couponSuccess"><i class="bi bi-check-circle-fill"></i><span id="couponMsg"></span></div>
 
+              <!-- Combo offer banner (auto-shown by JS) -->
+              <div id="comboOfferBanner" style="display:none;align-items:center;gap:0.6rem;border:1px solid;border-radius:7px;padding:0.7rem 1rem;margin-bottom:1rem;font-size:0.78rem;font-weight:600;"></div>
+
               <!-- Seats warning -->
               <div style="display:flex;align-items:center;gap:0.6rem;background:rgba(255,92,92,0.07);border:1px solid rgba(255,92,92,0.2);border-radius:6px;padding:0.8rem 1rem;margin-bottom:1.2rem;font-size:0.78rem;color:var(--muted);">
                 <i class="bi bi-exclamation-triangle-fill" style="color:var(--error);flex-shrink:0;"></i>
@@ -189,7 +203,7 @@
       <div style="font-size:0.7rem;color:var(--muted);font-family:var(--font-mono);letter-spacing:1px;">TOTAL PAYABLE</div>
       <div style="font-family:var(--font-display);font-size:1.8rem;color:var(--accent);letter-spacing:1px;" id="mobileTotalAmt">—</div>
     </div>
-    <!-- <button class="btn-pay-mobile" onclick="proceedToPayment()"><i class="bi bi-lock-fill"></i> Pay Now</button> -->
+    <button class="btn-pay-mobile" onclick="proceedToPayment()"><i class="bi bi-lock-fill"></i> Pay Now</button>
   </div>
 
   <%- include('../partials/scripts') %>
@@ -245,6 +259,7 @@
     let couponApplied = false;
     let couponCode = null;
     const MAX_QTY = 5;
+    let comboOfferDiscount = 0; // auto-applied combo offer discount
 
     // ── Ticket type selection ──
     function selectTier(card) {
@@ -259,9 +274,15 @@
       if (inp) inp.checked = true;
       const val = inp ? inp.value : '';
       const tt = EVENT_DATA.ticketTypes.find(t => t.category === val);
-      if (tt) { pricePerTicket = tt.price; selectedTypeName = tt.category; }
+      if (tt) {
+        pricePerTicket = tt.price;
+        selectedTypeName = tt.category;
+        // Reset combo offer when tier changes
+        comboOfferDiscount = 0;
+      }
       document.getElementById('sumType').textContent = selectedTypeName;
       document.getElementById('sumPriceEach').textContent = '₹' + pricePerTicket.toLocaleString('en-IN');
+      updateComboOffer();
       updateSummary();
     }
 
@@ -277,7 +298,7 @@
       document.getElementById('qtyDisplay').textContent = qty;
       document.getElementById('qtyMinus').disabled = qty <= 1;
       document.getElementById('qtyPlus').disabled = qty >= MAX_QTY;
-      updateChips(); updateAttendeeForms(); updateSummary();
+      updateChips(); updateAttendeeForms(); updateComboOffer(); updateSummary();
     }
 
     function updateChips() {
@@ -312,8 +333,8 @@
           </div>
           <div>
             <label class="form-label-custom">Age *</label>
-            <input type="number" class="form-input" id="age-${num}" placeholder="25" min="1" max="100" inputmode="numeric"/>
-            <div class="field-error" id="ageErr-${num}"><i class="bi bi-exclamation-circle"></i>Enter a valid Age</div>
+            <input type="number" class="form-input" id="age-${num}" placeholder="25" min="18" max="65" inputmode="numeric"/>
+            <div class="field-error" id="ageErr-${num}"><i class="bi bi-exclamation-circle"></i> Must be 18+</div>
           </div>
           ${isFirst ? `
           <div>
@@ -332,18 +353,53 @@
       return d;
     }
 
+    // ── Combo Offer auto-apply ──
+    function updateComboOffer() {
+      const tt = EVENT_DATA.ticketTypes.find(t => t.category === selectedTypeName);
+      const bannerEl = document.getElementById('comboOfferBanner');
+      if (tt && tt.comboOfferMinQty > 0 && tt.comboOfferDiscount > 0) {
+        if (qty >= tt.comboOfferMinQty) {
+          comboOfferDiscount = tt.comboOfferDiscount;
+          if (bannerEl) {
+            bannerEl.innerHTML = `<i class="bi bi-gift-fill" style="color:#f5c842;"></i> 🎉 Combo offer applied! ₹${tt.comboOfferDiscount} off for buying ${tt.comboOfferMinQty}+ tickets`;
+            bannerEl.style.display = 'flex';
+            bannerEl.style.background = 'rgba(245,200,66,0.08)';
+            bannerEl.style.borderColor = 'rgba(245,200,66,0.3)';
+            bannerEl.style.color = '#f5c842';
+          }
+        } else {
+          comboOfferDiscount = 0;
+          if (bannerEl) {
+            bannerEl.innerHTML = `<i class="bi bi-gift"></i> Add ${tt.comboOfferMinQty - qty} more ticket${tt.comboOfferMinQty - qty > 1 ? 's' : ''} to get ₹${tt.comboOfferDiscount} combo discount!`;
+            bannerEl.style.display = 'flex';
+            bannerEl.style.background = 'rgba(157,78,221,0.06)';
+            bannerEl.style.borderColor = 'rgba(157,78,221,0.2)';
+            bannerEl.style.color = '#9D4EDD';
+          }
+        }
+      } else {
+        comboOfferDiscount = 0;
+        if (bannerEl) bannerEl.style.display = 'none';
+      }
+    }
+
     // ── Summary ──
     function updateSummary() {
       const sub = qty * pricePerTicket;
-      const disc = couponApplied ? discountAmount : 0;
+      const disc = couponApplied ? discountAmount : comboOfferDiscount;
       const total = sub - disc + CONV_FEE;
       document.getElementById('sumQty').textContent = '× ' + qty;
       document.getElementById('sumSubtotal').textContent = '₹' + sub.toLocaleString('en-IN');
       document.getElementById('sumTotal').textContent = '₹' + total.toLocaleString('en-IN');
       document.getElementById('qtyTotalPrice').textContent = '₹' + sub.toLocaleString('en-IN');
       if (document.getElementById('mobileTotalAmt')) document.getElementById('mobileTotalAmt').textContent = '₹' + total.toLocaleString('en-IN');
-      if (couponApplied) { document.getElementById('discountRow').style.display='flex'; document.getElementById('sumDiscount').textContent='-₹'+disc.toLocaleString('en-IN'); }
-      else document.getElementById('discountRow').style.display='none';
+      const anyDiscount = couponApplied || comboOfferDiscount > 0;
+      if (anyDiscount) {
+        document.getElementById('discountRow').style.display='flex';
+        document.getElementById('sumDiscount').textContent='-₹'+disc.toLocaleString('en-IN');
+      } else {
+        document.getElementById('discountRow').style.display='none';
+      }
       return total;
     }
 
@@ -403,7 +459,7 @@
         // Launch Razorpay
         const rzp = new Razorpay({
           key: data.key, amount: data.amount, currency: data.currency,
-          name: 'Melattur Entertinment Events', description: selectedTypeName + ' × ' + qty,
+          name: 'Melattur Entertainment Events', description: selectedTypeName + ' × ' + qty,
           order_id: data.orderId,
           prefill: data.prefill,
           theme: { color: '#6A0DAD', backdrop_color: '#0B0B0F' },

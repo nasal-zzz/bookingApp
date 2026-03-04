@@ -8,15 +8,19 @@
   <style>
     *{box-sizing:border-box;margin:0;padding:0;}
     body{background:#0B0B0F;color:#FFFFFF;font-family:'Outfit',sans-serif;min-height:100vh;}
-    nav{padding:1rem 2rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.08);background:#14141C;position:sticky;top:0;z-index:100;}
-    .logo{font-family:'Anton',sans-serif;font-size:1.3rem;letter-spacing:3px;color:#fff;text-decoration:none;}
-    .logo span{color:#6A0DAD;}
-    .nav-links{display:flex;gap:1rem;align-items:center;}
-    .nav-links a{color:#B3B3B3;text-decoration:none;font-size:0.82rem;padding:0.4rem 0.8rem;border-radius:4px;transition:all 0.2s;}
-    .nav-links a:hover{color:#fff;background:rgba(255,255,255,0.05);}
-    .btn-danger{background:rgba(255,68,68,0.1);color:#FF4444;border:1px solid rgba(255,68,68,0.2);padding:0.4rem 1rem;border-radius:4px;text-decoration:none;font-size:0.82rem;}
-
-    .container{max-width:960px;margin:0 auto;padding:2.5rem 1.5rem;}
+    /* Admin layout */
+    :root{--bg:#0B0B0F;--surface:#14141C;--card:#14141C;--border:rgba(255,255,255,0.08);--accent:#6A0DAD;--accent-dim:rgba(106,13,173,0.15);--text:#FFFFFF;--muted:#B3B3B3;--error:#FF4444;--success:#00FF88;}
+    .admin-layout{display:grid;grid-template-columns:220px 1fr;min-height:100vh;}
+    .sidebar{background:var(--surface);border-right:1px solid var(--border);padding:1.5rem 1rem;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:0.3rem;z-index:10;overflow-y:auto;}
+    .s-logo{display:block;padding:0 0.5rem 1rem;border-bottom:1px solid var(--border);margin-bottom:0.5rem;}
+    .s-section{font-family:'Space Mono',monospace;font-size:0.48rem;letter-spacing:2px;color:rgba(255,255,255,0.3);text-transform:uppercase;padding:0.6rem 0.8rem 0.2rem;}
+    .s-link{display:flex;align-items:center;gap:0.7rem;padding:0.65rem 0.8rem;color:var(--muted);text-decoration:none;border-radius:6px;font-size:0.85rem;transition:all 0.15s;border:1px solid transparent;}
+    .s-link:hover,.s-link.active{background:rgba(106,13,173,0.07);border-color:rgba(106,13,173,0.15);color:#fff;}
+    .s-link i{color:var(--accent);width:18px;}
+    .s-logout{margin-top:auto;display:flex;align-items:center;gap:0.7rem;padding:0.65rem 0.8rem;color:var(--error);text-decoration:none;border-radius:6px;font-size:0.85rem;border:1px solid transparent;transition:all 0.15s;}
+    .s-logout:hover{background:rgba(255,92,92,0.08);border-color:rgba(255,92,92,0.2);}
+    .main{padding:2rem;overflow-x:hidden;position:relative;z-index:1;}
+    .container{max-width:900px;}
     .page-title{font-family:'Anton',sans-serif;font-size:2rem;letter-spacing:2px;color:#fff;margin-bottom:0.4rem;}
     .page-sub{color:#B3B3B3;font-size:0.88rem;margin-bottom:2.5rem;}
 
@@ -37,6 +41,10 @@
     .field-input:focus{border-color:#6A0DAD;}
     textarea.field-input{resize:vertical;min-height:90px;}
     select.field-input{cursor:pointer;}
+    .field-input.is-invalid{border-color:#FF4444 !important;background:rgba(255,68,68,0.04);}
+    .field-input.is-valid{border-color:#00FF88 !important;}
+    .field-error{font-size:0.72rem;color:#FF4444;margin-top:0.3rem;display:none;font-family:'Space Mono',monospace;}
+    .field-error.show{display:block;}
 
     /* Banner upload areas */
     .banner-upload{border:2px dashed rgba(255,255,255,0.12);border-radius:10px;padding:1.5rem;text-align:center;cursor:pointer;transition:border-color 0.2s;position:relative;background:#0B0B0F;}
@@ -124,30 +132,32 @@
     .btn-save{padding:0.9rem 2.5rem;background:#6A0DAD;color:#fff;border:none;border-radius:8px;font-family:'Outfit',sans-serif;font-weight:700;font-size:0.95rem;cursor:pointer;letter-spacing:1px;transition:box-shadow 0.2s,transform 0.15s;}
     .btn-save:hover{box-shadow:0 0 30px rgba(106,13,173,0.5);transform:translateY(-1px);}
     .btn-cancel{padding:0.9rem 1.5rem;background:transparent;color:#B3B3B3;border:1px solid rgba(255,255,255,0.12);border-radius:8px;text-decoration:none;font-size:0.9rem;font-family:'Outfit',sans-serif;}
-    .toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:#14141C;border:1px solid rgba(106,13,173,0.4);border-radius:8px;padding:0.8rem 1.5rem;font-size:0.88rem;z-index:999;display:none;box-shadow:0 10px 40px rgba(0,0,0,0.5);}
-    .toast.ok{border-color:rgba(0,255,136,0.4);color:#00FF88;}
-    .toast.err{border-color:rgba(255,68,68,0.4);color:#FF4444;}
+    /* Toast notifications */
+    #toast-container{position:fixed;top:1.2rem;right:1.2rem;z-index:9999;display:flex;flex-direction:column;gap:0.6rem;pointer-events:none;max-width:340px;}
+    .ef-toast{pointer-events:all;background:rgba(20,20,28,0.97);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:0.85rem 1rem;display:flex;align-items:center;gap:0.7rem;box-shadow:0 20px 60px rgba(0,0,0,0.5);animation:efToastIn 0.3s ease both;font-size:0.88rem;}
+    .ef-toast.ok {border-left:3px solid #00FF88;color:#00FF88;}
+    .ef-toast.err{border-left:3px solid #FF4444;color:#FF4444;}
+    .ef-toast.warn{border-left:3px solid #f5c842;color:#f5c842;}
+    @keyframes efToastIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+    @keyframes efToastOut{from{opacity:1;transform:translateX(0)}to{opacity:0;transform:translateX(20px)}}
 
+    .btn-back-dash{display:inline-flex;align-items:center;gap:0.3rem;color:var(--muted);text-decoration:none;font-size:0.78rem;font-family:'Space Mono',monospace;letter-spacing:1px;padding:0.35rem 0.75rem;border:1px solid var(--border);border-radius:5px;background:rgba(255,255,255,0.03);margin-bottom:1.5rem;transition:all 0.15s;}
+    .btn-back-dash:hover{color:#fff;border-color:rgba(255,255,255,0.2);}
+    @media(max-width:900px){.admin-layout{grid-template-columns:1fr;}.sidebar{display:none;}}
     @media(max-width:640px){.field-row.cols-2,.field-row.cols-3{grid-template-columns:1fr;}.artist-row{grid-template-columns:60px 1fr;grid-template-rows:auto auto;}}
   </style>
 </head>
 <body>
-<nav>
-  <a href="/admin" class="logo"><img src="/img/mee-logo.png" alt="MEE" style="height:28px;width:auto;object-fit:contain;"/></a>
-  <div class="nav-links">
-    <a href="/admin"><i class="bi bi-speedometer2"></i> Dashboard</a>
-    <a href="/admin/bookings"><i class="bi bi-collection"></i> Bookings</a>
-    <a href="/admin/reviews"><i class="bi bi-star-fill"></i> Reviews</a>
-    <a href="/admin/banners"><i class="bi bi-image-fill"></i> Banners</a>
-    <a href="/admin/profile" class="btn-secondary" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#B3B3B3;padding:0.55rem 1.1rem;border-radius:6px;text-decoration:none;font-size:0.82rem;display:flex;align-items:center;gap:0.4rem;"><i class="bi bi-person-circle"></i> Profile</a>
-    <% if(locals.isSuperAdmin){ %><a href="/superadmin" style="background:rgba(157,78,221,0.1);border:1px solid rgba(157,78,221,0.25);color:#9D4EDD;padding:0.55rem 1.1rem;border-radius:6px;text-decoration:none;font-size:0.82rem;display:flex;align-items:center;gap:0.4rem;"><i class="bi bi-shield-lock-fill"></i> SuperAdmin</a><% } %>
-    <a href="/admin/logout" class="btn-danger"><i class="bi bi-box-arrow-right"></i> Logout</a>
-  </div>
-</nav>
-
-<div class="container">
-  <div class="page-title"><%= event ? 'EDIT EVENT' : 'NEW EVENT' %></div>
-  <div class="page-sub"><%= event ? 'Update event details below' : 'Fill in the details to create a new event' %></div>
+<div id="toast-container"></div>
+<div class="admin-layout">
+  <%- include('../partials/admin-sidebar', { activePage: 'new-event', isSuperAdmin: locals.isSuperAdmin }) %>
+  <%- include('../partials/admin-confirm') %>
+  
+  <main class="main">
+  <div class="container">
+    <a href="/admin" class="btn-back-dash"><i class="bi bi-arrow-left-short"></i> Dashboard</a>
+    <div class="page-title"><%= event ? 'EDIT EVENT' : 'NEW EVENT' %></div>
+    <div class="page-sub"><%= event ? 'Update event details below' : 'Fill in the details to create a new event' %></div>
 
   <form id="eventForm" method="POST" action="<%= event ? '/admin/events/' + event._id : '/admin/events' %>" onsubmit="return prepareSubmit()">
 
@@ -369,7 +379,6 @@
   </div>
 </div>
 
-<div class="toast" id="toast"></div>
 
 <script>
 // ── Existing event data for pre-population ──
@@ -391,7 +400,7 @@ function previewBanner(input, fieldId) {
   const file = input.files[0];
   if (!file) return;
   if (file.size > MAX_SIZE_BYTES) {
-    alert('Image exceeds 10 MB limit. Please choose a smaller file.');
+    showToast('Image exceeds 10 MB limit. Please choose a smaller file.', 'err');
     input.value = ''; return;
   }
   const reader = new FileReader();
@@ -490,7 +499,7 @@ function closeBannerCrop() {
 
 function openArtistCrop(file, idx) {
   if (!file) return;
-  if (file.size > MAX_SIZE_BYTES) { alert('Image exceeds 10 MB limit.'); return; }
+  if (file.size > MAX_SIZE_BYTES) { showToast('Image exceeds 10 MB limit.', 'err'); return; }
   document.getElementById('artistSizeWarn').style.display='none';
   acArtistIndex = idx;
   const reader=new FileReader();
@@ -787,18 +796,145 @@ function toggleCatCombo(id) {
 }
 
 // ── Submit — inject JSON fields ──
+// ── Inline validation helpers ──
+function markField(el, valid, msg) {
+  el.classList.toggle('is-invalid', !valid);
+  el.classList.toggle('is-valid', valid);
+  const errEl = el.parentElement.querySelector('.field-error');
+  if (errEl) { errEl.textContent = msg || ''; errEl.classList.toggle('show', !valid && !!msg); }
+  return valid;
+}
+
+function validateField(el) {
+  const val = el.value.trim();
+  const name = el.name || el.id || '';
+  if (el.required && !val) return markField(el, false, 'This field is required.');
+  if (el.type === 'date' && val) {
+    const d = new Date(val);
+    if (isNaN(d.getTime())) return markField(el, false, 'Enter a valid date.');
+    // For event date — block if in the past
+    if (name === 'date') {
+      const today = new Date(); today.setHours(0,0,0,0);
+      if (d < today) return markField(el, false, 'Event date cannot be in the past.');
+    }
+    return markField(el, true, '');
+  }
+  // Time fields (doorsOpen, endTime) — must be like "8:00 PM" or "20:00"
+  if ((name === 'doorsOpen' || name === 'endTime') && val) {
+    var timeRe = /^([0-9]{1,2}):([0-9]{2})\s*(AM|PM)?$/i;
+    if (!timeRe.test(val)) return markField(el, false, 'Use format like "8:00 PM" or "20:00".');
+    return markField(el, true, '');
+  }
+  if (el.type === 'url' && val) {
+    try { new URL(val); return markField(el, true, ''); }
+    catch(e) { return markField(el, false, 'Enter a valid URL (starting with https://).'); }
+  }
+  if (el.type === 'number' && val !== '') {
+    const n = Number(val);
+    if (isNaN(n)) return markField(el, false, 'Must be a number.');
+    if (el.min !== '' && n < Number(el.min)) return markField(el, false, 'Value too low (min ' + el.min + ').');
+    return markField(el, true, '');
+  }
+  if (val) return markField(el, true, '');
+  return markField(el, false, '');
+}
+
+// Attach live validation to all field-inputs on page load
+(function attachLiveValidation() {
+  document.querySelectorAll('.field-input').forEach(function(el) {
+    // Add error placeholder if not already there
+    if (!el.parentElement.querySelector('.field-error')) {
+      const e = document.createElement('div');
+      e.className = 'field-error';
+      el.parentElement.appendChild(e);
+    }
+    el.addEventListener('blur', function() { validateField(el); });
+    el.addEventListener('input', function() {
+      if (el.classList.contains('is-invalid')) validateField(el); // clear error on fix
+    });
+  });
+
+  // Date field: prevent past dates from being submitted without warning
+  const dateEl = document.querySelector('input[name="date"]');
+  if (dateEl) {
+    dateEl.addEventListener('change', function() {
+      const d = new Date(dateEl.value);
+      if (d < new Date()) {
+        markField(dateEl, false, '⚠ Date is in the past — are you sure?');
+        // Don't block — just warn
+        dateEl.classList.remove('is-invalid'); // keep orange-ish but allow save
+        dateEl.style.borderColor = '#f5c842';
+      } else {
+        markField(dateEl, true, '');
+        dateEl.style.borderColor = '';
+      }
+    });
+  }
+
+  // Time fields: validate HH:MM AM/PM format
+  ['doorsOpen','endTime'].forEach(function(fname) {
+    const el = document.querySelector('input[name="' + fname + '"]');
+    if (!el) return;
+    el.addEventListener('blur', function() {
+      const v = el.value.trim();
+      if (!v) { markField(el, false, ''); return; }
+      const ok = /^\d{1,2}:\d{2}\s*(AM|PM|am|pm)$/i.test(v);
+      markField(el, ok, ok ? '' : 'Format: 8:00 PM or 4:00 AM');
+    });
+  });
+})();
+
 function prepareSubmit() {
+  let valid = true;
+
+  // Validate required text fields
+  ['input[name="name"]', 'input[name="date"]', 'input[name="venue"]'].forEach(function(sel) {
+    const el = document.querySelector(sel);
+    if (el && !el.value.trim()) {
+      markField(el, false, 'This field is required.');
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      valid = false;
+    }
+  });
+
+  // Validate URL fields if filled
+  document.querySelectorAll('.field-input[type="url"]').forEach(function(el) {
+    if (el.value.trim()) {
+      try { new URL(el.value.trim()); markField(el, true, ''); }
+      catch(e) { markField(el, false, 'Enter a valid URL starting with https://'); valid = false; }
+    }
+  });
+
+  // Validate date is not empty
+  const dateEl = document.querySelector('input[name="date"]');
+  if (dateEl && dateEl.value) {
+    const d = new Date(dateEl.value);
+    if (isNaN(d.getTime())) { markField(dateEl, false, 'Enter a valid date.'); valid = false; }
+  }
+
+  if (!valid) {
+    showToast('Please fix the errors highlighted in red before saving.', 'err');
+    return false;
+  }
+
   // Artists JSON
   document.getElementById('artistsJson').value = JSON.stringify(artists);
 
   // Ticket types JSON — collect from all dynamic cat cards
   const tickets = [];
+  let ticketErrors = [];
   document.querySelectorAll('#ticketCatList > div').forEach(el => {
     const id = el.id;
-    const name = (document.getElementById(id+'_name')?.value||'').trim();
-    const price = parseInt(document.getElementById(id+'_price')?.value) || 0;
-    const totalSeats = parseInt(document.getElementById(id+'_totalSeats')?.value) || 0;
-    if (!name || price <= 0 || totalSeats <= 0) return; // skip incomplete
+    const nameEl = document.getElementById(id+'_name');
+    const priceEl = document.getElementById(id+'_price');
+    const seatsEl = document.getElementById(id+'_totalSeats');
+    const name = (nameEl?.value||'').trim();
+    const price = parseInt(priceEl?.value) || 0;
+    const totalSeats = parseInt(seatsEl?.value) || 0;
+    if (!name && !priceEl?.value && !seatsEl?.value) return; // totally empty row - skip
+    if (!name) { ticketErrors.push('Ticket category name is required.'); if(nameEl)nameEl.classList.add('is-invalid'); return; }
+    if (price <= 0) { ticketErrors.push('Price must be greater than 0 for "' + name + '".'); if(priceEl)priceEl.classList.add('is-invalid'); return; }
+    if (totalSeats <= 0) { ticketErrors.push('Total seats must be greater than 0 for "' + name + '".'); if(seatsEl)seatsEl.classList.add('is-invalid'); return; }
     const color = document.getElementById(id+'_color')?.value || '#6A0DAD';
     const ageLimit = parseInt(document.getElementById(id+'_ageLimit')?.value) || 0;
     const ticketType = document.getElementById(id+'_ticketType')?.value || 'single';
@@ -817,6 +953,11 @@ function prepareSubmit() {
     });
   });
 
+  if (ticketErrors.length > 0) {
+    showToast(ticketErrors[0], 'err');
+    return false;
+  }
+
   if (tickets.length === 0) {
     showToast('Add at least one ticket category with name, price and seats.', 'err');
     return false;
@@ -826,16 +967,78 @@ function prepareSubmit() {
   return true;
 }
 
-function showToast(msg, type = 'ok') {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className   = 'toast ' + type;
-  t.style.display = 'block';
-  setTimeout(() => { t.style.display = 'none'; }, 3500);
+function showToast(msg, type) {
+  type = type || 'ok';
+  var container = document.getElementById('toast-container');
+  var icons = { ok: '✅', err: '❌', warn: '⚠️' };
+  var el = document.createElement('div');
+  el.className = 'ef-toast ' + type;
+  el.innerHTML = '<span>' + (icons[type]||'ℹ️') + '</span><span>' + msg + '</span>';
+  container.appendChild(el);
+  var timer = setTimeout(function() {
+    el.style.animation = 'efToastOut 0.3s ease forwards';
+    setTimeout(function() { if(el.parentNode) el.parentNode.removeChild(el); }, 300);
+  }, 4000);
+  el.addEventListener('click', function() {
+    clearTimeout(timer);
+    el.style.animation = 'efToastOut 0.3s ease forwards';
+    setTimeout(function() { if(el.parentNode) el.parentNode.removeChild(el); }, 300);
+  });
 }
 
 // Init
 renderArtists();
+
+// ── UNSAVED CHANGES GUARD ──
+var _formDirty = false;
+var _formSubmitting = false;
+
+// Mark dirty on any input change
+document.querySelectorAll('#eventForm input, #eventForm textarea, #eventForm select').forEach(function(el) {
+  el.addEventListener('change', function() { _formDirty = true; });
+  el.addEventListener('input',  function() { _formDirty = true; });
+});
+
+// Intercept submit — clear dirty flag so we don't warn on save
+document.getElementById('eventForm').addEventListener('submit', function() {
+  _formSubmitting = true;
+  _formDirty = false;
+});
+
+// Browser back / tab close
+window.addEventListener('beforeunload', function(e) {
+  if (_formDirty && !_formSubmitting) {
+    e.preventDefault();
+    e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+    return e.returnValue;
+  }
+});
+
+// Cancel button — show custom confirm modal instead of browser default
+document.querySelector('.btn-cancel').addEventListener('click', function(e) {
+  if (!_formDirty) return; // no changes, allow navigation
+  e.preventDefault();
+  document.getElementById('leaveConfirmModal').style.display = 'flex';
+});
+function _confirmLeave()  { _formDirty = false; window.location.href = '/admin'; }
+function _cancelLeave()   { document.getElementById('leaveConfirmModal').style.display = 'none'; }
 </script>
+
+<!-- Leave Confirm Modal -->
+<div id="leaveConfirmModal" style="display:none;position:fixed;inset:0;background:rgba(8,8,14,0.88);backdrop-filter:blur(8px);z-index:9999;align-items:center;justify-content:center;padding:1rem;">
+  <div style="background:#14141C;border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:2rem;max-width:400px;width:100%;text-align:center;animation:slideUp 0.25s ease both;">
+    <div style="font-size:2rem;margin-bottom:0.8rem;">⚠️</div>
+    <div style="font-family:'Anton',sans-serif;font-size:1.4rem;letter-spacing:2px;color:#fff;margin-bottom:0.6rem;">UNSAVED CHANGES</div>
+    <p style="font-size:0.88rem;color:#B3B3B3;line-height:1.6;margin-bottom:1.5rem;">You have unsaved changes on this form. If you leave now, all changes will be lost.</p>
+    <div style="display:flex;gap:0.8rem;justify-content:center;">
+      <button onclick="_cancelLeave()" style="padding:0.75rem 1.5rem;background:transparent;border:1px solid rgba(255,255,255,0.15);border-radius:7px;color:#B3B3B3;font-family:'Outfit',sans-serif;font-size:0.88rem;cursor:pointer;">Stay &amp; Keep Editing</button>
+      <button onclick="_confirmLeave()" style="padding:0.75rem 1.5rem;background:#FF4444;border:none;border-radius:7px;color:#fff;font-family:'Outfit',sans-serif;font-weight:700;font-size:0.88rem;cursor:pointer;">Leave Without Saving</button>
+    </div>
+  </div>
+</div>
+  </div><!-- /container -->
+  </main>
+</div><!-- /admin-layout -->
+  <%- include('../partials/admin-confirm') %>
 </body>
 </html>

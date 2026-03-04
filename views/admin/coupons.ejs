@@ -60,29 +60,15 @@
     .badge-off{background:rgba(255,68,68,0.08);border:1px solid rgba(255,68,68,0.3);color:var(--error);font-size:0.55rem;padding:0.1rem 0.45rem;border-radius:10px;font-family:'Space Mono',monospace;}
     .empty{text-align:center;padding:3rem;color:#555;}
     @media(max-width:900px){.layout{grid-template-columns:1fr;}.sidebar{display:none;}.f-grid{grid-template-columns:1fr;}.f-grid.cols3,.f-grid.cols4{grid-template-columns:1fr 1fr;}}
+    .btn-back-dash{display:inline-flex;align-items:center;gap:0.3rem;color:var(--muted);text-decoration:none;font-size:0.78rem;font-family:'Space Mono',monospace;letter-spacing:1px;padding:0.35rem 0.75rem;border:1px solid var(--border);border-radius:5px;background:rgba(255,255,255,0.03);margin-bottom:1.5rem;transition:all 0.15s;}
+    .btn-back-dash:hover{color:#fff;border-color:rgba(255,255,255,0.2);background:rgba(255,255,255,0.06);}
   </style>
 </head>
 <body>
 <div class="layout">
-  <aside class="sidebar">
-    <a href="/admin" class="s-logo"><img src="/img/mee-logo.png" alt="MEE" style="height:28px;width:auto;object-fit:contain;"/></a>
-    <div class="s-section">Main</div>
-    <a href="/admin" class="s-link"><i class="bi bi-speedometer2"></i> Dashboard</a>
-    <a href="/admin/bookings" class="s-link"><i class="bi bi-ticket-perforated-fill"></i> Bookings</a>
-    <a href="/admin/participants" class="s-link"><i class="bi bi-person-check-fill"></i> Participants</a>
-    <div class="s-section">Events</div>
-    <a href="/admin/events/new" class="s-link"><i class="bi bi-plus-circle-fill"></i> New Event</a>
-    <a href="/admin/reviews"      class="s-link"><i class="bi bi-star-fill"></i> Reviews</a>
-    <a href="/admin/banners"       class="s-link"><i class="bi bi-image-fill"></i> Banners</a>
-    <a href="/" class="s-link" target="_blank"><i class="bi bi-box-arrow-up-right"></i> View Site</a>
-    <a href="/admin/staff" class="s-link"><i class="bi bi-people-fill"></i> Staff</a>
-        <a href="/admin/profile" class="s-link"><i class="bi bi-person-circle"></i> My Profile</a>
-    <% if(locals.isSuperAdmin){ %>
-    <a href="/superadmin" class="s-link" style="color:#9D4EDD;border-color:rgba(157,78,221,0.2);background:rgba(157,78,221,0.06);"><i class="bi bi-shield-lock-fill" style="color:#9D4EDD;"></i> SuperAdmin Panel</a>
-    <% } %>
-    <a href="/admin/logout" class="s-logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
-  </aside>
-  <main class="main">
+    <%- include('../partials/admin-sidebar', { activePage: 'coupons' }) %>
+    <%- include('../partials/admin-confirm') %>
+    <main class="main">
     <h1 class="page-title">COUPONS</h1>
     <p class="page-sub">Create discount codes — fixed ₹ or percentage off. Used at checkout.</p>
 
@@ -152,17 +138,125 @@
     <% } %>
   </main>
 </div>
+<style>
+.f-inp.is-invalid{border-color:#FF4444 !important;background:rgba(255,68,68,0.04);}
+.f-inp.is-valid{border-color:#00FF88 !important;}
+.f-err{font-size:0.7rem;color:#FF4444;margin-top:0.25rem;font-family:'Space Mono',monospace;display:none;}
+.f-err.show{display:block;}
+</style>
 <script>
+function cpMark(id, valid, msg) {
+  const el = document.getElementById(id);
+  const errEl = el && el.parentElement.querySelector('.f-err');
+  if (!el) return valid;
+  el.classList.toggle('is-invalid', !valid);
+  el.classList.toggle('is-valid', valid && !!el.value.trim());
+  if (errEl) { errEl.textContent = msg||''; errEl.classList.toggle('show', !valid && !!msg); }
+  return valid;
+}
+
+// Add error divs and live validation on load
+document.addEventListener('DOMContentLoaded', function() {
+  ['cpCode','cpValue','cpMinOrder','cpMaxUses','cpFrom','cpUntil'].forEach(function(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (!el.parentElement.querySelector('.f-err')) {
+      const e = document.createElement('div'); e.className = 'f-err';
+      el.parentElement.appendChild(e);
+    }
+    el.addEventListener('input', function() {
+      if (el.classList.contains('is-invalid')) cpValidateSingle(id);
+    });
+    el.addEventListener('blur', function() { cpValidateSingle(id); });
+  });
+
+  // Date cross-validation: validUntil must be after validFrom
+  document.getElementById('cpUntil').addEventListener('change', validateDateRange);
+  document.getElementById('cpFrom').addEventListener('change', validateDateRange);
+});
+
+function validateDateRange() {
+  const from = document.getElementById('cpFrom').value;
+  const until = document.getElementById('cpUntil').value;
+  if (from && until && until < from) {
+    cpMark('cpUntil', false, 'Valid Until must be after Valid From.');
+    return false;
+  }
+  // Check if until is in the past
+  if (until) {
+    const d = new Date(until); d.setHours(23,59,59,999);
+    if (d < new Date()) {
+      cpMark('cpUntil', false, 'Expiry date is in the past.');
+      return false;
+    }
+    cpMark('cpUntil', true, '');
+  }
+  return true;
+}
+
+function cpValidateSingle(id) {
+  const el = document.getElementById(id);
+  if (!el) return true;
+  const val = el.value.trim();
+  if (id === 'cpCode') {
+    if (!val) return cpMark(id, false, 'Coupon code is required.');
+    if (!/^[A-Z0-9_-]+$/.test(val.toUpperCase())) return cpMark(id, false, 'Only letters, numbers, _ and - allowed.');
+    if (val.length < 3) return cpMark(id, false, 'Minimum 3 characters.');
+    return cpMark(id, true, '');
+  }
+  if (id === 'cpValue') {
+    if (!val) return cpMark(id, false, 'Discount value is required.');
+    if (isNaN(val) || Number(val) <= 0) return cpMark(id, false, 'Must be a positive number.');
+    const type = document.getElementById('cpType').value;
+    if (type === 'percent' && Number(val) > 100) return cpMark(id, false, 'Percentage cannot exceed 100.');
+    return cpMark(id, true, '');
+  }
+  if (id === 'cpMinOrder' || id === 'cpMaxUses') {
+    if (val && (isNaN(val) || Number(val) < 0)) return cpMark(id, false, 'Must be 0 or a positive number.');
+    if (val) cpMark(id, true, '');
+    return true;
+  }
+  if (id === 'cpFrom' || id === 'cpUntil') {
+    validateDateRange();
+    return true;
+  }
+  return true;
+}
+
+// Re-validate value when type changes (percent vs fixed)
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('cpType').addEventListener('change', function() {
+    if (document.getElementById('cpValue').value) cpValidateSingle('cpValue');
+  });
+});
+
 async function createCoupon(){
   const code=document.getElementById('cpCode').value.trim();
   const type=document.getElementById('cpType').value;
   const value=document.getElementById('cpValue').value;
   const t=document.getElementById('cpToast');
-  if(!code||!value){t.textContent='Code and value are required.';t.className='toast err';setTimeout(()=>t.className='toast',4000);return;}
+
+  // Validate all fields before submitting
+  const v1 = cpValidateSingle('cpCode');
+  const v2 = cpValidateSingle('cpValue');
+  const vd = validateDateRange();
+  if (!v1 || !v2 || !vd) {
+    t.textContent='Please fix the errors above.';t.className='toast err';
+    setTimeout(()=>t.className='toast',4000);
+    return;
+  }
+
+  const minOrder = document.getElementById('cpMinOrder').value || 0;
+  const maxUses  = document.getElementById('cpMaxUses').value || 0;
+  if (minOrder && (isNaN(minOrder) || Number(minOrder) < 0)) {
+    t.textContent='Min order must be a positive number.';t.className='toast err';
+    setTimeout(()=>t.className='toast',4000); return;
+  }
+
   try{
     const res=await fetch('/admin/coupons',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({code,type,value,minOrder:document.getElementById('cpMinOrder').value||0,
-        maxUses:document.getElementById('cpMaxUses').value||0,
+      body:JSON.stringify({code,type,value,minOrder,
+        maxUses,
         validFrom:document.getElementById('cpFrom').value||null,
         validUntil:document.getElementById('cpUntil').value||null,
         description:document.getElementById('cpDesc').value})});

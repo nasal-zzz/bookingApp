@@ -1,150 +1,178 @@
-# 🎉 NightPass — Party Ticket Booking System
+# 🎉 MEE — Melattur Entertainment Events
 
-Full-stack Node.js + Express + MongoDB + EJS party ticket booking app with Razorpay payments, OTP verification, and QR code ticket generation.
+Full-stack Node.js + Express + MongoDB + EJS ticket booking platform with Razorpay payments, WhatsApp OTP, QR code tickets, seat-map builder, coupon system, and a full Admin + SuperAdmin panel.
+
+---
 
 ## 🚀 Quick Start
 
-### 1. Install dependencies
 ```bash
 npm install
+cp .env.example .env   # fill in all values
+npm run dev            # development (nodemon)
+npm start              # production
 ```
-
-### 2. Configure environment
-```bash
-cp .env.example .env
-# Edit .env with your real credentials
-```
-
-### 3. Seed the event into MongoDB
-```bash
-node scripts/seedEvent.js
-```
-
-### 4. Start the server
-```bash
-# Development (with auto-reload)
-npm run dev
-
-# Production
-npm start
-```
-
-App runs at: **http://localhost:3000**
+App runs at **http://localhost:3000**
 
 ---
 
 ## 📁 Project Structure
 
 ```
-nightpass/
-├── server.js               # Entry point
-├── config/
-│   └── db.js               # MongoDB connection
+MEE/
+├── server.js
+├── config/db.js
 ├── models/
-│   ├── User.js             # User schema
-│   ├── OTP.js              # OTP schema (auto-expires)
-│   ├── Event.js            # Event + ticket types
-│   └── Booking.js          # Booking + tickets + QR codes
+│   ├── User.js          Booking.js       Coupon.js
+│   ├── Event.js         Staff.js         ScanLog.js
+│   ├── Banner.js        Review.js        OTP.js
 ├── controllers/
-│   ├── authController.js   # Login, signup, OTP, Google
-│   └── bookingController.js# Booking, Razorpay, tickets
+│   ├── authController.js     bookingController.js     adminController.js
 ├── routes/
-│   ├── indexRoutes.js      # Home page
-│   ├── authRoutes.js       # /auth/*
-│   └── bookingRoutes.js    # /booking/*
-├── middleware/
-│   └── auth.js             # JWT auth, requireAuth guard
+│   ├── indexRoutes.js        authRoutes.js            bookingRoutes.js
+│   ├── userRoutes.js         adminRoutes.js           superadminRoutes.js
+│   └── staffRoutes.js
 ├── utils/
-│   ├── otpHelper.js        # OTP generate + Twilio send
-│   ├── qrHelper.js         # QR code generation
-│   └── emailHelper.js      # Nodemailer confirmation email
+│   ├── whatsappHelper.js     qrHelper.js     pdfHelper.js     emailHelper.js
 ├── views/
-│   ├── partials/           # head.ejs, navbar.ejs, scripts.ejs
-│   └── pages/              # index, login, signup, otp, booking, ticket, my-bookings, error
-├── public/
-│   └── css/main.css        # All shared styles
-└── scripts/
-    └── seedEvent.js        # Seed the Eclipse Dark Night event
+│   ├── partials/
+│   │   ├── head.ejs                  — meta + CSS (user side)
+│   │   ├── navbar.ejs                — main site nav
+│   │   ├── scripts.ejs               — Bootstrap JS + global scripts
+│   │   ├── admin-sidebar.ejs         ✅ Canonical admin sidebar (ONE place to edit)
+│   │   └── superadmin-sidebar.ejs    ✅ Canonical superadmin sidebar
+│   ├── pages/       admin/       superadmin/       staff/
+└── public/
+    ├── css/
+    │   ├── index.css       ← include ONLY this in HTML layouts
+    │   ├── theme.css       🎨 accent colors, shadows — change to retheme
+    │   ├── typography.css  🔤 fonts, --scale variable for global size
+    │   ├── layout.css      page structure, sidebar, nav
+    │   ├── components.css  buttons, forms, badges, toasts, tables
+    │   ├── admin.css       admin-only styles
+    │   └── user.css        user/public page styles
+    └── js/
+        ├── ui.js           showToast() + AdminValidator
+        └── lang.js         Malayalam/English toggle
 ```
 
 ---
 
 ## 🔑 Environment Variables (.env)
 
-| Variable | Description |
-|----------|-------------|
-| `MONGODB_URI` | MongoDB Atlas connection string |
-| `SESSION_SECRET` | Express session secret (random string) |
-| `JWT_SECRET` | JWT signing secret |
-| `TWILIO_ACCOUNT_SID` | Twilio Account SID |
-| `TWILIO_AUTH_TOKEN` | Twilio Auth Token |
-| `TWILIO_PHONE_NUMBER` | Your Twilio phone number |
-| `RAZORPAY_KEY_ID` | Razorpay Key ID (rzp_test_...) |
-| `RAZORPAY_KEY_SECRET` | Razorpay Key Secret |
-| `SMTP_USER` | Gmail address for sending emails |
-| `SMTP_PASS` | Gmail App Password |
-| `GOOGLE_CLIENT_ID` | Google OAuth Client ID |
-| `GOOGLE_CLIENT_SECRET` | Google OAuth Client Secret |
-| `APP_URL` | Your app URL (http://localhost:3000) |
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `MONGODB_URI` | MongoDB Atlas connection string | ✅ |
+| `SESSION_SECRET` | Random 32+ char string | ✅ |
+| `TWILIO_ACCOUNT_SID` | Twilio SID | ✅ |
+| `TWILIO_AUTH_TOKEN` | Twilio Auth Token | ✅ |
+| `TWILIO_WHATSAPP_NUMBER` | e.g. `whatsapp:+14155238886` | ✅ |
+| `RAZORPAY_KEY_ID` | `rzp_test_...` or `rzp_live_...` | ✅ |
+| `RAZORPAY_KEY_SECRET` | Razorpay key secret | ✅ |
+| `APP_URL` | Full app URL e.g. `http://localhost:3000` | ✅ |
+| `SMTP_USER` | Gmail address | Optional |
+| `SMTP_PASS` | Gmail App Password | Optional |
+| `GOOGLE_CLIENT_ID` | Google OAuth | Optional |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth | Optional |
+| `SUPER_ADMIN_USER` | SuperAdmin username (default: `superadmin`) | Optional |
+| `SUPER_ADMIN_PASS` | SuperAdmin password | Optional |
 
 ---
 
-## 🌊 User Flow
+## 👤 Booking Flow
 
 ```
-Home (/) → Book Tickets (/booking)
-  ↓ Not logged in?
-Login (/auth/login) or Signup (/auth/signup)
-  ↓ Phone OTP sent via Twilio
-Verify OTP (/auth/otp)
-  ↓ Verified → JWT issued
-Book Tickets (/booking)
-  ↓ Select type + quantity + attendee details
-Razorpay Checkout (popup)
-  ↓ Payment success → backend verifies signature
-Ticket Page (/booking/ticket/:id)
-  ↓ QR codes generated + PDF download + email sent
-My Bookings (/booking/my-bookings)
+Home → Event Detail → Seat Map (Step 1: zone/type)
+  → Booking Details (Step 2: attendee info + coupon)   ← minimal nav, back button only
+  → Razorpay Payment (Step 3)
+  → Ticket Page (Step 4: QR + PDF download)
+  → WhatsApp confirmation sent automatically
+```
+
+**My Bookings:**
+- Paid → View Ticket / Download PDF
+- Pending → Complete Payment (if event active + seats available)
+- Failed → Book Again / Remove
+- Empty → "Browse Events" → `/#events`
+
+---
+
+## 🛡 Admin Panel (`/admin`)
+
+Login with staff credentials. All pages have a **← Dashboard** back button.
+
+| Page | Notes |
+|------|-------|
+| Dashboard | Stats + quick actions |
+| Bookings | Filter by status, bulk WhatsApp reminders |
+| Participants | Registered attendees |
+| Entered Tickets | Real-time gate scan log |
+| Users by Event | All paid bookings per event |
+| New/Edit Event | **Unsaved-changes guard** — shows modal before leaving |
+| Reviews, Banners, Coupons, Staff, Profile | — |
+
+Sidebar is in **`views/partials/admin-sidebar.ejs`** — edit once, updates all pages.
+
+---
+
+## ⚡ SuperAdmin Panel (`/superadmin`)
+
+Credentials: `SUPER_ADMIN_USER` / `SUPER_ADMIN_PASS` in `.env`  
+Default: `superadmin` / `MEE@SuperAdmin2026`
+
+Sidebar is in **`views/partials/superadmin-sidebar.ejs`**.
+
+Pages: Dashboard · Staff & Admins · Coupons · Users by Event · Entered Tickets
+
+---
+
+## 📱 Staff QR Scanner (`/staff`)
+
+Mobile camera scanner — validates tickets, logs entry to `ScanLog`, supports group tickets.
+
+---
+
+## 🎨 Quick Theming
+
+```css
+/* public/css/theme.css — change accent color */
+--accent: #6A0DAD;
+
+/* public/css/typography.css — scale all text */
+--scale: 1;          /* 1.1 = 10% bigger everywhere */
+
+/* swap fonts */
+--font-display: 'Anton', sans-serif;
+--font-body:    'Outfit', sans-serif;
 ```
 
 ---
 
-## 💳 Razorpay Setup
+## 💳 Razorpay
 
-1. Create account at [razorpay.com](https://razorpay.com)
-2. Get your **Test Key ID** and **Test Key Secret** from Dashboard → Settings → API Keys
-3. Add both to `.env`
-4. For production, switch to Live keys and enable HTTPS
-
----
-
-## 📱 OTP via Twilio
-
-1. Sign up at [twilio.com](https://twilio.com)
-2. Get a phone number
-3. Add `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_PHONE_NUMBER` to `.env`
-4. In **development mode**, OTP is just printed to the terminal — no Twilio needed
+Duplicate booking prevention: 3-layer guard
+1. Frontend: 900ms delay on `ondismiss` + `_paymentCompleted` flag
+2. `savePending`: checks for existing paid booking before creating pending
+3. `verifyPayment`: checks by `paymentId` + upgrades pending→paid if exists
 
 ---
 
-## 🔒 Security Features
+## 📱 WhatsApp (Twilio)
 
-- JWT tokens stored in server-side sessions (not localStorage)
-- OTP rate-limited (5 requests per 15 minutes)
-- OTP auto-expires after 5 minutes (MongoDB TTL index)
-- Max 5 failed OTP attempts before lockout
-- Razorpay signature verified server-side before any booking is saved
-- Helmet.js for security headers
-- HTTPS cookie in production
+| Event | Message |
+|-------|---------|
+| Login/Signup | OTP code |
+| Booking confirmed | Text + QR image per ticket |
+| Payment pending | Reminder with retry link |
+| Payment failed | Failure notice |
+
+Dev mode (no Twilio): messages printed to terminal.
 
 ---
 
-## 📧 Email Confirmation
+## 🚑 Utility Routes
 
-After successful payment, a styled HTML email is sent containing:
-- Booking reference number
-- Event details
-- Attendee list with ticket IDs
-- Link to view/download QR tickets
-
-Configure `SMTP_USER` and `SMTP_PASS` (Gmail App Password) to enable.
+| Route | Method | Purpose |
+|-------|--------|---------|
+| `/admin/cleanup-duplicates` | POST | Remove duplicate pending/failed where paid exists |
+| `/superadmin/api/repair-qr` | POST | Fix bookings with `PENDING` bookingRef in QR |

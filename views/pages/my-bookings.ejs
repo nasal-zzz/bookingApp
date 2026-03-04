@@ -6,6 +6,7 @@
   <%- include('../partials/navbar') %>
 
   <div style="max-width:900px;margin:0 auto;padding:2.5rem 1.5rem 5rem;position:relative;z-index:1;">
+    <a href="/" style="display:inline-flex;align-items:center;gap:0.4rem;color:#B3B3B3;text-decoration:none;font-size:0.78rem;font-family:'Space Mono',monospace;letter-spacing:1px;padding:0.35rem 0.75rem;border:1px solid rgba(255,255,255,0.08);border-radius:5px;background:rgba(255,255,255,0.03);margin-bottom:1.2rem;transition:all 0.15s;"><i class="bi bi-house-fill"></i> Home</a>
     <p style="font-family:var(--font-mono);font-size:0.62rem;letter-spacing:3px;color:var(--accent);margin-bottom:0.5rem;">// your passes</p>
     <h1 style="font-family:var(--font-display);font-size:clamp(2rem,5vw,3.5rem);letter-spacing:2px;color:#fff;line-height:1;margin-bottom:2rem;">MY <span style="color:var(--muted);">TICKETS</span></h1>
 
@@ -14,7 +15,7 @@
         <div style="font-size:3rem;margin-bottom:1rem;">🎟</div>
         <h2 style="font-family:var(--font-display);letter-spacing:2px;color:#fff;margin-bottom:0.5rem;">NO BOOKINGS YET</h2>
         <p style="color:var(--muted);margin-bottom:2rem;">You haven't booked any tickets yet.</p>
-        <a href="/" style="background:var(--accent);color:#fff;padding:0.9rem 2rem;border-radius:6px;text-decoration:none;font-weight:700;letter-spacing:1px;">Book Now</a>
+        <a href="/#events" style="background:var(--accent);color:#fff;padding:0.9rem 2rem;border-radius:6px;text-decoration:none;font-weight:700;letter-spacing:1px;"><i class="bi bi-ticket-perforated-fill"></i> Browse Events</a>
       </div>
     <% } else { %>
     <div style="display:flex;flex-direction:column;gap:1rem;">
@@ -26,11 +27,9 @@
            const statusBg    = isPaid?'rgba(0,255,136,0.08)':(isPend?'rgba(245,200,66,0.08)':'rgba(255,68,68,0.08)');
            const statusBorder= isPaid?'rgba(0,255,136,0.3)':(isPend?'rgba(245,200,66,0.3)':'rgba(255,68,68,0.3)');
            const statusIcon  = isPaid?'check-circle-fill':(isPend?'clock-fill':'x-circle-fill');
-           const statusLbl   = booking.paymentStatus.toUpperCase();
-           // Check if event still has tickets (for pay now)
+           const statusLbl   = isPaid?'CONFIRMED':(isPend?'PAYMENT PENDING':'PAYMENT FAILED');
            const evtActive   = booking.event && booking.event.isActive;
-           const evtHasSeats = booking.event && booking.event.ticketTypes && booking.event.ticketTypes.some(t=>t.bookedSeats<t.totalSeats);
-           const canRetryPay = isPend && evtActive && evtHasSeats;  // Only pending gets Pay Now (not failed)
+           const evtHasSeats = booking.event && booking.event.ticketTypes && booking.event.ticketTypes.some(function(t){return t.bookedSeats<t.totalSeats;});
       %>
       <div data-booking="<%= booking._id %>" style="background:var(--card);border:1px solid rgba(255,255,255,0.07);border-radius:12px;overflow:hidden;">
         <!-- Status accent bar -->
@@ -59,22 +58,32 @@
               <div style="font-family:var(--font-display);font-size:1.4rem;color:var(--accent);letter-spacing:1px;">₹<%= booking.totalAmount.toLocaleString('en-IN') %></div>
               <div style="display:flex;gap:0.6rem;flex-wrap:wrap;justify-content:flex-end;">
                 <% if(isPaid){ %>
-                  <!-- View or Download toggle -->
                   <a href="/booking/success/<%= booking._id %>" style="display:flex;align-items:center;gap:0.4rem;background:rgba(0,255,136,0.08);border:1px solid rgba(0,255,136,0.25);color:#00FF88;padding:0.55rem 1rem;border-radius:6px;text-decoration:none;font-weight:700;font-size:0.78rem;white-space:nowrap;">
                     <i class="bi bi-eye-fill"></i> View Ticket
                   </a>
                   <button onclick="dlTicket('<%= booking._id %>')" style="display:flex;align-items:center;gap:0.4rem;background:var(--accent);border:none;color:#fff;padding:0.55rem 1rem;border-radius:6px;font-weight:700;font-size:0.78rem;white-space:nowrap;cursor:pointer;">
                     <i class="bi bi-download"></i> Download PDF
                   </button>
-                <% } else if(canRetryPay){ %>
-                  <a href="/booking/retry-payment/<%= booking._id %>" style="display:flex;align-items:center;gap:0.4rem;background:var(--accent);color:#fff;padding:0.55rem 1.1rem;border-radius:6px;text-decoration:none;font-weight:700;font-size:0.78rem;white-space:nowrap;box-shadow:0 0 18px rgba(106,13,173,0.22);">
-                    <i class="bi bi-credit-card-fill"></i> Pay Now
+                <% } else if(isPend){ %>
+                  <%# PENDING: show complete payment if event still active, else just remove %>
+                  <% if(evtActive && evtHasSeats){ %>
+                  <a href="/booking/retry-payment/<%= booking._id %>" style="display:flex;align-items:center;gap:0.4rem;background:rgba(245,200,66,0.1);border:1px solid rgba(245,200,66,0.3);color:#f5c842;padding:0.55rem 1rem;border-radius:6px;text-decoration:none;font-weight:700;font-size:0.78rem;white-space:nowrap;">
+                    <i class="bi bi-credit-card-fill"></i> Complete Payment
                   </a>
-                <% } else if(isPend||isFail){ %>
-                  <span style="font-size:0.72rem;color:#555;font-family:var(--font-mono);">Tickets unavailable</span>
-                <% } %>
-                <% if(isFail||isPend){ %>
-                 
+                  <% } %>
+                  <button onclick="deleteBooking('<%= booking._id %>')" style="display:flex;align-items:center;gap:0.4rem;background:rgba(255,68,68,0.06);border:1px solid rgba(255,68,68,0.2);color:#FF4444;padding:0.55rem 0.9rem;border-radius:6px;font-weight:700;font-size:0.78rem;white-space:nowrap;cursor:pointer;">
+                    <i class="bi bi-trash3-fill"></i> Remove
+                  </button>
+                <% } else { %>
+                  <%# FAILED: offer to book again from scratch, or remove %>
+                  <% if(evtActive){ %>
+                  <a href="/booking/seatmap/<%= booking.event._id %>" style="display:flex;align-items:center;gap:0.4rem;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:var(--muted);padding:0.55rem 1rem;border-radius:6px;text-decoration:none;font-weight:700;font-size:0.78rem;white-space:nowrap;">
+                    <i class="bi bi-arrow-clockwise"></i> Book Again
+                  </a>
+                  <% } %>
+                  <button onclick="deleteBooking('<%= booking._id %>')" style="display:flex;align-items:center;gap:0.4rem;background:rgba(255,68,68,0.06);border:1px solid rgba(255,68,68,0.2);color:#FF4444;padding:0.55rem 0.9rem;border-radius:6px;font-weight:700;font-size:0.78rem;white-space:nowrap;cursor:pointer;">
+                    <i class="bi bi-trash3-fill"></i> Remove
+                  </button>
                 <% } %>
               </div>
             </div>

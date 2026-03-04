@@ -46,23 +46,15 @@
     .empty{text-align:center;padding:4rem 1rem;color:#555;}
     .empty i{font-size:2.5rem;display:block;margin-bottom:0.8rem;}
     @media(max-width:768px){.admin-layout{grid-template-columns:1fr;}.sidebar{display:none;}.rev-row{grid-template-columns:1fr;}}
+    .btn-back-dash{display:inline-flex;align-items:center;gap:0.3rem;color:var(--muted);text-decoration:none;font-size:0.78rem;font-family:'Space Mono',monospace;letter-spacing:1px;padding:0.35rem 0.75rem;border:1px solid var(--border);border-radius:5px;background:rgba(255,255,255,0.03);margin-bottom:1.5rem;transition:all 0.15s;}
+    .btn-back-dash:hover{color:#fff;border-color:rgba(255,255,255,0.2);background:rgba(255,255,255,0.06);}
   </style>
 </head>
 <body>
 <div class="admin-layout">
-  <aside class="sidebar">
-    <a href="/admin" class="s-logo"><img src="/img/mee-logo.png" alt="MEE" style="height:28px;width:auto;object-fit:contain;"/></a>
-    <a href="/admin"            class="s-link"><i class="bi bi-speedometer2"></i> Dashboard</a>
-    <a href="/admin/events/new" class="s-link"><i class="bi bi-plus-circle-fill"></i> New Event</a>
-    <a href="/admin/bookings"   class="s-link"><i class="bi bi-ticket-perforated-fill"></i> Bookings</a>
-    <a href="/admin/reviews"    class="s-link active"><i class="bi bi-star-fill"></i> Reviews</a>
-        <a href="/admin/profile" class="s-link"><i class="bi bi-person-circle"></i> My Profile</a>
-    <% if(locals.isSuperAdmin){ %>
-    <a href="/superadmin" class="s-link" style="color:#9D4EDD;border-color:rgba(157,78,221,0.2);background:rgba(157,78,221,0.06);"><i class="bi bi-shield-lock-fill" style="color:#9D4EDD;"></i> SuperAdmin Panel</a>
-    <% } %>
-    <a href="/admin/logout" class="s-logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
-  </aside>
-  <main class="main">
+    <%- include('../partials/admin-sidebar', { activePage: 'reviews' }) %>
+    <%- include('../partials/admin-confirm') %>
+    <main class="main">
     <div class="page-header">
       <h1 class="page-title">REVIEWS</h1>
     </div>
@@ -104,7 +96,7 @@
             <i class="bi bi-eye<%= rev.isVisible ? '-slash' : '' %>-fill" id="eye-<%= rev._id %>"></i>
             <span id="btntxt-<%= rev._id %>"><%= rev.isVisible ? 'Hide' : 'Show' %></span>
           </button>
-          <form method="POST" action="/admin/reviews/<%= rev._id %>/delete" onsubmit="return confirm('Delete this review?')">
+          <form method="POST" action="/admin/reviews/<%= rev._id %>/delete" onsubmit="event.preventDefault(); var f=this; meeConfirm('Permanently delete this review?', function(){ f.submit(); })">
             <button type="submit" class="btn-sm btn-del"><i class="bi bi-trash3-fill"></i></button>
           </form>
         </div>
@@ -134,8 +126,9 @@ async function toggleRev(id){
         eye.className='bi bi-eye-fill';btntxt.textContent='Show';
       }
     }
-  }catch(e){alert('Error toggling review');}
+  }catch(e){meeAlert('Error toggling review', {icon:'❌'});}
 }
 </script>
+  <%- include('../partials/admin-confirm') %>
 </body>
 </html>

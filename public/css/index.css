@@ -1,0 +1,24 @@
+/* ============================================================
+   INDEX.CSS — Master import file
+   Include ONLY this file in your HTML/EJS layouts.
+   Load order matters: theme → typography → layout → components → page-specific
+   ============================================================ */
+
+/* 1. Design tokens (colors, shadows, radii) */
+@import url('./theme.css');
+
+/* 2. Fonts and size scale */
+@import url('./typography.css');
+
+/* 3. Page structure, nav, sidebar */
+@import url('./layout.css');
+
+/* 4. Reusable UI components */
+@import url('./components.css');
+
+/* 5. Page-specific — include only the one needed:
+      For admin pages:       @import url('./admin.css');
+      For user/public pages: @import url('./user.css');
+      Both are safe to import together if needed.         */
+@import url('./admin.css');
+@import url('./user.css');

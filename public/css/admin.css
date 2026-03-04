@@ -1,0 +1,65 @@
+/* ============================================================
+   ADMIN.CSS — Admin & SuperAdmin panel specific styles
+   Imports theme, typography, layout, components automatically
+   ============================================================ */
+
+/* ── EVENT FORM ── */
+.section-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; margin-bottom: 1.5rem; }
+.section-card-head { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 0.7rem; }
+.section-card-head i { color: var(--accent); }
+.section-card-head h3 { font-family: var(--font-display); font-size: var(--text-xl); letter-spacing: 2px; }
+.section-card-body { padding: 1.5rem; }
+
+/* ── TICKET TYPE PILLS ── */
+.ticket-pill { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.7rem 1rem; display: flex; align-items: center; gap: 0.7rem; margin-bottom: 0.5rem; }
+.ticket-pill-color { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+.ticket-pill-name { font-weight: 600; font-size: var(--text-base); flex: 1; }
+.ticket-pill-price { font-family: var(--font-mono); font-size: var(--text-sm); color: var(--accent); }
+.ticket-pill-remove { background: none; border: none; color: var(--error); cursor: pointer; font-size: 1rem; padding: 0; opacity: 0.7; }
+.ticket-pill-remove:hover { opacity: 1; }
+
+/* ── COUPON LIST ── */
+.coupon-row { display: flex; align-items: center; gap: 1rem; padding: 1rem; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+.coupon-row:last-child { border-bottom: none; }
+.coupon-code { font-family: var(--font-mono); font-size: var(--text-base); font-weight: 700; color: var(--accent); letter-spacing: 2px; }
+.coupon-type { font-size: var(--text-sm); color: var(--muted); }
+.coupon-actions { margin-left: auto; display: flex; gap: 0.5rem; }
+
+/* ── BOOKING DETAIL ROW ── */
+.booking-row { padding: 1rem 1.2rem; border-bottom: 1px solid rgba(255,255,255,0.04); transition: background var(--transition); }
+.booking-row:hover { background: rgba(255,255,255,0.015); }
+.booking-row:last-child { border-bottom: none; }
+.booking-ref { font-family: var(--font-mono); font-size: var(--text-xs); letter-spacing: 2px; color: var(--muted); }
+.booking-amount { font-family: var(--font-mono); font-size: var(--text-md); color: var(--success); }
+
+/* ── STATUS BADGES (booking) ── */
+.status-paid    { background: rgba(0,255,136,0.08);  border: 1px solid rgba(0,255,136,0.25);  color: var(--success); }
+.status-pending { background: rgba(245,200,66,0.08); border: 1px solid rgba(245,200,66,0.25); color: var(--warning); }
+.status-failed  { background: rgba(255,68,68,0.08);  border: 1px solid rgba(255,68,68,0.25);  color: var(--error); }
+
+/* ── ADMIN FORM VALIDATION ── */
+.admin-form-feedback { display: none; font-size: var(--text-sm); margin-top: 0.35rem; align-items: center; gap: 0.3rem; }
+.admin-form-feedback.error   { display: flex; color: var(--error); }
+.admin-form-feedback.success { display: flex; color: var(--success); }
+.form-input.admin-error   { border-color: var(--error)   !important; box-shadow: 0 0 0 3px var(--error-dim); }
+.form-input.admin-success { border-color: var(--success) !important; }
+
+/* ── INLINE TOAST (admin-specific, fixed position) ── */
+.admin-save-indicator { display: inline-flex; align-items: center; gap: 0.4rem; font-size: var(--text-sm); padding: 0.35rem 0.8rem; border-radius: var(--radius-sm); opacity: 0; transition: opacity var(--transition); }
+.admin-save-indicator.show { opacity: 1; }
+.admin-save-indicator.ok  { color: var(--success); background: var(--success-dim); }
+.admin-save-indicator.err { color: var(--error);   background: var(--error-dim);   }
+
+/* ── PAGE HEADER ── */
+.admin-page-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
+.admin-page-header-left h1 { font-family: var(--font-display); font-size: var(--text-3xl); letter-spacing: 2px; }
+.admin-page-header-left p  { font-size: var(--text-sm); color: var(--muted); margin-top: 0.2rem; }
+
+/* ── EVENT CARD (dashboard list) ── */
+.event-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; transition: border-color var(--transition); }
+.event-card:hover { border-color: var(--accent-border); }
+.event-card-img { width: 100%; height: 140px; object-fit: cover; }
+.event-card-body { padding: 1.2rem; }
+.event-card-title { font-family: var(--font-display); font-size: var(--text-xl); letter-spacing: 1px; margin-bottom: 0.5rem; }
+.event-card-meta  { font-size: var(--text-sm); color: var(--muted); display: flex; gap: 1rem; flex-wrap: wrap; }
+.event-card-actions { padding: 0.8rem 1.2rem; border-top: 1px solid var(--border); display: flex; gap: 0.5rem; }

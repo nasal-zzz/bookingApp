@@ -52,21 +52,13 @@
     .ev-name{font-family:'Anton',sans-serif;font-size:1.1rem;letter-spacing:2px;}
     .ev-meta{font-size:0.78rem;color:var(--muted);margin-top:0.2rem;}
     @media(max-width:900px){.layout{grid-template-columns:1fr;}.sidebar{display:none;}}
+    .btn-back-dash{display:inline-flex;align-items:center;gap:0.3rem;color:var(--muted);text-decoration:none;font-size:0.78rem;font-family:'Space Mono',monospace;letter-spacing:1px;padding:0.35rem 0.75rem;border:1px solid var(--border);border-radius:5px;background:rgba(255,255,255,0.03);margin-bottom:1.5rem;transition:all 0.15s;}
+    .btn-back-dash:hover{color:#fff;border-color:rgba(255,255,255,0.2);background:rgba(255,255,255,0.06);}
   </style>
 </head>
 <body>
 <div class="layout">
-  <aside class="sidebar">
-    <a href="/superadmin" class="s-logo"><img src="/img/mee-logo.png" alt="MEE" style="height:28px;width:auto;object-fit:contain;"/></a>
-    <span class="s-badge">&#11041; SUPER ADMIN</span>
-    <a href="/superadmin"                  class="s-link"><i class="bi bi-speedometer2"></i> Dashboard</a>
-    <a href="/superadmin/staff"            class="s-link"><i class="bi bi-people-fill"></i> Staff &amp; Admins</a>
-    <a href="/superadmin/coupons"          class="s-link"><i class="bi bi-tag-fill"></i> Coupons</a>
-    <a href="/superadmin/users-by-event"   class="s-link"><i class="bi bi-person-lines-fill"></i> Users by Event</a>
-    <a href="/superadmin/entered-tickets"  class="s-link active"><i class="bi bi-door-open-fill"></i> Entered Tickets</a>
-    <a href="/admin"                       class="s-link"><i class="bi bi-grid-fill"></i> Admin Panel</a>
-    <a href="/superadmin/logout" class="s-logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
-  </aside>
+    <%- include('../partials/superadmin-sidebar', { activePage: 'entered-tickets' }) %>
   <main class="main">
     <h1 class="page-title">ENTERED TICKETS</h1>
     <p class="page-sub">All attendees scanned in at the venue — full gate log across all events.</p>

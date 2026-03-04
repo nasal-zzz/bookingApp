@@ -1,0 +1,60 @@
+<!-- ── MEE Confirm Modal ── inject once per page, before </body> ── -->
+<div id="meeConfirmModal" style="display:none;position:fixed;inset:0;background:rgba(8,8,14,0.88);backdrop-filter:blur(10px);z-index:9990;align-items:center;justify-content:center;padding:1rem;">
+  <div style="background:#14141C;border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:2rem;max-width:380px;width:100%;text-align:center;animation:meePopIn 0.22s ease both;position:relative;">
+    <div id="meeConfirmIcon" style="font-size:2.2rem;margin-bottom:0.8rem;">⚠️</div>
+    <div id="meeConfirmTitle" style="font-family:'Anton',sans-serif;font-size:1.3rem;letter-spacing:2px;color:#fff;margin-bottom:0.5rem;"></div>
+    <p id="meeConfirmMsg" style="font-size:0.85rem;color:#B3B3B3;line-height:1.6;margin-bottom:1.5rem;"></p>
+    <div style="display:flex;gap:0.75rem;justify-content:center;">
+      <button id="meeConfirmCancel" style="padding:0.7rem 1.4rem;background:transparent;border:1px solid rgba(255,255,255,0.12);border-radius:7px;color:#B3B3B3;font-family:'Outfit',sans-serif;font-size:0.88rem;cursor:pointer;transition:all 0.15s;" onmouseover="this.style.borderColor='rgba(255,255,255,0.3)';this.style.color='#fff'" onmouseout="this.style.borderColor='rgba(255,255,255,0.12)';this.style.color='#B3B3B3'">Cancel</button>
+      <button id="meeConfirmOk" style="padding:0.7rem 1.4rem;background:#FF4444;border:none;border-radius:7px;color:#fff;font-family:'Outfit',sans-serif;font-weight:700;font-size:0.88rem;cursor:pointer;transition:all 0.15s;" onmouseover="this.style.background='#ff2222'" onmouseout="this.style.background='#FF4444'">Delete</button>
+    </div>
+  </div>
+</div>
+<!-- ── MEE Alert Modal ── -->
+<div id="meeAlertModal" style="display:none;position:fixed;inset:0;background:rgba(8,8,14,0.88);backdrop-filter:blur(10px);z-index:9990;align-items:center;justify-content:center;padding:1rem;">
+  <div style="background:#14141C;border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:2rem;max-width:360px;width:100%;text-align:center;animation:meePopIn 0.22s ease both;">
+    <div id="meeAlertIcon" style="font-size:2.2rem;margin-bottom:0.8rem;">ℹ️</div>
+    <p id="meeAlertMsg" style="font-size:0.88rem;color:#B3B3B3;line-height:1.6;margin-bottom:1.5rem;"></p>
+    <button onclick="meeAlertClose()" style="padding:0.7rem 2rem;background:#6A0DAD;border:none;border-radius:7px;color:#fff;font-family:'Outfit',sans-serif;font-weight:700;font-size:0.88rem;cursor:pointer;">OK</button>
+  </div>
+</div>
+<style>
+  @keyframes meePopIn{from{opacity:0;transform:scale(0.92)}to{opacity:1;transform:scale(1)}}
+</style>
+<script>
+// meeConfirm(message, onConfirm, { title, btnLabel, btnColor })
+function meeConfirm(msg, onYes, opts) {
+  opts = opts || {};
+  var modal = document.getElementById('meeConfirmModal');
+  document.getElementById('meeConfirmTitle').textContent = opts.title || 'ARE YOU SURE?';
+  document.getElementById('meeConfirmMsg').textContent   = msg;
+  document.getElementById('meeConfirmIcon').textContent  = opts.icon || '⚠️';
+  var okBtn = document.getElementById('meeConfirmOk');
+  okBtn.textContent        = opts.btnLabel || 'Delete';
+  okBtn.style.background   = opts.btnColor || '#FF4444';
+  modal.style.display      = 'flex';
+  // Cancel
+  document.getElementById('meeConfirmCancel').onclick = function() {
+    modal.style.display = 'none';
+  };
+  // Confirm
+  okBtn.onclick = function() {
+    modal.style.display = 'none';
+    if (typeof onYes === 'function') onYes();
+  };
+  // Backdrop click
+  modal.onclick = function(e) {
+    if (e.target === modal) modal.style.display = 'none';
+  };
+}
+// meeAlert(message, { icon })
+function meeAlert(msg, opts) {
+  opts = opts || {};
+  document.getElementById('meeAlertMsg').textContent  = msg;
+  document.getElementById('meeAlertIcon').textContent = opts.icon || 'ℹ️';
+  document.getElementById('meeAlertModal').style.display = 'flex';
+}
+function meeAlertClose() {
+  document.getElementById('meeAlertModal').style.display = 'none';
+}
+</script>

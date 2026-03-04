@@ -56,33 +56,14 @@
     .btn-del:hover{background:rgba(255,68,68,0.1);}
     .empty{text-align:center;padding:3rem;color:#555;}
     @media(max-width:900px){.admin-layout{grid-template-columns:1fr;}.sidebar{display:none;}.f-grid{grid-template-columns:1fr;}.f-grid.cols3{grid-template-columns:1fr 1fr;}}
+    .btn-back-dash{display:inline-flex;align-items:center;gap:0.3rem;color:var(--muted);text-decoration:none;font-size:0.78rem;font-family:'Space Mono',monospace;letter-spacing:1px;padding:0.35rem 0.75rem;border:1px solid var(--border);border-radius:5px;background:rgba(255,255,255,0.03);margin-bottom:1.5rem;transition:all 0.15s;}
+    .btn-back-dash:hover{color:#fff;border-color:rgba(255,255,255,0.2);background:rgba(255,255,255,0.06);}
   </style>
 </head>
 <body>
 <div class="admin-layout">
-  <aside class="sidebar">
-    <a href="/admin" class="s-logo"><img src="/img/mee-logo.png" alt="MEE" style="height:28px;width:auto;object-fit:contain;"/></a>
-    <div class="s-section">Main</div>
-    <a href="/admin"          class="s-link"><i class="bi bi-speedometer2"></i> Dashboard</a>
-    <a href="/admin/bookings" class="s-link"><i class="bi bi-ticket-perforated-fill"></i> Bookings</a>
-    <a href="/admin/participants" class="s-link"><i class="bi bi-person-check-fill"></i> Participants</a>
-    <a href="/admin/entered-tickets" class="s-link"><i class="bi bi-door-open-fill"></i> Entered Tickets</a>
-    <a href="/admin/users-by-event" class="s-link"><i class="bi bi-people-fill"></i> Users by Event</a>
-    <div class="s-section">Events</div>
-    <a href="/admin/events/new" class="s-link"><i class="bi bi-plus-circle-fill"></i> New Event</a>
-    <a href="/admin/reviews"    class="s-link"><i class="bi bi-star-fill"></i> Reviews</a>
-    <a href="/admin/banners"    class="s-link"><i class="bi bi-image-fill"></i> Banners</a>
-    <div class="s-section">Team</div>
-    <a href="/admin/coupons"        class="s-link"><i class="bi bi-tag-fill"></i> Coupons</a>
-    <a href="/admin/staff" class="s-link active"><i class="bi bi-people-fill"></i> Staff</a>
-    <a href="/" class="s-link" target="_blank"><i class="bi bi-box-arrow-up-right"></i> View Site</a>
-    <a href="/admin/profile" class="s-link"><i class="bi bi-person-circle"></i> My Profile</a>
-    <% if(locals.isSuperAdmin){ %>
-    <a href="/superadmin" class="s-link" style="color:#9D4EDD;border-color:rgba(157,78,221,0.2);background:rgba(157,78,221,0.06);"><i class="bi bi-shield-lock-fill" style="color:#9D4EDD;"></i> SuperAdmin Panel</a>
-    <% } %>
-    <a href="/admin/logout" class="s-logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
-  </aside>
-
+    <%- include('../partials/admin-sidebar', { activePage: 'staff' }) %>
+    <%- include('../partials/admin-confirm') %>
   <main class="main">
     <h1 class="page-title">STAFF MANAGEMENT</h1>
     <p class="page-sub">Create and manage QR scanner staff accounts.</p>
@@ -161,7 +142,7 @@
               <i class="bi bi-<%= m.isActive?'lock-fill':'unlock-fill' %>"></i>
               <span id="stxt-<%= m._id %>"><%= m.isActive?'Block':'Unblock' %></span>
             </button>
-            <form method="POST" action="/admin/staff/<%= m._id %>/delete" onsubmit="return confirm('Delete <%= m.firstName %>?')" style="display:inline;">
+            <form method="POST" action="/admin/staff/<%= m._id %>/delete" onsubmit="event.preventDefault(); var f=this; meeConfirm('Remove staff member \"<%= m.firstName %>\"?', function(){ f.submit(); }, {title:'REMOVE STAFF'})" style="display:inline;">
               <button type="submit" class="btn-sm btn-del"><i class="bi bi-trash3-fill"></i></button>
             </form>
           </div>
@@ -181,6 +162,22 @@ function toggleManualCreds(){
   if(!on){document.getElementById('saManualUsername').value='';document.getElementById('saManualPassword').value='';}
 }
 
+function sfMark(id, ok, msg) {
+  const el = document.getElementById(id);
+  if (!el) return ok;
+  el.style.borderColor = ok ? 'rgba(0,255,136,0.4)' : '#FF4444';
+  el.style.background  = ok ? '' : 'rgba(255,68,68,0.04)';
+  let errEl = document.getElementById(id + '_err');
+  if (!errEl) {
+    errEl = document.createElement('div');
+    errEl.id = id + '_err';
+    errEl.style.cssText = 'font-size:0.7rem;color:#FF4444;margin-top:0.25rem;font-family:Space Mono,monospace;';
+    el.parentElement.appendChild(errEl);
+  }
+  errEl.textContent = ok ? '' : (msg || '');
+  return ok;
+}
+
 async function addStaff(){
   const firstName=document.getElementById('saFirstName').value.trim();
   const lastName=document.getElementById('saLastName').value.trim();
@@ -190,8 +187,23 @@ async function addStaff(){
   const manualPassword=document.getElementById('saManualPassword').value.trim();
   const errBox=document.getElementById('errBox');
   errBox.style.display='none';
-  if(!firstName||!email||!phone){errBox.textContent='First name, email and phone are required.';errBox.style.display='block';return;}
-  if(document.getElementById('manualCreds').checked&&!manualUsername){errBox.textContent='Enter a username or uncheck manual credentials.';errBox.style.display='block';return;}
+
+  let valid = true;
+  if (!firstName) { sfMark('saFirstName', false, 'First name is required.'); valid = false; } else sfMark('saFirstName', true);
+  if (!email) { sfMark('saEmail', false, 'Email is required.'); valid = false; }
+  else if (!/^[^@]+@[^@]+\.[^@]+$/.test(email)) { sfMark('saEmail', false, 'Enter a valid email address.'); valid = false; }
+  else sfMark('saEmail', true);
+  if (!phone) { sfMark('saPhone', false, 'Phone number is required.'); valid = false; }
+  else if (!/^[6-9]\d{9}$/.test(phone.replace(/\s/g,''))) { sfMark('saPhone', false, 'Enter a valid 10-digit Indian mobile number.'); valid = false; }
+  else sfMark('saPhone', true);
+  if (document.getElementById('manualCreds').checked) {
+    if (!manualUsername) { sfMark('saManualUsername', false, 'Username is required.'); valid = false; }
+    else if (manualUsername.length < 4) { sfMark('saManualUsername', false, 'Username must be at least 4 characters.'); valid = false; }
+    else sfMark('saManualUsername', true);
+    if (manualPassword && manualPassword.length < 6) { sfMark('saManualPassword', false, 'Password must be at least 6 characters.'); valid = false; }
+    else if (manualPassword) sfMark('saManualPassword', true);
+  }
+  if (!valid) return;
   try{
     const res=await fetch('/admin/staff',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({firstName,lastName,email,phone,manualUsername,manualPassword,
@@ -220,5 +232,6 @@ async function toggleStaff(id){
   }
 }
 </script>
+  <%- include('../partials/admin-confirm') %>
 </body>
 </html>

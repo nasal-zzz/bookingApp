@@ -1,0 +1,98 @@
+/* ============================================================
+   TYPOGRAPHY.CSS — Fonts, sizes, weights, letter-spacing
+   Change font families and size scale here globally.
+   ============================================================ */
+
+/* ── FONT IMPORTS ── */
+@import url('https://fonts.googleapis.com/css2?family=Anton&family=Outfit:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+
+/* ── LOCAL FONT FACES ── */
+@font-face {
+  font-family: 'MiravaSans';
+  src: url('/fonts/Montserrat-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ── FONT STACK VARIABLES ── */
+:root {
+  /* Change these to swap fonts across the whole site */
+  --font-display: 'Anton', 'MiravaSans', sans-serif;  /* headings, titles */
+  --font-body:    'Outfit', sans-serif;                /* body text */
+  --font-mono:    'Space Mono', monospace;             /* labels, refs, codes */
+
+  /* ── SIZE SCALE ──
+     Adjust --scale to make everything proportionally bigger/smaller.
+     1 = default, 1.1 = 10% larger, 0.9 = 10% smaller              */
+  --scale: 1;
+
+  --text-xs:   calc(0.65rem  * var(--scale));   /* 10.4px — micro labels */
+  --text-sm:   calc(0.75rem  * var(--scale));   /* 12px   — secondary */
+  --text-base: calc(0.875rem * var(--scale));   /* 14px   — body text */
+  --text-md:   calc(0.95rem  * var(--scale));   /* 15px   — slightly bigger body */
+  --text-lg:   calc(1.1rem   * var(--scale));   /* 17.6px — subheadings */
+  --text-xl:   calc(1.3rem   * var(--scale));   /* 20.8px — card titles */
+  --text-2xl:  calc(1.6rem   * var(--scale));   /* 25.6px — section headings */
+  --text-3xl:  calc(2rem     * var(--scale));   /* 32px   — page titles */
+  --text-4xl:  calc(2.8rem   * var(--scale));   /* 44px   — hero headings */
+  --text-hero: clamp(calc(2.5rem * var(--scale)), 7vw, calc(5rem * var(--scale)));
+
+  /* ── LINE HEIGHTS ── */
+  --leading-tight:  1.1;
+  --leading-normal: 1.5;
+  --leading-loose:  1.75;
+
+  /* ── LETTER SPACING ── */
+  --tracking-tight:  -0.02em;
+  --tracking-normal: 0;
+  --tracking-wide:   0.05em;
+  --tracking-wider:  0.1em;
+  --tracking-widest: 0.2em;
+}
+
+/* ── BASE RESETS ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  color: var(--text);
+  background: var(--bg);
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3 { font-family: var(--font-display); letter-spacing: var(--tracking-wide); line-height: var(--leading-tight); }
+p { line-height: var(--leading-normal); }
+small { font-size: var(--text-sm); }
+code, kbd, pre { font-family: var(--font-mono); }
+
+/* ── UTILITY CLASSES ── */
+.font-display { font-family: var(--font-display) !important; }
+.font-body    { font-family: var(--font-body)    !important; }
+.font-mono    { font-family: var(--font-mono)    !important; }
+
+.text-xs   { font-size: var(--text-xs)   !important; }
+.text-sm   { font-size: var(--text-sm)   !important; }
+.text-base { font-size: var(--text-base) !important; }
+.text-md   { font-size: var(--text-md)   !important; }
+.text-lg   { font-size: var(--text-lg)   !important; }
+.text-xl   { font-size: var(--text-xl)   !important; }
+.text-2xl  { font-size: var(--text-2xl)  !important; }
+.text-3xl  { font-size: var(--text-3xl)  !important; }
+
+.text-muted   { color: var(--muted)  !important; }
+.text-accent  { color: var(--accent) !important; }
+.text-success { color: var(--success)!important; }
+.text-error   { color: var(--error)  !important; }
+
+.tracking-wide   { letter-spacing: var(--tracking-wide)   !important; }
+.tracking-wider  { letter-spacing: var(--tracking-wider)  !important; }
+.tracking-widest { letter-spacing: var(--tracking-widest) !important; }
+.uppercase       { text-transform: uppercase !important; }
+.fw-bold         { font-weight: 700 !important; }
+.fw-semibold     { font-weight: 600 !important; }

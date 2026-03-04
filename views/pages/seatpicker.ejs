@@ -11,7 +11,7 @@
     body{background:var(--bg);color:var(--text);font-family:'Poppins',sans-serif;min-height:100vh;display:flex;flex-direction:column;}
 
     /* STEP BAR */
-    .step-bar{background:#0e0e18;border-bottom:1px solid var(--border);padding:0 1.5rem;height:52px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:1rem;}
+    .step-bar{background:#0e0e18;border-bottom:1px solid var(--border);padding:0 0.75rem;height:44px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:0.5rem;}
     .step-back{display:flex;align-items:center;gap:0.4rem;color:var(--muted);text-decoration:none;font-size:0.78rem;transition:color 0.2s;white-space:nowrap;}
     .step-back:hover{color:#fff;}
     .steps{display:flex;align-items:center;gap:0;flex:1;justify-content:center;}
@@ -25,7 +25,7 @@
     .event-lbl{font-family:'Space Mono',monospace;font-size:0.6rem;color:#444;letter-spacing:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px;}
 
     /* LAYOUT */
-    .layout{display:flex;flex:1;overflow:hidden;height:calc(100vh - 52px);}
+    .layout{display:flex;flex:1;overflow:hidden;height:calc(100vh - 44px);}
 
     /* MAP */
     .map-area{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--bg);min-width:0;}
@@ -64,30 +64,49 @@
     .zc-name{font-family:'Montserrat',sans-serif;font-weight:700;font-size:0.8rem;color:#fff;margin-bottom:0.06rem;}
     .zc-cat{font-size:0.62rem;font-weight:700;letter-spacing:0.5px;margin-bottom:0.06rem;}
     .zc-price{font-family:'Space Mono',monospace;font-size:0.65rem;color:var(--muted);}
-    .zc-avail{font-size:0.58rem;color:#555;margin-top:0.04rem;}
+    .zc-avail{font-size:0.62rem;margin-top:0.18rem;display:flex;align-items:center;gap:0.28rem;font-weight:600;}
+    .zc-avail.ok{color:#555;}
+    .zc-avail.warn{color:#f5c842;}
+    .zc-avail.crit{color:#FF4444;}
+    .zc-avail-bar{height:3px;border-radius:2px;margin-top:0.28rem;background:rgba(255,255,255,0.05);overflow:hidden;}
+    .zc-avail-bar-fill{height:100%;border-radius:2px;transition:width 0.3s;}
     .zc-ck{position:absolute;top:0.42rem;right:0.65rem;font-size:0.7rem;font-weight:800;display:none;}
     .zc.sel .zc-ck{display:block;}
 
-    /* Qty */
-    .qty-strip{padding:0.65rem 1.2rem;border-top:1px solid var(--border);display:none;}
-    .qty-strip.show{display:block;}
-    .qs-lbl{font-family:'Space Mono',monospace;font-size:0.5rem;letter-spacing:1.5px;color:#444;text-transform:uppercase;margin-bottom:0.38rem;}
-    .qs-row{display:flex;align-items:center;gap:0.45rem;}
-    .qs-btn{width:34px;height:34px;border-radius:8px;background:rgba(106,13,173,0.1);border:1px solid rgba(106,13,173,0.22);color:var(--accent2);font-size:1.05rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.18s;font-weight:700;}
-    .qs-btn:hover:not(:disabled){background:rgba(106,13,173,0.25);}
-    .qs-btn:disabled{opacity:0.22;cursor:not-allowed;}
-    .qs-num{font-family:'Montserrat',sans-serif;font-weight:800;font-size:1.2rem;color:#fff;min-width:30px;text-align:center;}
-    .qs-total{flex:1;padding-left:0.4rem;}
-    .qs-total-lbl{font-size:0.65rem;color:var(--muted);}
-    .qs-total-val{font-family:'Montserrat',sans-serif;font-size:1.05rem;font-weight:800;color:var(--accent);}
-    .qs-max{font-size:0.58rem;color:#444;margin-top:0.18rem;}
+    /* Canvas tooltip */
+    .cv-tip{
+      position:absolute;
+      background:rgba(8,8,16,0.96);
+      backdrop-filter:blur(8px);
+      border:1.5px solid var(--tip-c,#6A0DAD);
+      border-radius:9px;
+      padding:0.55rem 0.75rem;
+      pointer-events:none;
+      white-space:nowrap;
+      display:none;
+      z-index:20;
+      box-shadow:0 4px 20px rgba(0,0,0,0.5), 0 0 12px var(--tip-glow,rgba(106,13,173,0.2));
+      min-width:140px;
+    }
+    .tip-zone{font-family:'Montserrat',sans-serif;font-weight:800;font-size:0.75rem;color:#fff;margin-bottom:0.22rem;letter-spacing:0.5px;}
+    .tip-cat{font-family:'Space Mono',monospace;font-size:0.52rem;letter-spacing:1.5px;color:var(--tip-c,#9D4EDD);margin-bottom:0.3rem;}
+    .tip-row{display:flex;align-items:center;justify-content:space-between;gap:0.8rem;}
+    .tip-price{font-family:'Space Mono',monospace;font-size:0.68rem;color:#fff;font-weight:700;}
+    .tip-avail{font-family:'Space Mono',monospace;font-size:0.62rem;font-weight:700;padding:0.12rem 0.45rem;border-radius:4px;display:flex;align-items:center;gap:0.25rem;}
+    .tip-avail.ok  {background:rgba(0,255,136,0.1);color:#00FF88;border:1px solid rgba(0,255,136,0.25);}
+    .tip-avail.warn{background:rgba(245,200,66,0.1);color:#f5c842;border:1px solid rgba(245,200,66,0.3);}
+    .tip-avail.crit{background:rgba(255,68,68,0.12);color:#FF4444;border:1px solid rgba(255,68,68,0.3);}
+    .tip-avail.sold{background:rgba(255,68,68,0.15);color:#FF4444;border:1px solid rgba(255,68,68,0.4);font-size:0.6rem;letter-spacing:1px;}
+    .tip-bar{height:3px;background:rgba(255,255,255,0.07);border-radius:2px;margin-top:0.38rem;overflow:hidden;}
+    .tip-bar-fill{height:100%;border-radius:2px;transition:width 0.2s;}
 
     /* Footer */
     .sb-footer{padding:0.75rem 1.2rem;border-top:1px solid rgba(255,255,255,0.05);}
-    .sf-row{display:flex;justify-content:space-between;font-size:0.72rem;color:var(--muted);margin-bottom:0.2rem;}
-    .sf-total{display:flex;justify-content:space-between;padding-top:0.4rem;border-top:1px solid rgba(255,255,255,0.05);margin-bottom:0.8rem;}
+    .sf-row{display:flex;justify-content:space-between;font-size:0.72rem;color:var(--muted);margin-bottom:0.22rem;align-items:center;}
+    .sf-row span:last-child{font-weight:600;color:#fff;}
+    .sf-total{display:flex;justify-content:space-between;padding-top:0.42rem;border-top:1px solid rgba(255,255,255,0.05);margin-bottom:0.8rem;align-items:center;}
     .sf-tlbl{font-size:0.72rem;color:var(--muted);}
-    .sf-tval{font-family:'Montserrat',sans-serif;font-weight:800;font-size:1.18rem;color:var(--accent);}
+    .sf-tval{font-family:'Montserrat',sans-serif;font-weight:800;font-size:1.18rem;color:var(--accent2);}
     .btn-next{width:100%;padding:0.78rem;background:var(--accent);color:#fff;border:none;border-radius:9px;font-family:'Poppins',sans-serif;font-weight:700;font-size:0.86rem;cursor:pointer;transition:box-shadow 0.2s,transform 0.12s;display:flex;align-items:center;justify-content:center;gap:0.4rem;box-shadow:0 0 20px rgba(106,13,173,0.18);}
     .btn-next:hover:not(:disabled){box-shadow:0 0 40px rgba(106,13,173,0.48);transform:translateY(-1px);}
     .btn-next:disabled{opacity:0.32;cursor:not-allowed;box-shadow:none;transform:none;}
@@ -95,12 +114,27 @@
     .trust-item{display:flex;align-items:center;gap:0.22rem;font-size:0.57rem;color:#333;}
     .trust-item i{color:#00FF88;font-size:0.6rem;}
 
+    /* Avail badge in header legend */
+    .leg-avail{font-size:0.58rem;font-family:'Space Mono',monospace;}
+    .leg-avail.warn{color:#f5c842;}
+    .leg-avail.crit{color:#FF4444;font-weight:700;}
+
     @media(max-width:768px){
       .layout{flex-direction:column;height:auto;}
-      .map-area{height:56vw;min-height:260px;}
+      .map-area{height:58vw;min-height:260px;}
       .sidebar{width:100%;border-left:none;border-top:1px solid var(--border);}
-      .zone-list{max-height:310px;}
+      .zone-list{max-height:280px;}
       .event-lbl{display:none;}
+    }
+    @media(max-width:480px){
+      .step-bar{padding:0 0.6rem;height:42px;}
+      .step-item{font-size:0.58rem;gap:0.22rem;}
+      .step-num{width:17px;height:17px;font-size:0.5rem;}
+      .step-line{width:14px;}
+      .step-back{font-size:0.68rem;}
+      .steps{gap:0;}
+      .map-legend{padding:0.38rem 0.75rem;gap:0.45rem;}
+      .leg-lbl{display:none;}
     }
   </style>
 </head>
@@ -127,55 +161,68 @@
     <% if(seatMap.previewImage){ %>
     <div class="map-tabs">
       <div class="map-tab active" id="tab-live" onclick="switchTab('live')"><i class="bi bi-grid-3x3-gap"></i> Interactive</div>
-      <div class="map-tab" id="tab-preview" onclick="switchTab('preview')"><i class="bi bi-image"></i> Preview</div>
+      <div class="map-tab" id="tab-preview" onclick="switchTab('preview')"><i class="bi bi-image"></i> Preview Image</div>
     </div>
     <% } %>
     <div class="map-legend">
       <span class="leg-lbl">Legend</span>
       <% event.ticketTypes.filter(t=>t.isActive).forEach(t=>{
            const cc={platinum:'#9D4EDD',gold:'#f5c842',silver:'#c0c8d8',fanfit:'#00FF88',family:'#FF6B6B'}[t.category]||'#6A0DAD';
-           const catSoldOut = t.bookedSeats >= t.totalSeats && t.totalSeats > 0; %>
-      <div class="leg-item" id="leg-<%= t.category %>" style="--zc:<%=catSoldOut?'#FF4444':cc%>;<%=catSoldOut?'opacity:0.5;cursor:not-allowed;':'';%>" onclick="<%= catSoldOut?'':"highlightCat('" + t.category + "')" %>">
-        <div class="leg-dot" style="<%=catSoldOut?'background:#FF4444;':''%>"></div>
+           const avail = t.totalSeats - t.bookedSeats;
+           const catSoldOut = t.bookedSeats >= t.totalSeats && t.totalSeats > 0;
+           const availCls = catSoldOut ? 'crit' : (avail<=3&&t.totalSeats>0 ? 'crit' : (avail<=10&&t.totalSeats>0 ? 'warn' : '')); %>
+      <div class="leg-item" id="leg-<%= t.category %>" style="--zc:<%=catSoldOut?'#FF4444':cc%>;<%=catSoldOut?'opacity:0.45;cursor:not-allowed;':'';%>" onclick="<%=catSoldOut?'':"highlightCat('"+t.category+"')" %>">
+        <div class="leg-dot" style="<%=catSoldOut?'background:#FF4444;border-color:#FF4444;':''%>"></div>
         <span style="color:<%=catSoldOut?'#FF4444':cc%>;font-weight:700;font-size:0.66rem;"><%= t.category.toUpperCase() %></span>
         <% if(catSoldOut){ %>
-          <span style="color:#FF4444;font-family:'Space Mono',monospace;font-size:0.55rem;">SOLD OUT</span>
+          <span class="leg-avail crit">SOLD OUT</span>
         <% } else { %>
-          <span style="color:var(--muted);">₹<%= t.price.toLocaleString('en-IN') %></span>
-          <% if(t.comboOfferMinQty>0&&t.comboOfferDiscount>0){ %><span style="color:#f5c842;font-size:0.55rem;">🎯<%=t.comboOfferMinQty%>+→₹<%=t.comboOfferDiscount%>off</span><% } %>
+          <span style="color:var(--muted);">&#8377;<%= t.price.toLocaleString('en-IN') %></span>
+          <% if(avail<=10&&t.totalSeats>0){ %>
+            <span class="leg-avail <%=availCls%>">&#9888; <%=avail%> left</span>
+          <% } %>
+          <% if(t.comboOfferMinQty>0&&t.comboOfferDiscount>0){ %>
+            <span style="color:#f5c842;font-size:0.53rem;">&#9889;<%=t.comboOfferMinQty%>+&#8594;&#8377;<%=t.comboOfferDiscount%>off</span>
+          <% } %>
         <% } %>
       </div>
       <% }); %>
     </div>
-    <div class="map-scroll" id="liveView"><canvas id="vc" width="<%= seatMap.canvasWidth||960 %>" height="<%= seatMap.canvasHeight||760 %>"></canvas></div>
-    <div class="preview-wrap" id="previewView"><% if(seatMap.previewImage){ %><img src="<%= seatMap.previewImage %>" alt="Venue"/><% } %></div>
+    <div class="map-scroll" id="liveView" style="position:relative;">
+      <canvas id="vc" width="<%= seatMap.canvasWidth||960 %>" height="<%= seatMap.canvasHeight||760 %>"></canvas>
+      <div class="cv-tip" id="cvTip">
+        <div class="tip-zone" id="tipZone"></div>
+        <div class="tip-cat" id="tipCat"></div>
+        <div class="tip-row">
+          <div class="tip-price" id="tipPrice"></div>
+          <div class="tip-avail" id="tipAvail"></div>
+        </div>
+        <div class="tip-bar"><div class="tip-bar-fill" id="tipBarFill"></div></div>
+      </div>
+    </div>
+    <div class="preview-wrap" id="previewView">
+      <% if(seatMap.previewImage){ %><img src="<%= seatMap.previewImage %>" alt="Venue Map"/><% } %>
+    </div>
   </div>
 
   <!-- SIDEBAR -->
   <div class="sidebar">
     <div class="sb-head">
       <div class="sb-title">PICK YOUR ZONE</div>
-      <div class="sb-sub">Tap the map or click below to select</div>
+      <div class="sb-sub">Tap the map or click a zone below</div>
     </div>
     <div class="zone-list" id="zoneList"></div>
-    <div class="qty-strip" id="qtyStrip">
-      <div class="qs-lbl">Tickets price</div>
-      <div class="qs-row">
-        <div class="qs-total">
-          <div class="qs-total-lbl">Per Ticket</div>
-          <div class="qs-total-val" id="qTotal">—</div>
-        </div>
-      </div>
-      <div class="qs-max" id="qMaxLbl"></div>
-    </div>
+
+
+
     <div class="sb-footer">
-      <div class="sf-row"><span>Zone</span><span id="sfZone">—</span></div>
-      <div class="sf-row"><span>Price / ticket</span><span id="sfPrice">—</span></div>
+      <div class="sf-row"><span>Zone</span><span id="sfZone">&#8212;</span></div>
+      <div class="sf-row"><span>Price / ticket</span><span id="sfPrice">&#8212;</span></div>
       <div class="sf-row"><span>Qty</span><span id="sfQty">0</span></div>
-      <div class="sf-row"><span>Convenience fee</span><span>₹<%= event.convenienceFee||0 %></span></div>
+      <div class="sf-row"><span>Convenience fee</span><span>&#8377;<%= event.convenienceFee||0 %></span></div>
       <div class="sf-total">
         <div class="sf-tlbl">Total</div>
-        <div class="sf-tval" id="sfTotal">₹<%= event.convenienceFee||0 %></div>
+        <div class="sf-tval" id="sfTotal">&#8377;<%= event.convenienceFee||0 %></div>
       </div>
       <button class="btn-next" id="btnNext" disabled onclick="goNext()">
         <span>Next — Attendee Details</span><i class="bi bi-arrow-right"></i>
@@ -190,12 +237,12 @@
 </div>
 
 <script>
-const EVENT_ID  = '<%= event._id %>';
-const CONV_FEE  = <%= event.convenienceFee||0 %>;
-const SEAT_MAP  = <%- JSON.stringify(seatMap) %>;
-const TT        = <%- JSON.stringify(event.ticketTypes) %>;
-const CAT_C     = {platinum:'#9D4EDD',gold:'#f5c842',silver:'#c0c8d8',fanfit:'#00FF88',family:'#FF6B6B'};
-const PM        = Object.fromEntries(TT.map(t=>[t.category,t.price]));
+const EVENT_ID = '<%= event._id %>';
+const CONV_FEE = <%= event.convenienceFee||0 %>;
+const SEAT_MAP = <%- JSON.stringify(seatMap) %>;
+const TT       = <%- JSON.stringify(event.ticketTypes) %>;
+const CAT_C    = {platinum:'#9D4EDD',gold:'#f5c842',silver:'#c0c8d8',fanfit:'#00FF88',family:'#FF6B6B'};
+const PM       = Object.fromEntries(TT.map(t=>[t.category,t.price]));
 
 const canvas = document.getElementById('vc');
 const ctx    = canvas.getContext('2d');
@@ -211,8 +258,46 @@ const zones = (SEAT_MAP.sections||[]).map(s=>({
   totalSeats:s.totalSeats||0, bookedSeats:s.bookedSeats||0,
 }));
 
-let selIdx = null, litCat = null, qty = 1;
-const MAXQ = 10;
+let selIdx=null, litCat=null, qty=1;
+const MAXQ=10;
+
+// ── Availability helpers ──
+function avail(z){ return (z.totalSeats||0)-(z.bookedSeats||0); }
+function isSO(z) { return z.totalSeats>0 && avail(z)<=0; }
+function maxQty(z){ return z.totalSeats>0 ? Math.min(MAXQ,avail(z)) : MAXQ; }
+function avClass(z){
+  if(isSO(z)) return 'crit';
+  if(!z.totalSeats) return 'ok';
+  const a=avail(z);
+  return a<=3?'crit': a<=10?'warn':'ok';
+}
+function avText(z){
+  if(isSO(z)) return 'SOLD OUT';
+  if(!z.totalSeats) return '';
+  const a=avail(z);
+  if(a<=3)  return `\u26a0\ufe0f Only ${a} ticket${a===1?'':'s'} left \u2014 book now!`;
+  if(a<=10) return `\u26a0 Only ${a} tickets remaining`;
+  return `${a} of ${z.totalSeats} available`;
+}
+function avShort(z){
+  if(isSO(z)) return 'SOLD OUT';
+  if(!z.totalSeats) return '';
+  const a=avail(z);
+  if(a<=3)  return `\u26a0 ${a} left`;
+  if(a<=10) return `${a} remaining`;
+  return `${a} available`;
+}
+function barPct(z){
+  if(!z.totalSeats) return 100;
+  return Math.round((avail(z)/z.totalSeats)*100);
+}
+function barColor(z){
+  const a=avail(z);
+  if(isSO(z)) return '#FF4444';
+  if(a<=3)    return '#FF4444';
+  if(a<=10)   return '#f5c842';
+  return '#00FF88';
+}
 
 function switchTab(t){
   document.querySelectorAll('.map-tab').forEach(e=>e.classList.remove('active'));
@@ -221,52 +306,102 @@ function switchTab(t){
   document.getElementById('previewView').classList.toggle('show',t==='preview');
 }
 
-/* ── DRAW ── */
+/* ── CANVAS DRAW ── */
 function draw(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
   drawGrid(); drawStage(SEAT_MAP.stage);
   zones.forEach((z,i)=>drawZone(z,i===selIdx,litCat===z.category&&i!==selIdx));
 }
+
 function drawGrid(){
   ctx.save();ctx.strokeStyle='rgba(255,255,255,0.025)';ctx.lineWidth=1;
   for(let x=0;x<canvas.width;x+=40){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,canvas.height);ctx.stroke();}
   for(let y=0;y<canvas.height;y+=40){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(canvas.width,y);ctx.stroke();}
   ctx.restore();
 }
+
 function drawStage(s){
   if(!s)return;
-  const bx=s.x||80,by=s.y||30,bw=s.width||500,bh=s.height||100;
+  const x=s.x||80, y=s.y||30, w=s.width||500, h=s.height||100;
   ctx.save();
-  ctx.fillStyle='rgba(106,13,173,0.13)';ctx.strokeStyle='#6A0DAD';ctx.lineWidth=2;
-  ctx.beginPath();ctx.roundRect(bx,by,bw,bh,10);ctx.fill();ctx.stroke();
-  ctx.fillStyle='#bf80ff';ctx.font='bold 14px "Space Mono",monospace';ctx.textAlign='center';ctx.textBaseline='middle';
-  ctx.fillText(s.label||'STAGE',bx+bw/2,by+bh/2);ctx.restore();
+  ctx.fillStyle='rgba(106,13,173,0.15)'; ctx.strokeStyle='#6A0DAD'; ctx.lineWidth=2;
+  const shp=s.shape||'rectangle';
+  if(shp==='rectangle'){
+    ctx.beginPath();ctx.roundRect(x,y,w,h,10);ctx.fill();ctx.stroke();
+  }else if(shp==='semicircle'){
+    ctx.beginPath();ctx.arc(x+w/2,y+h,w/2,Math.PI,0);ctx.closePath();ctx.fill();ctx.stroke();
+  }else if(shp==='thrust'){
+    ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+w,y);ctx.lineTo(x+w-50,y+h);
+    ctx.lineTo(x+w/2+35,y+h);ctx.lineTo(x+w/2+35,y+h+50);
+    ctx.lineTo(x+w/2-35,y+h+50);ctx.lineTo(x+w/2-35,y+h);
+    ctx.lineTo(x+50,y+h);ctx.closePath();ctx.fill();ctx.stroke();
+  }else if(shp==='intheround'){
+    ctx.beginPath();ctx.arc(x+w/2,y+h/2,Math.min(w,h)*0.45,0,Math.PI*2);ctx.fill();ctx.stroke();
+  }else{
+    ctx.beginPath();ctx.roundRect(x,y,w,h,10);ctx.fill();ctx.stroke();
+  }
+  ctx.fillStyle='#bf80ff';
+  ctx.font='bold 14px "Space Mono",monospace';
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText(s.label||'STAGE', x+w/2, y+h/2);
+  ctx.restore();
 }
+
 function drawZone(z,isSel,isLit){
   const {x,y,w,h,name,category,shape,totalSeats,bookedSeats}=z;
-  const rot=d2r(z.rot||0),color=CAT_C[category]||'#6A0DAD',price=PM[category]||0;
-  const cx=x+w/2,cy=y+h/2,avail=totalSeats-(bookedSeats||0),isSO=totalSeats>0&&avail<=0;
-  ctx.save();ctx.translate(cx,cy);ctx.rotate(rot);
+  const rot=d2r(z.rot||0), color=CAT_C[category]||'#6A0DAD', price=PM[category]||0;
+  const cx=x+w/2, cy=y+h/2;
+  const a=avail(z), SO=isSO(z);
+
+  ctx.save();
+  ctx.translate(cx,cy); ctx.rotate(rot);
+
   if(isSel){ctx.shadowColor=color;ctx.shadowBlur=30;}
   else if(isLit){ctx.shadowColor=color;ctx.shadowBlur=16;}
-  ctx.fillStyle=isSO?'rgba(50,50,60,0.32)':(isSel?color+'55':(isLit?color+'38':color+'1A'));
-  ctx.strokeStyle=isSO?'rgba(100,100,110,0.38)':(isSel?color:(isLit?color:color+'55'));
-  ctx.lineWidth=isSel?3:(isLit?2:1.5);
+
+  ctx.fillStyle  = SO?'rgba(50,50,60,0.32)':(isSel?color+'55':(isLit?color+'38':color+'1A'));
+  ctx.strokeStyle= SO?'rgba(100,100,110,0.38)':(isSel?color:(isLit?color:color+'55'));
+  ctx.lineWidth  = isSel?3:(isLit?2:1.5);
+
   ctx.beginPath();
-  if(shape==='round')ctx.ellipse(0,0,w/2,h/2,0,0,Math.PI*2);
+  if(shape==='round') ctx.ellipse(0,0,w/2,h/2,0,0,Math.PI*2);
   else if(shape==='triangle'){ctx.moveTo(0,-h/2);ctx.lineTo(w/2,h/2);ctx.lineTo(-w/2,h/2);ctx.closePath();}
   else ctx.roundRect(-w/2,-h/2,w,h,10);
-  ctx.fill();ctx.shadowBlur=0;ctx.stroke();
+  ctx.fill(); ctx.shadowBlur=0; ctx.stroke();
+
+  // Name
   const fs=Math.max(9,Math.min(14,w/(name.length*0.78)));
   const lY=shape==='triangle'?h*0.06:-10;
-  ctx.fillStyle=isSO?'#444':'#fff';ctx.font=`bold ${fs}px "Montserrat",sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(name,0,lY);
-  ctx.fillStyle=isSO?'#444':color;ctx.font='600 9.5px "Poppins",sans-serif';ctx.fillText(category.toUpperCase(),0,lY+13);
-  ctx.fillStyle=isSO?'#333':'rgba(255,255,255,0.72)';ctx.font='bold 11px "Space Mono",monospace';ctx.fillText('₹'+price.toLocaleString('en-IN'),0,lY+26);
-  if(totalSeats>0&&(isSO||(avail>0&&avail<=10))){ctx.fillStyle=isSO?'#FF4444':'#f5c842';ctx.font='9px "Space Mono",monospace';ctx.fillText(isSO?'SOLD OUT':`Only ${avail} left!`,0,lY+39);}
+  ctx.fillStyle=SO?'#444':'#fff';
+  ctx.font=`bold ${fs}px "Montserrat",sans-serif`;
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText(name,0,lY);
+
+  // Category
+  ctx.fillStyle=SO?'#444':color;
+  ctx.font='600 9.5px "Poppins",sans-serif';
+  ctx.fillText(category.toUpperCase(),0,lY+13);
+
+  // Price
+  ctx.fillStyle=SO?'#333':'rgba(255,255,255,0.75)';
+  ctx.font='bold 11px "Space Mono",monospace';
+  ctx.fillText('\u20b9'+price.toLocaleString('en-IN'),0,lY+26);
+
+  // Availability: only show SOLD OUT on canvas (counts shown in legend + sidebar)
+  if(SO){
+    ctx.fillStyle='rgba(255,68,68,0.85)';
+    ctx.font='bold 9px "Space Mono",monospace';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('SOLD OUT',0,lY+39);
+  }
+
+  // Checkmark when selected
   if(isSel){
-    ctx.rotate(-rot);ctx.fillStyle=color;ctx.strokeStyle='#0f0f18';ctx.lineWidth=2;
+    ctx.rotate(-rot);
+    ctx.fillStyle=color; ctx.strokeStyle='#0f0f18'; ctx.lineWidth=2;
     ctx.beginPath();ctx.arc(w/2-12,-h/2+12,11,0,Math.PI*2);ctx.fill();ctx.stroke();
-    ctx.fillStyle='#fff';ctx.font='bold 13px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('✓',w/2-12,-h/2+13);
+    ctx.fillStyle='#fff';ctx.font='bold 13px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText('\u2713',w/2-12,-h/2+13);
   }
   ctx.restore();
 }
@@ -278,7 +413,11 @@ function ptIn(px,py,z){
   const lx=(px-cx)*c-(py-cy)*s,ly=(px-cx)*s+(py-cy)*c;
   const hw=z.w/2,hh=z.h/2;
   if(z.shape==='round') return (lx/hw)**2+(ly/hh)**2<=1;
-  if(z.shape==='triangle'){function sgn(ax,ay,bx,by,qx,qy){return(ax-qx)*(by-ay)-(bx-ax)*(ay-qy);}const d1=sgn(0,-hh,hw,hh,lx,ly),d2=sgn(hw,hh,-hw,hh,lx,ly),d3=sgn(-hw,hh,0,-hh,lx,ly);return !((d1<0||d2<0||d3<0)&&(d1>0||d2>0||d3>0));}
+  if(z.shape==='triangle'){
+    function sgn(ax,ay,bx,by,qx,qy){return(ax-qx)*(by-ay)-(bx-ax)*(ay-qy);}
+    const d1=sgn(0,-hh,hw,hh,lx,ly),d2=sgn(hw,hh,-hw,hh,lx,ly),d3=sgn(-hw,hh,0,-hh,lx,ly);
+    return !((d1<0||d2<0||d3<0)&&(d1>0||d2>0||d3>0));
+  }
   return lx>=-hw&&lx<=hw&&ly>=-hh&&ly<=hh;
 }
 function zoneAt(px,py){for(let i=zones.length-1;i>=0;i--)if(ptIn(px,py,zones[i]))return i;return -1;}
@@ -288,21 +427,64 @@ canvas.addEventListener('click',e=>{
   const px=(e.clientX-r.left)*sx,py=(e.clientY-r.top)*sx;
   const hit=zoneAt(px,py);
   if(hit!==-1){
-    const z=zones[hit];if(z.totalSeats>0&&(z.totalSeats-z.bookedSeats)<=0)return;
-    selIdx=(selIdx===hit)?null:hit;if(selIdx!==null)litCat=null;qty=1;
-  } else selIdx=null;
+    const z=zones[hit];
+    if(isSO(z))return;
+    selIdx=(selIdx===hit)?null:hit;
+    if(selIdx!==null)litCat=null;
+    qty=1;
+  }else selIdx=null;
   refresh();
 });
+
 canvas.addEventListener('mousemove',e=>{
   const r=canvas.getBoundingClientRect(),sx=canvas.width/r.width;
   const px=(e.clientX-r.left)*sx,py=(e.clientY-r.top)*sx;
   const zi=zoneAt(px,py);
-  if(zi!==-1){const z=zones[zi];canvas.style.cursor=(z.totalSeats>0&&(z.totalSeats-z.bookedSeats)<=0)?'not-allowed':'pointer';}
-  else canvas.style.cursor='default';
+  const tip=document.getElementById('cvTip');
+  if(zi!==-1){
+    const z=zones[zi];
+    const SO=isSO(z);
+    canvas.style.cursor=SO?'not-allowed':'pointer';
+
+    // Build tooltip content
+    const a=avail(z), p=PM[z.category]||0, col=CAT_C[z.category]||'#6A0DAD';
+    const cls = SO?'sold': a<=3?'crit': a<=10?'warn':'ok';
+    const availTxt = SO ? 'SOLD OUT'
+      : a<=3  ? '⚠ Only '+a+' left!'
+      : a<=10 ? '⚠ '+a+' remaining'
+      : a+' available';
+    const pct = z.totalSeats>0 ? Math.round((a/z.totalSeats)*100) : 100;
+    const barCol = SO?'#FF4444': a<=3?'#FF4444': a<=10?'#f5c842':'#00FF88';
+    const glowCol = SO||a<=3?'rgba(255,68,68,0.18)': a<=10?'rgba(245,200,66,0.15)':'rgba(0,255,136,0.12)';
+
+    document.getElementById('tipZone').textContent = z.name;
+    document.getElementById('tipCat').textContent  = z.category.toUpperCase()+' ZONE';
+    document.getElementById('tipPrice').textContent= '₹'+p.toLocaleString('en-IN')+' / ticket';
+    const av=document.getElementById('tipAvail');
+    av.className='tip-avail '+cls;
+    av.textContent=availTxt;
+    document.getElementById('tipBarFill').style.cssText='width:'+pct+'%;background:'+barCol+';';
+    tip.style.setProperty('--tip-c', SO||a<=3?'#FF4444': a<=10?'#f5c842': col);
+    tip.style.setProperty('--tip-glow', glowCol);
+
+    // Position: keep inside canvas bounds
+    const tw=tip.offsetWidth||160, th=tip.offsetHeight||80;
+    let tx=e.clientX-r.left+16, ty=e.clientY-r.top-th-8;
+    if(tx+tw > r.width-8)  tx=e.clientX-r.left-tw-8;
+    if(ty < 4)             ty=e.clientY-r.top+18;
+    tip.style.left=tx+'px'; tip.style.top=ty+'px';
+    tip.style.display='block';
+  } else {
+    canvas.style.cursor='default';
+    tip.style.display='none';
+  }
 });
+canvas.addEventListener('mouseleave',()=>{document.getElementById('cvTip').style.display='none';});
 
 function highlightCat(cat){
-  litCat=(litCat===cat)?null:cat;if(litCat)selIdx=null;qty=1;syncLegend();refresh();
+  litCat=(litCat===cat)?null:cat;
+  if(litCat)selIdx=null;
+  qty=1; syncLegend(); refresh();
 }
 function syncLegend(){
   document.querySelectorAll('.leg-item').forEach(e=>e.classList.toggle('active',e.id==='leg-'+litCat));
@@ -312,60 +494,66 @@ function syncLegend(){
 function renderCards(){
   const wrap=document.getElementById('zoneList');
   wrap.innerHTML=zones.map((z,i)=>{
-    const c=CAT_C[z.category]||'#6A0DAD',p=PM[z.category]||0;
-    const isSel=i===selIdx,isLit=z.category===litCat&&!isSel;
-    const avail=(z.totalSeats||0)-(z.bookedSeats||0),isSO=z.totalSeats>0&&avail<=0;
+    const c=CAT_C[z.category]||'#6A0DAD', p=PM[z.category]||0;
+    const isSel=i===selIdx, isLit=z.category===litCat&&!isSel;
+    const SO=isSO(z), a=avail(z);
+    const pct=barPct(z), bcol=barColor(z);
+    const cls=avClass(z), short=avShort(z);
+
     let sh='';
     if(z.shape==='triangle') sh=`<polygon points="16,2 30,30 2,30" fill="${c}1F" stroke="${c}" stroke-width="1.6"/>`;
     else if(z.shape==='round') sh=`<ellipse cx="16" cy="16" rx="14" ry="9" fill="${c}1F" stroke="${c}" stroke-width="1.6"/>`;
     else sh=`<rect x="2" y="6" width="28" height="20" rx="4" fill="${c}1F" stroke="${c}" stroke-width="1.6"/>`;
-    return `<div class="zc${isSel?' sel':''}${isSO?' so':''}${isLit?' lit':''}" style="--zc:${c}" onclick="selCard(${i})">
+
+    const availHtml = SO
+      ? `<div class="zc-avail crit"><i class="bi bi-x-circle-fill"></i> SOLD OUT</div>`
+      : (z.totalSeats>0 ? `
+        <div class="zc-avail ${cls}">
+          ${a<=3?'<i class="bi bi-exclamation-triangle-fill"></i>':a<=10?'<i class="bi bi-exclamation-triangle"></i>':''}
+          ${short}
+        </div>
+        <div class="zc-avail-bar"><div class="zc-avail-bar-fill" style="width:${pct}%;background:${bcol};"></div></div>` : '');
+
+    return `<div class="zc${isSel?' sel':''}${SO?' so':''}${isLit?' lit':''}" style="--zc:${c}" onclick="selCard(${i})">
       <div class="zc-ico"><svg viewBox="0 0 32 32">${sh}</svg></div>
       <div class="zc-info">
         <div class="zc-name">${z.name}</div>
         <div class="zc-cat" style="color:${c}">${z.category.toUpperCase()}</div>
-        <div class="zc-price">₹${p.toLocaleString('en-IN')}<span style="font-size:0.57rem;color:#444;"> / person</span></div>
-        ${(isSO||avail<=10)?`<div class="zc-avail" style="color:${isSO?'#FF4444':'#f5c842'}">${isSO?'SOLD OUT':`⚠ Only ${avail} left!`}</div>`:''}
+        <div class="zc-price">\u20b9${p.toLocaleString('en-IN')}<span style="font-size:0.57rem;color:#444;"> / person</span></div>
+        ${availHtml}
       </div>
-      <span class="zc-ck" style="color:${c}">✓</span>
+      <span class="zc-ck" style="color:${c}">\u2713</span>
     </div>`;
   }).join('');
-  document.getElementById('qtyStrip').className='qty-strip'+(selIdx!==null?' show':'');
+
+
 }
 
 function selCard(i){
-  const z=zones[i];if(z.totalSeats>0&&(z.totalSeats-z.bookedSeats)<=0)return;
-  selIdx=(selIdx===i)?null:i;if(selIdx!==null)litCat=null;qty=1;refresh();
+  const z=zones[i];
+  if(isSO(z))return;
+  selIdx=(selIdx===i)?null:i;
+  if(selIdx!==null)litCat=null;
+  qty=1; refresh();
 }
 
-/* ── QTY ── */
-function chQty(d){
-  if(selIdx===null)return;
-  const z=zones[selIdx],maxQ=z.totalSeats>0?Math.min(MAXQ,z.totalSeats-(z.bookedSeats||0)):MAXQ;
-  qty=Math.max(1,Math.min(maxQ,qty+d));
-  document.getElementById('qNum').textContent=qty;
-  document.getElementById('qMin').disabled=qty<=1;
-  document.getElementById('qMax').disabled=qty>=maxQ;
-  document.getElementById('qMaxLbl').textContent=`Max ${maxQ} tickets`;
-  document.getElementById('qTotal').textContent='₹'+((PM[z.category]||0)*qty+CONV_FEE).toLocaleString('en-IN');
-  updFooter();
-}
+
 
 function updFooter(){
   const btn=document.getElementById('btnNext');
   if(selIdx===null){
-    document.getElementById('sfZone').textContent='—';document.getElementById('sfPrice').textContent='—';
-    document.getElementById('sfQty').textContent='0';document.getElementById('sfTotal').textContent='₹'+CONV_FEE.toLocaleString('en-IN');
-    btn.disabled=true;return;
+    document.getElementById('sfZone').textContent='\u2014';
+    document.getElementById('sfPrice').textContent='\u2014';
+    document.getElementById('sfQty').textContent='0';
+    document.getElementById('sfTotal').textContent='\u20b9'+CONV_FEE.toLocaleString('en-IN');
+    btn.disabled=true; return;
   }
-  const z=zones[selIdx],p=PM[z.category]||0;
-  document.getElementById('sfZone').textContent=z.name;document.getElementById('sfPrice').textContent='₹'+p.toLocaleString('en-IN');
-  document.getElementById('sfQty').textContent=qty;document.getElementById('sfTotal').textContent='₹'+(p*qty+CONV_FEE).toLocaleString('en-IN');
-  document.getElementById('qTotal').textContent='₹'+(p*qty+CONV_FEE).toLocaleString('en-IN');
+  const z=zones[selIdx], p=PM[z.category]||0;
+  document.getElementById('sfZone').textContent=z.name;
+  document.getElementById('sfPrice').textContent='\u20b9'+p.toLocaleString('en-IN');
+  document.getElementById('sfQty').textContent=qty;
+  document.getElementById('sfTotal').textContent='\u20b9'+(p*qty+CONV_FEE).toLocaleString('en-IN');
   btn.disabled=false;
-  const maxQ=z.totalSeats>0?Math.min(MAXQ,z.totalSeats-(z.bookedSeats||0)):MAXQ;
-  document.getElementById('qMin').disabled=qty<=1;document.getElementById('qMax').disabled=qty>=maxQ;
-  document.getElementById('qMaxLbl').textContent=`Max ${maxQ} tickets`;
 }
 
 function refresh(){ syncLegend();draw();renderCards();updFooter(); }
@@ -374,10 +562,10 @@ function goNext(){
   if(selIdx===null)return;
   const z=zones[selIdx];
   sessionStorage.setItem('np_sel',JSON.stringify({eventId:EVENT_ID,zone:z.name,category:z.category,price:PM[z.category]||0,qty,convFee:CONV_FEE}));
-  window.location.href=`/booking/details/${EVENT_ID}?cat=${z.category}&qty=${qty}`;
+  window.location.href=`/booking/details/${EVENT_ID}?cat=${encodeURIComponent(z.category)}&qty=${qty}`;
 }
 
-renderCards();updFooter();draw();
+renderCards(); updFooter(); draw();
 </script>
 </body>
 </html>

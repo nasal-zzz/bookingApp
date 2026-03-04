@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>My Profile — NightPass</title>
+  <title>My Profile — MEE</title>
   <link href="https://fonts.googleapis.com/css2?family=Anton&family=Outfit:wght@400;500;600;700&family=Space+Mono&display=swap" rel="stylesheet"/>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet"/>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -153,6 +153,9 @@
   <%- include('../partials/navbar') %>
 
   <div class="page-wrap">
+    <a href="/#events" style="display:inline-flex;align-items:center;gap:0.4rem;color:#B3B3B3;text-decoration:none;font-size:0.78rem;font-family:'Space Mono',monospace;letter-spacing:1px;padding:0.35rem 0.75rem;border:1px solid rgba(255,255,255,0.08);border-radius:5px;background:rgba(255,255,255,0.03);margin-bottom:1.2rem;transition:all 0.15s;" onmouseover="this.style.color='#fff';this.style.borderColor='rgba(255,255,255,0.2)'" onmouseout="this.style.color='#B3B3B3';this.style.borderColor='rgba(255,255,255,0.08)'">
+      <i class="bi bi-house-fill"></i> Home
+    </a>
     <span class="eyebrow">// my account</span>
     <h1>MY <span style="color:var(--muted);">PROFILE</span></h1>
 
@@ -347,7 +350,9 @@
                   <i class="bi bi-arrow-repeat"></i> Retry Payment
                 </a>
                 <% } %>
-                
+                <button class="btn-delete-bk" onclick="deleteBooking('<%= booking._id %>', this)">
+                  <i class="bi bi-trash3-fill"></i> Delete
+                </button>
               </div>
               <% } %>
 
@@ -443,7 +448,7 @@
                 <div class="activity-dot dot-accent">🎉</div>
                 <div class="activity-info">
                   <div class="activity-title">Account created</div>
-                  <div class="activity-sub">Joined NightPass · Phone verified</div>
+                  <div class="activity-sub">Joined Melattur Entertainment Events · Phone verified</div>
                 </div>
                 <div class="activity-time"><%= new Date(user.createdAt).toLocaleDateString('en-IN', {day:'numeric',month:'short',year:'numeric'}) %></div>
               </div>
@@ -514,7 +519,7 @@
         if (!data.success) { alert(data.message || 'Unable to initiate payment.'); return; }
         const rzp = new Razorpay({
           key: data.key, amount: data.amount, currency: data.currency,
-          name: 'NightPass', description: data.description || 'Ticket Payment',
+          name: 'Melattur Entertainment Events', description: data.description || 'Ticket Payment',
           order_id: data.orderId, prefill: data.prefill,
           theme: { color: '#6A0DAD', backdrop_color: '#0B0B0F' },
           handler: async function(response) {
@@ -581,7 +586,7 @@
         // Brand
         doc.setFont('helvetica', 'normal'); doc.setFontSize(7);
         doc.setTextColor(120, 140, 80);
-        doc.text('NIGHTPASS · KOCHI', 12, 14);
+        doc.text('MEE · MELATTUR', 12, 14);
 
         // Event name
         doc.setFont('helvetica', 'bold'); doc.setFontSize(20);
@@ -671,7 +676,7 @@
         doc.setTextColor(60, 70, 50);
         doc.text('SCAN AT ENTRY · 18+ · VALID PHOTO ID REQUIRED', rx, H - 6);
 
-        doc.save('NightPass_' + ticketData.ticketId + '.pdf');
+        doc.save('Melattur Entertainment Events_' + ticketData.ticketId + '.pdf');
       } catch(e) {
         console.error('PDF error:', e);
         alert('PDF generation failed. Please try again.');

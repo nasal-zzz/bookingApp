@@ -35,18 +35,7 @@
 </head>
 <body>
 <div class="admin-layout">
-  <aside class="sidebar">
-    <a href="/admin" class="s-logo"><img src="/img/mee-logo.png" alt="MEE" style="height:28px;width:auto;object-fit:contain;"/></a>
-    <div class="s-section">Main</div>
-    <a href="/admin"          class="s-link"><i class="bi bi-speedometer2"></i> Dashboard</a>
-    <a href="/admin/bookings" class="s-link"><i class="bi bi-ticket-perforated-fill"></i> Bookings</a>
-    <div class="s-section">Events</div>
-    <a href="/admin/events/new" class="s-link"><i class="bi bi-plus-circle-fill"></i> New Event</a>
-    <a href="/admin/reviews"    class="s-link"><i class="bi bi-star-fill"></i> Reviews</a>
-    <a href="/admin/banners"    class="s-link"><i class="bi bi-image-fill"></i> Banners</a>
-    <a href="/" class="s-link" target="_blank"><i class="bi bi-box-arrow-up-right"></i> View Site</a>
-    <a href="/admin/logout" class="s-logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
-  </aside>
+    <%- include('../partials/admin-sidebar', { activePage: 'error' }) %>
   <main class="main">
     <div class="err-card">
       <div class="err-icon"><i class="bi bi-exclamation-triangle-fill"></i></div>

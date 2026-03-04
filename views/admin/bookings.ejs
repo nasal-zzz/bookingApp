@@ -59,31 +59,13 @@
     .empty-row{text-align:center;padding:2.5rem;color:#444;}
     @media(max-width:900px){.admin-layout{grid-template-columns:1fr;}.sidebar{display:none;}}
     @keyframes spin{to{transform:rotate(360deg)}}
+    .btn-back-dash{display:inline-flex;align-items:center;gap:0.3rem;color:var(--muted);text-decoration:none;font-size:0.78rem;font-family:'Space Mono',monospace;letter-spacing:1px;padding:0.35rem 0.75rem;border:1px solid var(--border);border-radius:5px;background:rgba(255,255,255,0.03);margin-bottom:1.5rem;transition:all 0.15s;}
+    .btn-back-dash:hover{color:#fff;border-color:rgba(255,255,255,0.2);background:rgba(255,255,255,0.06);}
   </style>
 </head>
 <body>
 <div class="admin-layout">
-  <aside class="sidebar">
-    <a href="/admin" class="s-logo"><img src="/img/mee-logo.png" alt="MEE" style="height:28px;width:auto;object-fit:contain;"/></a>
-    <div class="s-section">Main</div>
-    <a href="/admin"          class="s-link"><i class="bi bi-speedometer2"></i> Dashboard</a>
-    <a href="/admin/bookings" class="s-link active"><i class="bi bi-ticket-perforated-fill"></i> Bookings</a>
-    <a href="/admin/participants" class="s-link"><i class="bi bi-person-check-fill"></i> Participants</a>
-    <a href="/admin/entered-tickets" class="s-link"><i class="bi bi-door-open-fill"></i> Entered Tickets</a>
-    <a href="/admin/users-by-event" class="s-link"><i class="bi bi-people-fill"></i> Users by Event</a>
-    <div class="s-section">Events</div>
-    <a href="/admin/events/new" class="s-link"><i class="bi bi-plus-circle-fill"></i> New Event</a>
-    <a href="/admin/reviews"    class="s-link"><i class="bi bi-star-fill"></i> Reviews</a>
-    <a href="/admin/banners"    class="s-link"><i class="bi bi-image-fill"></i> Banners</a>
-    <a href="/" class="s-link" target="_blank"><i class="bi bi-box-arrow-up-right"></i> View Site</a>
-    <a href="/admin/coupons"        class="s-link"><i class="bi bi-tag-fill"></i> Coupons</a>
-    <a href="/admin/staff" class="s-link"><i class="bi bi-people-fill"></i> Staff</a>
-    <a href="/admin/profile" class="s-link"><i class="bi bi-person-circle"></i> My Profile</a>
-    <% if(locals.isSuperAdmin){ %>
-    <a href="/superadmin" class="s-link" style="color:#9D4EDD;border-color:rgba(157,78,221,0.2);background:rgba(157,78,221,0.06);"><i class="bi bi-shield-lock-fill" style="color:#9D4EDD;"></i> SuperAdmin Panel</a>
-    <% } %>
-    <a href="/admin/logout" class="s-logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
-  </aside>
+    <%- include('../partials/admin-sidebar', { activePage: 'bookings' }) %>
 
   <main class="main">
     <div class="page-header">

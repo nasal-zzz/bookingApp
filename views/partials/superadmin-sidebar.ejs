@@ -1,0 +1,24 @@
+<%
+var _active = locals.activePage || '';
+function _isActive(page) { return _active === page ? ' active' : ''; }
+%>
+<aside class="sidebar">
+  <a href="/superadmin" class="s-logo">
+    <img src="/img/mee-logo.png" alt="MEE" style="height:28px;width:auto;object-fit:contain;"/>
+  </a>
+  <span class="s-badge">&#11041; SUPER ADMIN</span>
+
+  <a href="/superadmin"                 class="s-link<%- _isActive('dashboard') %>">       <i class="bi bi-speedometer2"></i>         Dashboard</a>
+  <a href="/superadmin/staff"           class="s-link<%- _isActive('staff') %>">           <i class="bi bi-people-fill"></i>          Staff &amp; Admins</a>
+  <a href="/superadmin/coupons"         class="s-link<%- _isActive('coupons') %>">         <i class="bi bi-tag-fill"></i>             Coupons</a>
+  <a href="/superadmin/users-by-event"  class="s-link<%- _isActive('users-by-event') %>">  <i class="bi bi-person-lines-fill"></i>    Users by Event</a>
+  <a href="/superadmin/entered-tickets" class="s-link<%- _isActive('entered-tickets') %>"> <i class="bi bi-door-open-fill"></i>       Entered Tickets</a>
+
+  <div class="s-section">Switch</div>
+  <a href="/admin" class="s-link"><i class="bi bi-grid-fill"></i> Admin Panel</a>
+  <a href="/" class="s-link" target="_blank" rel="noopener"><i class="bi bi-box-arrow-up-right"></i> View Site</a>
+
+  <a href="/superadmin/logout" class="s-logout" style="margin-top:auto;">
+    <i class="bi bi-box-arrow-right"></i> Logout
+  </a>
+</aside>

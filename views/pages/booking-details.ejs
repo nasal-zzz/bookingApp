@@ -5,7 +5,7 @@
   <title>Step 2 — Attendee Details · <%= event.name %></title>
   <%- include('../partials/head') %>
   <style>
-    .step-bar{background:#0e0e18;border-bottom:1px solid rgba(255,255,255,0.07);padding:0 1.5rem;height:52px;display:flex;align-items:center;justify-content:space-between;gap:1rem;}
+    .step-bar{background:#0e0e18;border-bottom:1px solid rgba(255,255,255,0.07);padding:0 0.75rem;height:44px;display:flex;align-items:center;justify-content:space-between;gap:0.5rem;}
     .step-back{display:flex;align-items:center;gap:0.4rem;color:#B3B3B3;text-decoration:none;font-size:0.78rem;transition:color 0.2s;white-space:nowrap;}
     .step-back:hover{color:#fff;}
     .steps{display:flex;align-items:center;flex:1;justify-content:center;}
@@ -148,6 +148,13 @@
     .pf-btn-retry:hover{box-shadow:0 0 24px rgba(106,13,173,0.5);transform:translateY(-1px);}
     .pf-btn-back{display:flex;align-items:center;justify-content:center;gap:0.5rem;padding:0.75rem;background:transparent;color:#B3B3B3;border:1px solid rgba(255,255,255,0.1);border-radius:8px;font-size:0.85rem;cursor:pointer;transition:all 0.18s;text-decoration:none;}
     .pf-btn-back:hover{border-color:rgba(255,255,255,0.25);color:#fff;}
+    @media(max-width:480px){
+      .step-bar{padding:0 0.6rem;height:42px;}
+      .step-item{font-size:0.58rem;gap:0.22rem;}
+      .step-num{width:17px;height:17px;font-size:0.5rem;}
+      .step-line{width:14px;}
+      .step-back{font-size:0.68rem;}
+    }
   </style>
 </head>
 <body>
@@ -164,8 +171,6 @@
     </div>
     <div class="event-lbl"><%= event.name.toUpperCase() %></div>
   </div>
-
-  <%- include('../partials/navbar') %>
 
   <!-- Toast container -->
   <div id="toast-container"></div>
@@ -229,8 +234,13 @@
             <div class="qty-right">
               <div class="qty-total-lbl">TOTAL AMOUNT</div>
               <div class="qty-total-val" id="qtyTotalAmt">—</div>
-              <div style="font-size:0.68rem;color:#555;margin-top:0.15rem;">Max 10 per booking</div>
+              <div id="qtyHint" style="font-size:0.68rem;color:#555;margin-top:0.15rem;">Max 10 per booking</div>
             </div>
+          </div>
+          <!-- Availability warning -->
+          <div id="qtyAvailWarn" style="display:none;margin-top:0.75rem;padding:0.5rem 0.75rem;border-radius:8px;font-size:0.72rem;display:none;align-items:center;gap:0.4rem;">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            <span id="qtyAvailWarnTxt"></span>
           </div>
           <div class="qty-chips" id="qtyChips" style="display:none;">
             <div class="tix-chip"><i class="bi bi-ticket-perforated-fill"></i> TICKET #1</div>
@@ -385,7 +395,11 @@
       const priceEl=document.getElementById('selTicketPrice');
       if(priceEl){priceEl.textContent='₹'+price.toLocaleString('en-IN')+' per person';}
 
-      qty=Math.min(urlQty,10);
+      // Cap qty by available seats for this ticket type
+      const _tt = EVENT_DATA.ticketTypes.find(t=>t.category===selTypeName);
+      const _avail = _tt ? Math.max(0, (_tt.totalSeats||999) - (_tt.bookedSeats||0)) : 999;
+      const _maxQ = _avail > 0 ? Math.min(10, _avail) : 10;
+      qty = Math.min(urlQty, _maxQ);
 
       // Update zone banner
       document.getElementById('zbZone').textContent=selZone?(selZone+' Zone'):selTypeName.toUpperCase()+' ZONE';
@@ -399,14 +413,54 @@
   // (Ticket type is locked from step 1 — no tier selection needed here)
 
   // ─── QTY ─────────────────────────────────────────────────────────
+  function getMaxQty(){
+    const tt=EVENT_DATA.ticketTypes.find(t=>t.category===selTypeName);
+    if(!tt||!tt.totalSeats) return 10;
+    const avail=Math.max(0,(tt.totalSeats||0)-(tt.bookedSeats||0));
+    return avail>0 ? Math.min(10,avail) : 10;
+  }
   function changeQty(d){
-    const n=qty+d;if(n<1||n>10)return;qty=n;
+    const mq=getMaxQty();
+    const n=qty+d;if(n<1||n>mq)return;qty=n;
     setQtyDisplay(); updateChips(); updateAttendeeForms(); updateSummary();
   }
   function setQtyDisplay(){
+    const mq=getMaxQty();
+    const tt=EVENT_DATA.ticketTypes.find(t=>t.category===selTypeName);
+    const avail=tt&&tt.totalSeats?Math.max(0,(tt.totalSeats||0)-(tt.bookedSeats||0)):999;
     document.getElementById('qtyDisplay').textContent=qty;
     document.getElementById('qtyMinus').disabled=qty<=1;
-    document.getElementById('qtyPlus').disabled=qty>=10;
+    document.getElementById('qtyPlus').disabled=qty>=mq;
+    // Update hint text
+    const hintEl=document.getElementById('qtyHint');
+    if(hintEl){
+      if(avail>0&&avail<=10){
+        hintEl.textContent='Only '+avail+' ticket'+(avail===1?'':'s')+' left';
+        hintEl.style.color=avail<=3?'#FF4444':'#f5c842';
+        hintEl.style.display='block';
+      } else {
+        hintEl.textContent='Max '+mq+' per booking';
+        hintEl.style.color='#555';
+        hintEl.style.display='block';
+      }
+    }
+    // Availability warning banner
+    const warnEl=document.getElementById('qtyAvailWarn');
+    const warnTxt=document.getElementById('qtyAvailWarnTxt');
+    if(warnEl&&warnTxt){
+      if(avail>0&&avail<=10){
+        const isLow=avail<=3;
+        warnEl.style.display='flex';
+        warnEl.style.background=isLow?'rgba(255,68,68,.07)':'rgba(245,200,66,.07)';
+        warnEl.style.border='1px solid '+(isLow?'rgba(255,68,68,.25)':'rgba(245,200,66,.25)');
+        warnEl.style.color=isLow?'#FF4444':'#f5c842';
+        warnTxt.textContent=isLow
+          ? 'Only '+avail+' ticket'+(avail===1?'':'s')+' left — book now!'
+          : 'Hurry! Only '+avail+' tickets remaining for this zone.';
+      } else {
+        warnEl.style.display='none';
+      }
+    }
   }
   function updateChips(){
     const c=document.getElementById('qtyChips');c.innerHTML='';
@@ -463,6 +517,19 @@
         <i class="bi bi-chat-left-text"></i> Add special request
       </div>
       <textarea class="special-inp" id="sp-${n}" rows="2" placeholder="E.g. wheelchair access..."></textarea>`;
+    // Live blur validation for this attendee card
+    var nEl = document.getElementById ? el.querySelector('#n-'+n) : null;
+    // Use setTimeout to ensure DOM is appended before querying
+    setTimeout(function(){
+      var nf = document.getElementById('n-'+n);
+      var af = document.getElementById('a-'+n);
+      var gf = document.getElementById('g-'+n);
+      function clearErr(inp, errId){ inp.classList.remove('err'); document.getElementById(errId).classList.remove('show'); }
+      function showErr(inp, errId){ inp.classList.add('err'); document.getElementById(errId).classList.add('show'); }
+      if(nf){ nf.addEventListener('blur', function(){ if(nf.value.trim().length>=2){ clearErr(nf,'ne-'+n); } else { showErr(nf,'ne-'+n); } }); nf.addEventListener('input', function(){ if(nf.classList.contains('err')&&nf.value.trim().length>=2) clearErr(nf,'ne-'+n); }); }
+      if(af){ af.addEventListener('blur', function(){ var v=parseInt(af.value); if(!isNaN(v)&&v>=1&&v<=120){ clearErr(af,'ae-'+n); } else { showErr(af,'ae-'+n); } }); af.addEventListener('input', function(){ if(af.classList.contains('err')){ var v=parseInt(af.value); if(!isNaN(v)&&v>=1&&v<=120) clearErr(af,'ae-'+n); } }); }
+      if(gf){ gf.addEventListener('change', function(){ if(gf.value){ clearErr(gf,'ge-'+n); } else { showErr(gf,'ge-'+n); } }); }
+    }, 0);
     return el;
   }
 
@@ -617,6 +684,7 @@
   // ─── PAYMENT FAILED OVERLAY ────────────────────────────────────────
   var _lastOrderId = null;
   var _lastPayData = null;
+  var _paymentCompleted = false;
 
   function showPayFailed(errMsg) {
     document.getElementById('pfErrorMsg').textContent = errMsg || 'Please try again or use a different payment method.';
@@ -678,6 +746,7 @@
   }
 
   function launchRazorpay(data) {
+    _paymentCompleted = false;
     var rzp = new Razorpay({
       key: data.key, amount: data.amount, currency: data.currency,
       name: 'Melattur Entertainment Events',
@@ -686,15 +755,21 @@
       theme: { color: '#6A0DAD', backdrop_color: '#0B0B0F' },
       modal: {
         ondismiss: function(){
-          fetch('/booking/save-pending', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify({ orderId: data.orderId })
-          }).catch(function(){});
-          setLoading(false);
+          // Delay 900ms — if handler fired (payment succeeded), _paymentCompleted will be true
+          // This prevents the race where ondismiss and handler fire at nearly the same time
+          setTimeout(function(){
+            if(_paymentCompleted) return;
+            fetch('/booking/save-pending', {
+              method: 'POST', headers: { 'Content-Type': 'application/json' },
+              credentials: 'include',
+              body: JSON.stringify({ orderId: data.orderId })
+            }).catch(function(){});
+            setLoading(false);
+          }, 900);
         }
       },
       handler: function(response){
+        _paymentCompleted = true; // set immediately before any async work
         showToast('Verifying payment', 'Please wait a moment...', 'info', 9000);
         fetch('/booking/verify-payment', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },

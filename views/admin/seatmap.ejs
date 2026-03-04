@@ -24,8 +24,6 @@
     .btn-teal{background:rgba(0,200,180,0.12);color:#00c8b4;border:1px solid rgba(0,200,180,0.3);}.btn-teal:hover{background:rgba(0,200,180,0.22);}
     .save-status{font-size:0.68rem;color:#B3B3B3;}
     .workspace{display:flex;flex:1;overflow:hidden;}
-
-    /* LEFT PANEL */
     .panel{width:248px;background:#14141C;border-right:1px solid rgba(255,255,255,0.08);overflow-y:auto;flex-shrink:0;display:flex;flex-direction:column;}
     .ps{padding:0.8rem;border-bottom:1px solid rgba(255,255,255,0.06);}
     .pt{font-family:'Space Mono',monospace;font-size:0.52rem;letter-spacing:2px;color:#666;margin-bottom:0.6rem;text-transform:uppercase;}
@@ -37,7 +35,6 @@
     .sbtn{padding:0.45rem 0.25rem;border-radius:6px;background:#0B0B0F;border:1.5px solid rgba(255,255,255,0.08);color:#666;cursor:pointer;font-size:0.62rem;text-align:center;transition:all 0.2s;font-family:'Poppins',sans-serif;line-height:1.4;}
     .sbtn em{font-size:1rem;display:block;margin-bottom:0.08rem;font-style:normal;}
     .sbtn.on,.sbtn:hover{border-color:#6A0DAD;color:#9D4EDD;background:rgba(106,13,173,0.1);}
-    /* zone list */
     .zlist{display:flex;flex-direction:column;gap:0.3rem;}
     .zitem{background:#0B0B0F;border:1px solid rgba(255,255,255,0.06);border-radius:6px;padding:0.4rem 0.6rem;display:flex;align-items:center;gap:0.35rem;cursor:pointer;transition:border-color 0.2s;}
     .zitem:hover,.zitem.sel{border-color:rgba(106,13,173,0.45);}
@@ -47,7 +44,6 @@
     .zseats{font-size:0.6rem;color:#666;font-family:'Space Mono',monospace;min-width:24px;text-align:right;}
     .zrotlbl{font-size:0.58rem;color:#555;font-family:'Space Mono',monospace;min-width:28px;text-align:right;}
     .zrm{background:none;border:none;color:#FF4444;cursor:pointer;font-size:0.7rem;padding:0.1rem 0.15rem;flex-shrink:0;}
-    /* rotation panel */
     .rot-wrap{background:#0B0B0F;border-radius:8px;padding:0.7rem;border:1px solid rgba(106,13,173,0.2);}
     .rot-head{font-family:'Space Mono',monospace;font-size:0.52rem;letter-spacing:1.5px;color:#666;text-transform:uppercase;margin-bottom:0.5rem;display:flex;align-items:center;justify-content:space-between;}
     .rot-deg{color:#9D4EDD;font-size:0.72rem;}
@@ -63,18 +59,15 @@
     .rot-fine{display:flex;gap:0.25rem;}
     .rf-btn{flex:1;padding:0.28rem 0;border-radius:5px;background:#0B0B0F;border:1px solid rgba(255,255,255,0.07);color:#B3B3B3;cursor:pointer;font-size:0.62rem;font-family:'Space Mono',monospace;text-align:center;transition:all 0.18s;}
     .rf-btn:hover{border-color:#6A0DAD;color:#9D4EDD;}
-    /* edit panel */
     .edit-wrap{background:#0B0B0F;border-radius:8px;padding:0.7rem;border:1px solid rgba(106,13,173,0.2);}
     .hint{background:rgba(106,13,173,0.07);border:1px solid rgba(106,13,173,0.15);border-radius:6px;padding:0.5rem 0.6rem;font-size:0.63rem;color:#666;line-height:1.7;}
     .hint b{color:#9D4EDD;}
-    /* canvas */
     .canvas-area{flex:1;display:flex;flex-direction:column;overflow:hidden;}
     .ctoolbar{padding:0.45rem 0.8rem;background:#14141C;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;gap:0.5rem;flex-shrink:0;flex-wrap:wrap;}
     .tbtn{padding:0.3rem 0.65rem;border-radius:4px;background:transparent;border:1px solid rgba(255,255,255,0.1);color:#666;cursor:pointer;font-size:0.7rem;font-family:'Poppins',sans-serif;transition:all 0.2s;}
     .tbtn.on,.tbtn:hover{background:rgba(106,13,173,0.15);border-color:#6A0DAD;color:#9D4EDD;}
     .canvas-wrap{flex:1;overflow:auto;padding:1rem;background:#0B0B0F;}
     canvas{cursor:default;background:#0f0f18;border-radius:10px;border:1px solid rgba(255,255,255,0.06);display:block;}
-    /* right panel */
     .rpanel{width:172px;background:#14141C;border-left:1px solid rgba(255,255,255,0.08);padding:0.8rem;overflow-y:auto;flex-shrink:0;}
     .rpt{font-family:'Space Mono',monospace;font-size:0.52rem;letter-spacing:2px;color:#666;margin-bottom:0.7rem;text-transform:uppercase;}
     .sbox{background:#0B0B0F;border-radius:7px;padding:0.65rem;margin-bottom:0.45rem;}
@@ -87,7 +80,6 @@
     .selrow{display:flex;justify-content:space-between;font-size:0.68rem;padding:0.12rem 0;}
     .selrow span:first-child{color:#666;}
     .selrow span:last-child{color:#fff;font-weight:600;}
-    /* preview modal */
     .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:900;display:none;align-items:center;justify-content:center;}
     .modal-bg.show{display:flex;}
     .modal{background:#14141C;border:1px solid rgba(255,255,255,0.1);border-radius:14px;padding:1.5rem;max-width:90vw;max-height:90vh;overflow:auto;position:relative;}
@@ -99,6 +91,28 @@
     .toast{position:fixed;bottom:1.2rem;left:50%;transform:translateX(-50%);padding:0.55rem 1.1rem;border-radius:7px;font-size:0.8rem;z-index:999;display:none;pointer-events:none;}
     .toast.ok{background:#14141C;border:1px solid rgba(0,255,136,0.35);color:#00FF88;}
     .toast.err{background:#14141C;border:1px solid rgba(255,68,68,0.35);color:#FF4444;}
+    .toast.warn{background:#14141C;border:1px solid rgba(245,200,66,0.4);color:#f5c842;}
+    .inactive-banner{display:none;width:100%;background:rgba(245,200,66,0.08);border-bottom:1.5px solid rgba(245,200,66,0.35);padding:0.4rem 1.1rem;font-size:0.72rem;color:#f5c842;align-items:center;gap:0.55rem;flex-shrink:0;}
+    .inactive-banner.show{display:flex;}
+    .inactive-banner i{font-size:0.85rem;}
+    .inactive-banner b{color:#fff;}
+    .inactive-banner .ib-btn{margin-left:auto;padding:0.22rem 0.75rem;background:rgba(245,200,66,0.15);border:1px solid rgba(245,200,66,0.4);color:#f5c842;border-radius:5px;font-size:0.68rem;font-weight:700;cursor:pointer;font-family:'Poppins',sans-serif;transition:background 0.2s;white-space:nowrap;}
+    .inactive-banner .ib-btn:hover{background:rgba(245,200,66,0.28);}
+    .cat-bal{margin-top:0.7rem;}
+    .cb-row{background:#0B0B0F;border-radius:7px;padding:0.5rem 0.65rem;margin-bottom:0.35rem;border:1.5px solid rgba(255,255,255,0.05);transition:border-color 0.2s;}
+    .cb-row.cb-warn{border-color:rgba(245,200,66,0.35);}
+    .cb-row.cb-over{border-color:rgba(255,68,68,0.45);}
+    .cb-row.cb-ok{border-color:rgba(0,255,136,0.2);}
+    .cb-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.35rem;}
+    .cb-name{font-size:0.65rem;font-weight:700;letter-spacing:0.5px;}
+    .cb-badge{font-family:'Space Mono',monospace;font-size:0.58rem;padding:0.1rem 0.38rem;border-radius:4px;font-weight:700;}
+    .cb-badge.ok{background:rgba(0,255,136,0.1);color:#00FF88;border:1px solid rgba(0,255,136,0.25);}
+    .cb-badge.warn{background:rgba(245,200,66,0.1);color:#f5c842;border:1px solid rgba(245,200,66,0.3);}
+    .cb-badge.over{background:rgba(255,68,68,0.12);color:#FF4444;border:1px solid rgba(255,68,68,0.35);}
+    .cb-nums{display:flex;justify-content:space-between;font-size:0.6rem;color:#555;margin-bottom:0.28rem;}
+    .cb-nums span:last-child{font-family:'Space Mono',monospace;font-weight:600;}
+    .cb-bar{height:4px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden;}
+    .cb-bar-fill{height:100%;border-radius:2px;transition:width 0.3s,background 0.3s;}
   </style>
 </head>
 <body>
@@ -112,62 +126,62 @@
     <span class="save-status" id="saveStatus"></span>
     <button class="btn btn-teal"   onclick="exportPNG()"><i class="bi bi-image"></i> Export PNG</button>
     <button class="btn btn-amber"  onclick="flipLayout()"><i class="bi bi-arrow-down-up"></i> Flip</button>
-    <button class="btn btn-outline" onclick="location.href='/admin'">← Back</button>
+    <button class="btn btn-outline" onclick="location.href='/admin'">&#8592; Back</button>
     <button class="btn btn-red"    onclick="clearAll()"><i class="bi bi-trash"></i> Clear</button>
     <button class="btn btn-purple" onclick="saveMap()"><i class="bi bi-floppy"></i> Save</button>
-    <button class="btn btn-green"  id="activateBtn" onclick="toggleActivate()">
-      <%= seatMap && seatMap.isActive ? '✅ Active' : '⚡ Activate' %>
+    <button class="btn <%= seatMap && seatMap.isActive ? 'btn-green' : 'btn-amber' %>" id="activateBtn" onclick="toggleActivate()">
+      <%= seatMap && seatMap.isActive ? '&#9989; Active' : '&#9889; Activate' %>
     </button>
   </div>
 </nav>
 
+<div class="inactive-banner" id="inactiveBanner">
+  <i class="bi bi-exclamation-triangle-fill"></i>
+  <span>This seat map is <b>saved but not activated</b> &#8212; users cannot see it until you activate it.</span>
+  <button class="ib-btn" onclick="toggleActivate()"><i class="bi bi-lightning-fill"></i> Activate Now</button>
+</div>
+
 <div class="workspace">
-
-  <!-- ═══ LEFT PANEL ═══ -->
   <div class="panel">
-
-    <!-- Stage -->
     <div class="ps">
-      <div class="pt">🎭 Stage</div>
+      <div class="pt">&#127917; Stage</div>
       <label class="lbl">Label</label>
       <input class="inp" id="stageLabel" value="<%= (seatMap&&seatMap.stage)?seatMap.stage.label:'STAGE' %>" oninput="draw()"/>
       <label class="lbl">Shape</label>
       <div class="sgrid">
-        <button class="sbtn <%=(!seatMap||!seatMap.stage||seatMap.stage.shape==='rectangle')?'on':''%>" data-stage="rectangle" onclick="setStageShape('rectangle',this)"><em>▬</em>Rectangle</button>
-        <button class="sbtn <%=(seatMap&&seatMap.stage&&seatMap.stage.shape==='semicircle')?'on':''%>" data-stage="semicircle" onclick="setStageShape('semicircle',this)"><em>⌒</em>Semicircle</button>
-        <button class="sbtn <%=(seatMap&&seatMap.stage&&seatMap.stage.shape==='thrust')?'on':''%>" data-stage="thrust" onclick="setStageShape('thrust',this)"><em>⬡</em>Thrust</button>
-        <button class="sbtn <%=(seatMap&&seatMap.stage&&seatMap.stage.shape==='intheround')?'on':''%>" data-stage="intheround" onclick="setStageShape('intheround',this)"><em>◎</em>In-Round</button>
+        <button class="sbtn <%=(!seatMap||!seatMap.stage||seatMap.stage.shape==='rectangle')?'on':''%>" data-stage="rectangle" onclick="setStageShape('rectangle',this)"><em>&#9644;</em>Rectangle</button>
+        <button class="sbtn <%=(seatMap&&seatMap.stage&&seatMap.stage.shape==='semicircle')?'on':''%>" data-stage="semicircle" onclick="setStageShape('semicircle',this)"><em>&#8978;</em>Semicircle</button>
+        <button class="sbtn <%=(seatMap&&seatMap.stage&&seatMap.stage.shape==='thrust')?'on':''%>" data-stage="thrust" onclick="setStageShape('thrust',this)"><em>&#11137;</em>Thrust</button>
+        <button class="sbtn <%=(seatMap&&seatMap.stage&&seatMap.stage.shape==='intheround')?'on':''%>" data-stage="intheround" onclick="setStageShape('intheround',this)"><em>&#9676;</em>In-Round</button>
       </div>
     </div>
-
-    <!-- Add Zone -->
     <div class="ps">
-      <div class="pt">➕ Add Zone</div>
+      <div class="pt">&#10133; Add Zone</div>
       <label class="lbl">Zone Name</label>
       <input class="inp" id="newName" placeholder="e.g. FRONT, VIP LEFT"/>
       <label class="lbl">Ticket Category</label>
       <select class="inp" id="newCat">
         <% event.ticketTypes.forEach(t=>{ %>
-        <option value="<%= t.category %>"><%= t.category.toUpperCase() %> · ₹<%= t.price %></option>
+        <option value="<%= t.category %>"><%= t.category.toUpperCase() %> &#183; &#8377;<%= t.price %></option>
         <% }); %>
       </select>
       <label class="lbl">Zone Shape</label>
       <div class="sgrid3">
-        <button class="sbtn on" id="zs-rect"     onclick="setZoneShape('rect',this)"><em>▬</em>Rect</button>
-        <button class="sbtn"   id="zs-round"    onclick="setZoneShape('round',this)"><em>⬭</em>Oval</button>
-        <button class="sbtn"   id="zs-triangle" onclick="setZoneShape('triangle',this)"><em>▲</em>Triangle</button>
+        <button class="sbtn on" id="zs-rect"     onclick="setZoneShape('rect',this)"><em>&#9644;</em>Rect</button>
+        <button class="sbtn"   id="zs-round"    onclick="setZoneShape('round',this)"><em>&#11053;</em>Oval</button>
+        <button class="sbtn"   id="zs-triangle" onclick="setZoneShape('triangle',this)"><em>&#9650;</em>Triangle</button>
       </div>
       <label class="lbl">Total Seats in Zone</label>
       <input class="inp" id="newTotalSeats" type="number" min="0" max="9999" placeholder="e.g. 200" value="0"/>
+      <div id="newSeatsHint" style="font-size:0.6rem;margin-bottom:0.45rem;color:#555;font-family:'Space Mono',monospace;"></div>
       <button class="btn btn-purple" style="width:100%;justify-content:center;" onclick="addZone()"><i class="bi bi-plus-circle"></i> Add Zone</button>
     </div>
-
-    <!-- Selected Zone Edit -->
     <div class="ps" id="editPanel" style="display:none;">
-      <div class="pt">✏️ Edit Selected Zone</div>
+      <div class="pt">&#9999;&#65039; Edit Selected Zone</div>
       <div class="edit-wrap">
         <label class="lbl">Total Seats</label>
         <input class="inp" id="selTotalSeats" type="number" min="0" placeholder="Seats in zone" oninput="updateSelSeats()"/>
+        <div id="selSeatsHint" style="font-size:0.6rem;margin-bottom:0.45rem;color:#555;font-family:'Space Mono',monospace;"></div>
         <label class="lbl">Category</label>
         <select class="inp" id="selCategory" onchange="updateSelCategory()">
           <% event.ticketTypes.forEach(t=>{ %>
@@ -176,13 +190,11 @@
         </select>
       </div>
     </div>
-
-    <!-- Rotation -->
     <div class="ps" id="rotPanel" style="display:none;">
       <div class="rot-wrap">
         <div class="rot-head">
-          <span>🔄 Rotation</span>
-          <span class="rot-deg" id="rotDegLabel">0°</span>
+          <span>&#128260; Rotation</span>
+          <span class="rot-deg" id="rotDegLabel">0&#176;</span>
         </div>
         <div class="dial-wrap">
           <div class="dial" id="dialEl">
@@ -192,54 +204,49 @@
         </div>
         <input type="range" class="rot-slider" id="rotSlider" min="0" max="359" value="0" oninput="onSlider(this.value)"/>
         <div class="rot-presets">
-          <button class="rp-btn" onclick="setRot(0)">0°</button>
-          <button class="rp-btn" onclick="setRot(45)">45°</button>
-          <button class="rp-btn" onclick="setRot(90)">90°</button>
-          <button class="rp-btn" onclick="setRot(135)">135°</button>
-          <button class="rp-btn" onclick="setRot(180)">180°</button>
-          <button class="rp-btn" onclick="setRot(225)">225°</button>
-          <button class="rp-btn" onclick="setRot(270)">270°</button>
-          <button class="rp-btn" onclick="setRot(315)">315°</button>
+          <button class="rp-btn" onclick="setRot(0)">0&#176;</button>
+          <button class="rp-btn" onclick="setRot(45)">45&#176;</button>
+          <button class="rp-btn" onclick="setRot(90)">90&#176;</button>
+          <button class="rp-btn" onclick="setRot(135)">135&#176;</button>
+          <button class="rp-btn" onclick="setRot(180)">180&#176;</button>
+          <button class="rp-btn" onclick="setRot(225)">225&#176;</button>
+          <button class="rp-btn" onclick="setRot(270)">270&#176;</button>
+          <button class="rp-btn" onclick="setRot(315)">315&#176;</button>
         </div>
         <div class="rot-fine">
-          <button class="rf-btn" onclick="nudgeRot(-15)">-15°</button>
-          <button class="rf-btn" onclick="nudgeRot(-5)">-5°</button>
-          <button class="rf-btn" onclick="nudgeRot(-1)">-1°</button>
-          <button class="rf-btn" onclick="nudgeRot(1)">+1°</button>
-          <button class="rf-btn" onclick="nudgeRot(5)">+5°</button>
-          <button class="rf-btn" onclick="nudgeRot(15)">+15°</button>
+          <button class="rf-btn" onclick="nudgeRot(-15)">-15&#176;</button>
+          <button class="rf-btn" onclick="nudgeRot(-5)">-5&#176;</button>
+          <button class="rf-btn" onclick="nudgeRot(-1)">-1&#176;</button>
+          <button class="rf-btn" onclick="nudgeRot(1)">+1&#176;</button>
+          <button class="rf-btn" onclick="nudgeRot(5)">+5&#176;</button>
+          <button class="rf-btn" onclick="nudgeRot(15)">+15&#176;</button>
         </div>
       </div>
     </div>
-
-    <!-- Zone List -->
     <div class="ps" style="flex:1;">
-      <div class="pt">📋 Zones (<span id="zoneCount">0</span>)</div>
+      <div class="pt">&#128203; Zones (<span id="zoneCount">0</span>)</div>
       <div class="zlist" id="zoneList"><div style="color:#444;font-size:0.73rem;">No zones yet.</div></div>
     </div>
-
-    <!-- Hints -->
     <div class="ps">
       <div class="hint">
-        <b>Drag</b> zone body → move<br/>
-        <b>Drag handles</b> → resize<br/>
-        <b>Drag ↻ handle</b> → rotate<br/>
-        <b>[ / ]</b> → rotate ±5°<br/>
-        <b>Del</b> → delete selected<br/>
-        <b>Export PNG</b> → saves map image
+        <b>Drag</b> zone body &#8594; move<br/>
+        <b>Drag handles</b> &#8594; resize<br/>
+        <b>Drag &#8635; handle</b> &#8594; rotate<br/>
+        <b>[ / ]</b> &#8594; rotate &#177;5&#176;<br/>
+        <b>Del</b> &#8594; delete selected<br/>
+        <b>Export PNG</b> &#8594; saves map image
       </div>
     </div>
   </div>
 
-  <!-- ═══ CANVAS ═══ -->
   <div class="canvas-area">
     <div class="ctoolbar">
       <span style="font-size:0.67rem;color:#666;">Tool:</span>
-      <button class="tbtn on" id="tool-select" onclick="setTool('select')">✋ Select / Move</button>
-      <button class="tbtn" id="tool-delete" onclick="setTool('delete')">🗑 Delete Zone</button>
+      <button class="tbtn on" id="tool-select" onclick="setTool('select')">&#9997; Select / Move</button>
+      <button class="tbtn" id="tool-delete" onclick="setTool('delete')">&#128465; Delete Zone</button>
       <div style="margin-left:auto;display:flex;align-items:center;gap:0.45rem;">
         <span style="font-size:0.63rem;color:#666;">Zoom:</span>
-        <button class="tbtn" onclick="zoom(-0.1)">−</button>
+        <button class="tbtn" onclick="zoom(-0.1)">&#8722;</button>
         <span id="zoomLbl" style="font-size:0.67rem;color:#888;width:34px;text-align:center;">100%</span>
         <button class="tbtn" onclick="zoom(0.1)">+</button>
         <button class="tbtn" onclick="resetZoom()">Reset</button>
@@ -250,20 +257,13 @@
     </div>
   </div>
 
-  <!-- ═══ RIGHT PANEL ═══ -->
   <div class="rpanel">
-    <div class="rpt">📊 Overview</div>
+    <div class="rpt">&#128202; Overview</div>
     <div class="sbox"><div class="snum" id="statZones">0</div><div class="slbl">Zones</div></div>
     <div class="sbox"><div class="snum" id="statSeats">0</div><div class="slbl">Total Seats</div></div>
-    <div style="margin-top:0.7rem;">
-      <div class="rpt">Categories</div>
-      <% event.ticketTypes.forEach(t=>{ const cc={platinum:'#9D4EDD',gold:'#f5c842',silver:'#c0c8d8',fanfit:'#00FF88',family:'#FF6B6B'}[t.category]||'#6A0DAD'; %>
-      <div class="crow">
-        <div class="csw" style="background:<%= cc %>;"></div>
-        <div style="flex:1;"><%= t.category.toUpperCase() %></div>
-        <div style="font-size:0.62rem;color:#9D4EDD;">₹<%= t.price %></div>
-      </div>
-      <% }); %>
+    <div class="cat-bal">
+      <div class="rpt">Seat Balance <span style="color:#555;font-size:0.48rem;">(zones vs event)</span></div>
+      <div id="catBalPanel"></div>
     </div>
     <% if(seatMap && seatMap.previewImage){ %>
     <div style="margin-top:0.8rem;">
@@ -278,13 +278,11 @@
       </div>
     </div>
   </div>
-
 </div>
 
-<!-- PNG Preview Modal -->
 <div class="modal-bg" id="previewModal">
   <div class="modal">
-    <button class="modal-close" onclick="closePreviewModal()">✕</button>
+    <button class="modal-close" onclick="closePreviewModal()">&#10005;</button>
     <h3>VENUE MAP PREVIEW</h3>
     <img id="previewImg" src="" alt="Venue map"/>
     <div class="modal-actions">
@@ -298,24 +296,22 @@
 
 <script>
 const EVENT_ID    = '<%= event._id %>';
-const TICKET_CATS = <%- JSON.stringify(event.ticketTypes.map(t=>({category:t.category,price:t.price}))) %>;
+const TICKET_CATS = <%- JSON.stringify(event.ticketTypes.map(t=>({category:t.category,price:t.price,totalSeats:t.totalSeats||0,bookedSeats:t.bookedSeats||0}))) %>;
 const EXISTING    = <%- JSON.stringify(seatMap || null) %>;
 const CAT_COLORS  = {platinum:'#9D4EDD',gold:'#f5c842',silver:'#c0c8d8',fanfit:'#00FF88',family:'#FF6B6B'};
 
-// ─── STATE ───────────────────────────────────────────────────
-let stageShape    = EXISTING?.stage?.shape || 'rectangle';
-let zones         = [];
-let isActive      = EXISTING?.isActive || false;
-let newZoneShape  = 'rect';
-let currentTool   = 'select';
-let zoomLevel     = 1;
-let sel           = null;
-let stageAtBottom = false;
+let stageShape = EXISTING?.stage?.shape || 'rectangle';
+let zones      = [];
+let isActive   = EXISTING?.isActive || false;
+let newZoneShape = 'rect';
+let currentTool  = 'select';
+let zoomLevel    = 1;
+let sel          = null;
+let stageAtBottom= false;
 
 const canvas = document.getElementById('seatCanvas');
 const ctx    = canvas.getContext('2d');
 
-// Stage — load exact saved dimensions
 let stage = {
   x: EXISTING?.stage?.x      ?? 80,
   y: EXISTING?.stage?.y      ?? 30,
@@ -330,8 +326,6 @@ function d2r(d){ return d*Math.PI/180; }
 function r2d(r){ return r*180/Math.PI; }
 function normDeg(d){ return ((d%360)+360)%360; }
 
-// ─── Load saved zones ────────────────────────────────────────
-// CRITICAL: read zoneShape/zoneW/zoneH/zoneRot — not defaults
 if(EXISTING?.sections?.length){
   zones = EXISTING.sections.map(s=>({
     id:          s._id || uid(),
@@ -349,9 +343,8 @@ if(EXISTING?.sections?.length){
   if(stage.y > canvas.height/2) stageAtBottom = true;
 }
 
-renderList(); draw(); updateStats();
+renderList(); draw(); updateStats(); updateCatBalance(); updateBanner();
 
-// ─── DIAL WIDGET ─────────────────────────────────────────────
 const dialEl     = document.getElementById('dialEl');
 const dialNeedle = document.getElementById('dialNeedle');
 let dialDrag = null;
@@ -371,33 +364,19 @@ document.addEventListener('mousemove',e=>{
 });
 document.addEventListener('mouseup',()=>{ dialDrag=null; dialEl.classList.remove('grabbing'); });
 
-// ─── ZOOM ─────────────────────────────────────────────────────
-function zoom(d){ zoomLevel=Math.min(2.5,Math.max(0.3,zoomLevel+d)); canvas.style.transform=`scale(${zoomLevel})`; canvas.style.transformOrigin='top left'; document.getElementById('zoomLbl').textContent=Math.round(zoomLevel*100)+'%'; }
+function zoom(d){ zoomLevel=Math.min(2.5,Math.max(0.3,zoomLevel+d)); canvas.style.transform='scale('+zoomLevel+')'; canvas.style.transformOrigin='top left'; document.getElementById('zoomLbl').textContent=Math.round(zoomLevel*100)+'%'; }
 function resetZoom(){ zoomLevel=1; canvas.style.transform='scale(1)'; document.getElementById('zoomLbl').textContent='100%'; }
 
-// ─── STAGE ───────────────────────────────────────────────────
-function setStageShape(s,btn){
-  stageShape=s;
-  document.querySelectorAll('[data-stage]').forEach(b=>b.classList.remove('on'));
-  btn.classList.add('on'); draw();
-}
+function setStageShape(s,btn){ stageShape=s; document.querySelectorAll('[data-stage]').forEach(b=>b.classList.remove('on')); btn.classList.add('on'); draw(); }
+function setZoneShape(s,btn){ newZoneShape=s; ['zs-rect','zs-round','zs-triangle'].forEach(id=>document.getElementById(id).classList.remove('on')); btn.classList.add('on'); updateNewSeatsHint(); }
 
-// ─── ZONE SHAPE ──────────────────────────────────────────────
-function setZoneShape(s,btn){
-  newZoneShape=s;
-  ['zs-rect','zs-round','zs-triangle'].forEach(id=>document.getElementById(id).classList.remove('on'));
-  btn.classList.add('on');
-}
-
-// ─── FLIP ────────────────────────────────────────────────────
 function flipLayout(){
   stageAtBottom=!stageAtBottom;
   if(stageAtBottom){ stage.y=canvas.height-stage.h-30; zones.forEach(z=>{if(z.y+z.h>stage.y-10)z.y=Math.max(30,stage.y-z.h-40);}); }
   else{ stage.y=30; zones.forEach(z=>{if(z.y<stage.y+stage.h+20)z.y=stage.y+stage.h+40;}); }
-  draw(); showToast(stageAtBottom?'⬇ Stage at bottom':'⬆ Stage at top','ok');
+  draw(); showToast(stageAtBottom?'Stage at bottom':'Stage at top','ok');
 }
 
-// ─── ROTATION ────────────────────────────────────────────────
 function setRot(deg){ if(sel===null)return; zones[sel].rot=normDeg(deg); syncRotUI(); draw(); refreshSelInfo(); }
 function nudgeRot(d){ if(sel===null)return; zones[sel].rot=normDeg((zones[sel].rot||0)+d); syncRotUI(); draw(); refreshSelInfo(); }
 function onSlider(v){ if(sel===null)return; zones[sel].rot=parseFloat(v); syncRotUI(); draw(); refreshSelInfo(); }
@@ -406,51 +385,108 @@ function syncRotUI(){
   const deg=normDeg(zones[sel].rot||0);
   document.getElementById('rotSlider').value=deg;
   document.getElementById('rotDegLabel').textContent=Math.round(deg)+'°';
-  dialNeedle.style.transform=`rotate(${deg}deg)`;
+  dialNeedle.style.transform='rotate('+deg+'deg)';
 }
 
-// ─── EDIT PANEL CALLBACKS ────────────────────────────────────
+// ── Seat validation helpers ──
+function catRemaining(category, excludeIdx){
+  const t=TICKET_CATS.find(x=>x.category===category);
+  if(!t||!t.totalSeats) return Infinity;
+  const used=zones.reduce((s,z,i)=>s+(i===excludeIdx?0:(z.category===category?z.totalSeats||0:0)),0);
+  return t.totalSeats-used;
+}
+function validateCatSeats(category, newZoneSeats, excludeZoneIdx){
+  const rem=catRemaining(category,excludeZoneIdx);
+  if(rem===Infinity) return null;
+  if(newZoneSeats>rem){
+    const t=TICKET_CATS.find(x=>x.category===category);
+    return '"'+category.toUpperCase()+'" only has '+t.totalSeats+' seats total. You have '+(t.totalSeats-rem-newZoneSeats+(rem===Infinity?0:0))+' already mapped. '+rem+' remaining.';
+  }
+  return null;
+}
+function validateCatSeatsMsg(category, newZoneSeats, excludeZoneIdx){
+  const t=TICKET_CATS.find(x=>x.category===category);
+  if(!t||!t.totalSeats) return null;
+  const used=zones.reduce((s,z,i)=>s+(i===excludeZoneIdx?0:(z.category===category?z.totalSeats||0:0)),0);
+  const total=used+newZoneSeats;
+  if(total>t.totalSeats){
+    return '"'+category.toUpperCase()+'" quota is '+t.totalSeats+'. You mapped '+total+' ('+used+' existing + '+newZoneSeats+' new). Over by '+(total-t.totalSeats)+'.';
+  }
+  return null;
+}
+
+function updateNewSeatsHint(){
+  const cat=document.getElementById('newCat').value;
+  const seats=parseInt(document.getElementById('newTotalSeats').value)||0;
+  const hint=document.getElementById('newSeatsHint');
+  if(!hint) return;
+  const t=TICKET_CATS.find(x=>x.category===cat);
+  if(!t||!t.totalSeats){ hint.textContent=''; return; }
+  const rem=catRemaining(cat, null);
+  const err=validateCatSeatsMsg(cat,seats,null);
+  if(err){ hint.style.color='#FF4444'; hint.textContent='✗ '+err; }
+  else if(rem<Infinity){ hint.style.color='#f5c842'; hint.textContent='Remaining quota for '+cat+': '+rem+' seats'; }
+  else { hint.textContent=''; }
+}
+
 function updateSelSeats(){
   if(sel===null) return;
-  zones[sel].totalSeats=parseInt(document.getElementById('selTotalSeats').value)||0;
+  const newSeats=parseInt(document.getElementById('selTotalSeats').value)||0;
+  const z=zones[sel];
+  const err=validateCatSeatsMsg(z.category,newSeats,sel);
+  const inp=document.getElementById('selTotalSeats');
+  const hint=document.getElementById('selSeatsHint');
+  if(err){
+    inp.style.borderColor='rgba(255,68,68,0.7)';
+    if(hint){ hint.style.color='#FF4444'; hint.textContent='✗ '+err; }
+    showToast(err,'warn');
+  } else {
+    inp.style.borderColor='';
+    if(hint){
+      const rem=catRemaining(z.category,sel)-newSeats;
+      hint.style.color='#f5c842';
+      const t=TICKET_CATS.find(x=>x.category===z.category);
+      hint.textContent=t&&t.totalSeats?('Quota: '+t.totalSeats+' | After save: '+(t.totalSeats-catRemaining(z.category,sel)+newSeats)+' used'):'';
+    }
+  }
+  z.totalSeats=newSeats;
   updateStats(); draw(); refreshSelInfo(); renderList();
 }
 function updateSelCategory(){
   if(sel===null) return;
   zones[sel].category=document.getElementById('selCategory').value;
-  draw(); refreshSelInfo(); renderList();
+  draw(); refreshSelInfo(); renderList(); updateStats();
 }
 
-// ─── ADD ZONE ────────────────────────────────────────────────
 function addZone(){
   const name=document.getElementById('newName').value.trim().toUpperCase();
   const cat=document.getElementById('newCat').value;
   const totalSeats=parseInt(document.getElementById('newTotalSeats').value)||0;
   if(!name){showToast('Enter a zone name','err');return;}
+  const err=validateCatSeatsMsg(cat,totalSeats,null);
+  if(err){showToast(err,'err');return;}
   let yOff=stageAtBottom?30:stage.y+stage.h+50;
   zones.forEach(z=>{const b=z.y+z.h+20;if(!stageAtBottom&&b>yOff)yOff=b;});
   const xOff=80+(zones.length%3)*220;
   zones.push({id:uid(),name,category:cat,shape:newZoneShape,x:xOff,y:yOff,w:200,h:100,rot:0,totalSeats,bookedSeats:0});
   document.getElementById('newName').value='';
   document.getElementById('newTotalSeats').value='0';
+  document.getElementById('newSeatsHint').textContent='';
   sel=zones.length-1;
-  renderList(); draw(); updateStats(); showSelPanel(); refreshSelInfo(); syncRotUI();
+  renderList(); draw(); updateStats(); showSelPanel(); refreshSelInfo(); syncRotUI(); updateBanner();
 }
 
-// ─── DRAW ─────────────────────────────────────────────────────
 function draw(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
   drawGrid(); drawStage();
   zones.forEach((z,i)=>drawZone(z,i===sel));
 }
-
 function drawGrid(){
   ctx.save(); ctx.strokeStyle='rgba(255,255,255,0.022)'; ctx.lineWidth=1;
   for(let x=0;x<canvas.width;x+=40){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,canvas.height);ctx.stroke();}
   for(let y=0;y<canvas.height;y+=40){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(canvas.width,y);ctx.stroke();}
   ctx.restore();
 }
-
 function drawStage(){
   const lbl=document.getElementById('stageLabel').value||'STAGE';
   const {x,y,w,h}=stage;
@@ -473,51 +509,41 @@ function drawStage(){
   drawHandles(x,y,w,h,'#6A0DAD');
   ctx.restore();
 }
-
-function drawZone(z, isSel){
+function drawZone(z,isSel){
   const {x,y,w,h,name,category,shape,totalSeats,bookedSeats}=z;
-  const rot=d2r(z.rot||0);
-  const color=CAT_COLORS[category]||'#6A0DAD';
-  const cx=x+w/2, cy=y+h/2;
+  const rot=d2r(z.rot||0), color=CAT_COLORS[category]||'#6A0DAD', cx=x+w/2, cy=y+h/2;
   const catInfo=TICKET_CATS.find(t=>t.category===category);
-  ctx.save();
-  ctx.translate(cx,cy); ctx.rotate(rot);
+  ctx.save(); ctx.translate(cx,cy); ctx.rotate(rot);
   if(isSel){ctx.shadowColor=color;ctx.shadowBlur=22;}
   ctx.fillStyle=isSel?color+'45':color+'1c';
   ctx.strokeStyle=isSel?color:color+'70';
   ctx.lineWidth=isSel?2.5:1.5;
   ctx.beginPath();
-  if(shape==='round'){
-    ctx.ellipse(0,0,w/2,h/2,0,0,Math.PI*2);
-  }else if(shape==='triangle'){
-    ctx.moveTo(0,-h/2); ctx.lineTo(w/2,h/2); ctx.lineTo(-w/2,h/2); ctx.closePath();
-  }else{
-    ctx.roundRect(-w/2,-h/2,w,h,10);
-  }
+  if(shape==='round') ctx.ellipse(0,0,w/2,h/2,0,0,Math.PI*2);
+  else if(shape==='triangle'){ctx.moveTo(0,-h/2);ctx.lineTo(w/2,h/2);ctx.lineTo(-w/2,h/2);ctx.closePath();}
+  else ctx.roundRect(-w/2,-h/2,w,h,10);
   ctx.fill(); ctx.shadowBlur=0; ctx.stroke();
   const fs=Math.max(9,Math.min(14,w/(name.length*0.78)));
-  ctx.fillStyle='#fff'; ctx.font=`bold ${fs}px "Montserrat",sans-serif`;
+  ctx.fillStyle='#fff'; ctx.font='bold '+fs+'px "Montserrat",sans-serif';
   ctx.textAlign='center'; ctx.textBaseline='middle';
   const lY=shape==='triangle'?h*0.1:-10;
   ctx.fillText(name,0,lY);
   ctx.fillStyle=color; ctx.font='600 10px "Poppins",sans-serif';
-  ctx.fillText(`${category.toUpperCase()} · ₹${catInfo?.price||''}`,0,lY+13);
+  ctx.fillText(category.toUpperCase()+' \u00b7 \u20b9'+(catInfo?.price||''),0,lY+13);
   if(totalSeats>0){
     const avail=totalSeats-(bookedSeats||0);
     ctx.fillStyle='rgba(255,255,255,0.55)'; ctx.font='10px "Space Mono",monospace';
-    ctx.fillText(`${avail}/${totalSeats}`,0,lY+26);
+    ctx.fillText(avail+'/'+totalSeats,0,lY+26);
   }
   ctx.restore();
   if(isSel){ drawHandles(x,y,w,h,color); drawRotHandle(cx,cy,h/2+26,rot,color); }
 }
-
 function drawHandles(x,y,w,h,c){
   const pts=[{hx:x+w,hy:y+h},{hx:x+w,hy:y+h/2},{hx:x+w/2,hy:y+h},{hx:x,hy:y+h},{hx:x,hy:y+h/2}];
   ctx.save();
-  pts.forEach(({hx,hy})=>{ ctx.fillStyle=c; ctx.strokeStyle='#0f0f18'; ctx.lineWidth=1.5; ctx.beginPath(); ctx.arc(hx,hy,5.5,0,Math.PI*2); ctx.fill(); ctx.stroke(); });
+  pts.forEach(function(p){ ctx.fillStyle=c; ctx.strokeStyle='#0f0f18'; ctx.lineWidth=1.5; ctx.beginPath(); ctx.arc(p.hx,p.hy,5.5,0,Math.PI*2); ctx.fill(); ctx.stroke(); });
   ctx.restore();
 }
-
 function drawRotHandle(cx,cy,dist,rotRad,c){
   const hx=cx+Math.cos(rotRad-Math.PI/2)*dist, hy=cy+Math.sin(rotRad-Math.PI/2)*dist;
   ctx.save();
@@ -526,14 +552,13 @@ function drawRotHandle(cx,cy,dist,rotRad,c){
   ctx.fillStyle=c; ctx.strokeStyle='#0f0f18'; ctx.lineWidth=2;
   ctx.beginPath(); ctx.arc(hx,hy,9,0,Math.PI*2); ctx.fill(); ctx.stroke();
   ctx.fillStyle='#fff'; ctx.font='bold 12px sans-serif';
-  ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('↻',hx,hy+1);
+  ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('\u21bb',hx,hy+1);
   ctx.restore();
 }
 
-// ─── HIT TESTING ──────────────────────────────────────────────
 function getHandleHit(px,py,x,y,w,h){
   const pts=[{hx:x+w,hy:y+h,id:'br'},{hx:x+w,hy:y+h/2,id:'r'},{hx:x+w/2,hy:y+h,id:'b'},{hx:x,hy:y+h,id:'bl'},{hx:x,hy:y+h/2,id:'l'}];
-  for(const p of pts) if(Math.hypot(px-p.hx,py-p.hy)<=9) return p.id;
+  for(var i=0;i<pts.length;i++) if(Math.hypot(px-pts[i].hx,py-pts[i].hy)<=9) return pts[i].id;
   return null;
 }
 function getRotHandlePos(z){
@@ -545,54 +570,53 @@ function ptInZone(px,py,z){
   const cos=Math.cos(rot), sin=Math.sin(rot);
   const lx=(px-cx)*cos-(py-cy)*sin, ly=(px-cx)*sin+(py-cy)*cos;
   const hw=z.w/2, hh=z.h/2;
-  if(z.shape==='round') return (lx/hw)**2+(ly/hh)**2<=1;
+  if(z.shape==='round') return (lx/hw)*(lx/hw)+(ly/hh)*(ly/hh)<=1;
   if(z.shape==='triangle'){
     function sign(ax,ay,bx,by,qx,qy){return(ax-qx)*(by-ay)-(bx-ax)*(ay-qy);}
-    const d1=sign(0,-hh,hw,hh,lx,ly), d2=sign(hw,hh,-hw,hh,lx,ly), d3=sign(-hw,hh,0,-hh,lx,ly);
+    var d1=sign(0,-hh,hw,hh,lx,ly),d2=sign(hw,hh,-hw,hh,lx,ly),d3=sign(-hw,hh,0,-hh,lx,ly);
     return !((d1<0||d2<0||d3<0)&&(d1>0||d2>0||d3>0));
   }
   return lx>=-hw&&lx<=hw&&ly>=-hh&&ly<=hh;
 }
-function getZoneAt(px,py){ for(let i=zones.length-1;i>=0;i--) if(ptInZone(px,py,zones[i])) return i; return -1; }
+function getZoneAt(px,py){ for(var i=zones.length-1;i>=0;i--) if(ptInZone(px,py,zones[i])) return i; return -1; }
 function canvasXY(e){ const r=canvas.getBoundingClientRect(); return{x:(e.clientX-r.left)/zoomLevel,y:(e.clientY-r.top)/zoomLevel}; }
 
-// ─── MOUSE ────────────────────────────────────────────────────
-canvas.addEventListener('mousedown',e=>{
-  const {x,y}=canvasXY(e);
+canvas.addEventListener('mousedown',function(e){
+  const p=canvasXY(e);
   if(currentTool==='delete'){
-    const zi=getZoneAt(x,y);
-    if(zi!==-1&&confirm(`Delete "${zones[zi].name}"?`)){zones.splice(zi,1);sel=null;renderList();draw();updateStats();hideSelPanel();}
+    const zi=getZoneAt(p.x,p.y);
+    if(zi!==-1&&confirm('Delete "'+zones[zi].name+'"?')){zones.splice(zi,1);sel=null;renderList();draw();updateStats();hideSelPanel();}
     return;
   }
   if(sel!==null){
-    const {hx,hy}=getRotHandlePos(zones[sel]);
-    if(Math.hypot(x-hx,y-hy)<=12){rotDrag={idx:sel};canvas.style.cursor='crosshair';return;}
+    const rh=getRotHandlePos(zones[sel]);
+    if(Math.hypot(p.x-rh.hx,p.y-rh.hy)<=12){rotDrag={idx:sel};canvas.style.cursor='crosshair';return;}
   }
   if(sel!==null){
-    const z=zones[sel], hid=getHandleHit(x,y,z.x,z.y,z.w,z.h);
-    if(hid){resDrag={idx:sel,hid,sx:x,sy:y,ox:z.x,oy:z.y,ow:z.w,oh:z.h};canvas.style.cursor='nwse-resize';return;}
+    const z=zones[sel], hid=getHandleHit(p.x,p.y,z.x,z.y,z.w,z.h);
+    if(hid){resDrag={idx:sel,hid:hid,sx:p.x,sy:p.y,ox:z.x,oy:z.y,ow:z.w,oh:z.h};canvas.style.cursor='nwse-resize';return;}
   }
-  const shid=getHandleHit(x,y,stage.x,stage.y,stage.w,stage.h);
-  if(shid){resDrag={idx:'stage',hid:shid,sx:x,sy:y,ox:stage.x,oy:stage.y,ow:stage.w,oh:stage.h};canvas.style.cursor='nwse-resize';return;}
-  if(x>=stage.x&&x<=stage.x+stage.w&&y>=stage.y&&y<=stage.y+stage.h){drag={type:'stage',sx:x,sy:y,ox:stage.x,oy:stage.y};canvas.style.cursor='grabbing';return;}
-  const zi=getZoneAt(x,y);
+  const shid=getHandleHit(p.x,p.y,stage.x,stage.y,stage.w,stage.h);
+  if(shid){resDrag={idx:'stage',hid:shid,sx:p.x,sy:p.y,ox:stage.x,oy:stage.y,ow:stage.w,oh:stage.h};canvas.style.cursor='nwse-resize';return;}
+  if(p.x>=stage.x&&p.x<=stage.x+stage.w&&p.y>=stage.y&&p.y<=stage.y+stage.h){drag={type:'stage',sx:p.x,sy:p.y,ox:stage.x,oy:stage.y};canvas.style.cursor='grabbing';return;}
+  const zi=getZoneAt(p.x,p.y);
   if(zi!==-1){
-    sel=zi; drag={type:'zone',idx:zi,sx:x,sy:y,ox:zones[zi].x,oy:zones[zi].y};
+    sel=zi; drag={type:'zone',idx:zi,sx:p.x,sy:p.y,ox:zones[zi].x,oy:zones[zi].y};
     canvas.style.cursor='grabbing'; renderList(); draw(); showSelPanel(); refreshSelInfo(); syncRotUI();
   }else{sel=null;renderList();draw();hideSelPanel();}
 });
 
-canvas.addEventListener('mousemove',e=>{
-  const {x,y}=canvasXY(e);
+canvas.addEventListener('mousemove',function(e){
+  const p=canvasXY(e);
   if(rotDrag){
     const z=zones[rotDrag.idx], cx=z.x+z.w/2, cy=z.y+z.h/2;
-    zones[rotDrag.idx].rot=normDeg(r2d(Math.atan2(y-cy,x-cx))+90);
+    zones[rotDrag.idx].rot=normDeg(r2d(Math.atan2(p.y-cy,p.x-cx))+90);
     syncRotUI(); draw(); refreshSelInfo(); return;
   }
   if(resDrag){
-    const dx=x-resDrag.sx, dy=y-resDrag.sy;
-    const {idx,hid,ox,oy,ow,oh}=resDrag;
-    let nx=ox,ny=oy,nw=ow,nh=oh;
+    const dx=p.x-resDrag.sx, dy=p.y-resDrag.sy;
+    const idx=resDrag.idx,hid=resDrag.hid,ox=resDrag.ox,oy=resDrag.oy,ow=resDrag.ow,oh=resDrag.oh;
+    var nx=ox,ny=oy,nw=ow,nh=oh;
     if(hid==='br'){nw=Math.max(60,ow+dx);nh=Math.max(40,oh+dy);}
     else if(hid==='r'){nw=Math.max(60,ow+dx);}
     else if(hid==='b'){nh=Math.max(40,oh+dy);}
@@ -603,65 +627,63 @@ canvas.addEventListener('mousemove',e=>{
     draw(); if(idx!=='stage')refreshSelInfo(); return;
   }
   if(drag){
-    const dx=x-drag.sx, dy=y-drag.sy;
+    const dx=p.x-drag.sx, dy=p.y-drag.sy;
     if(drag.type==='stage'){stage.x=Math.max(0,drag.ox+dx);stage.y=Math.max(0,drag.oy+dy);}
     else{zones[drag.idx].x=Math.max(0,drag.ox+dx);zones[drag.idx].y=Math.max(0,drag.oy+dy);}
     draw(); if(drag.type!=='stage')refreshSelInfo(); return;
   }
   if(currentTool==='delete'){canvas.style.cursor='not-allowed';return;}
   if(sel!==null){
-    const {hx,hy}=getRotHandlePos(zones[sel]);
-    if(Math.hypot(x-hx,y-hy)<=12){canvas.style.cursor='crosshair';return;}
-    if(getHandleHit(x,y,zones[sel].x,zones[sel].y,zones[sel].w,zones[sel].h)){canvas.style.cursor='nwse-resize';return;}
+    const rh=getRotHandlePos(zones[sel]);
+    if(Math.hypot(p.x-rh.hx,p.y-rh.hy)<=12){canvas.style.cursor='crosshair';return;}
+    if(getHandleHit(p.x,p.y,zones[sel].x,zones[sel].y,zones[sel].w,zones[sel].h)){canvas.style.cursor='nwse-resize';return;}
   }
-  if(getHandleHit(x,y,stage.x,stage.y,stage.w,stage.h)){canvas.style.cursor='nwse-resize';return;}
-  if(x>=stage.x&&x<=stage.x+stage.w&&y>=stage.y&&y<=stage.y+stage.h){canvas.style.cursor='grab';return;}
-  canvas.style.cursor=getZoneAt(x,y)!==-1?'grab':'default';
+  if(getHandleHit(p.x,p.y,stage.x,stage.y,stage.w,stage.h)){canvas.style.cursor='nwse-resize';return;}
+  if(p.x>=stage.x&&p.x<=stage.x+stage.w&&p.y>=stage.y&&p.y<=stage.y+stage.h){canvas.style.cursor='grab';return;}
+  canvas.style.cursor=getZoneAt(p.x,p.y)!==-1?'grab':'default';
 });
-canvas.addEventListener('mouseup',()=>{drag=null;resDrag=null;rotDrag=null;if(currentTool==='select')canvas.style.cursor='default';});
-canvas.addEventListener('mouseleave',()=>{drag=null;resDrag=null;rotDrag=null;});
+canvas.addEventListener('mouseup',function(){ drag=null;resDrag=null;rotDrag=null;if(currentTool==='select')canvas.style.cursor='default'; });
+canvas.addEventListener('mouseleave',function(){ drag=null;resDrag=null;rotDrag=null; });
 
-// ─── KEYBOARD ────────────────────────────────────────────────
-document.addEventListener('keydown',e=>{
+document.addEventListener('keydown',function(e){
   if(sel===null) return;
   if(['INPUT','SELECT','TEXTAREA'].includes(document.activeElement?.tagName)) return;
   if(e.key==='['){ nudgeRot(-5); e.preventDefault(); }
   if(e.key===']'){ nudgeRot(5);  e.preventDefault(); }
   if(e.key==='Delete'||e.key==='Backspace'){
-    if(confirm(`Delete "${zones[sel].name}"?`)){ zones.splice(sel,1); sel=null; renderList(); draw(); updateStats(); hideSelPanel(); }
+    if(confirm('Delete "'+zones[sel].name+'"?')){ zones.splice(sel,1); sel=null; renderList(); draw(); updateStats(); hideSelPanel(); }
     e.preventDefault();
   }
 });
 
-// ─── TOOL ────────────────────────────────────────────────────
 function setTool(t){
   currentTool=t;
-  document.querySelectorAll('.tbtn').forEach(b=>b.classList.remove('on'));
+  document.querySelectorAll('.tbtn').forEach(function(b){b.classList.remove('on');});
   document.getElementById('tool-'+t).classList.add('on');
   canvas.style.cursor=t==='delete'?'not-allowed':'default';
 }
 
-// ─── ZONE LIST ────────────────────────────────────────────────
 function renderList(){
   const el=document.getElementById('zoneList');
   document.getElementById('zoneCount').textContent=zones.length;
   if(!zones.length){el.innerHTML='<div style="color:#444;font-size:0.73rem;">No zones yet.</div>';return;}
-  const icons={rect:'▬',round:'⬭',triangle:'▲'};
-  el.innerHTML=zones.map((z,i)=>`
-    <div class="zitem ${i===sel?'sel':''}" onclick="selectZone(${i})">
-      <div class="zdot" style="background:${CAT_COLORS[z.category]||'#6A0DAD'};
-        clip-path:${z.shape==='triangle'?'polygon(50% 0%,100% 100%,0% 100%)':'none'};
-        border-radius:${z.shape==='round'?'50%':'2px'};"></div>
-      <div class="zlbl">${z.name}</div>
-      <div class="zshape">${icons[z.shape]||'▬'}</div>
-      <div class="zseats">${z.totalSeats||'—'}</div>
-      <div class="zrotlbl">${Math.round(z.rot||0)}°</div>
-      <button class="zrm" onclick="event.stopPropagation();delZone(${i})"><i class="bi bi-trash"></i></button>
-    </div>`).join('');
+  const icons={rect:'\u25ac',round:'\u2b2d',triangle:'\u25b2'};
+  el.innerHTML=zones.map(function(z,i){
+    return '<div class="zitem '+(i===sel?'sel':'')+'" onclick="selectZone('+i+')">'+
+      '<div class="zdot" style="background:'+(CAT_COLORS[z.category]||'#6A0DAD')+';'+
+      'clip-path:'+(z.shape==='triangle'?'polygon(50% 0%,100% 100%,0% 100%)':'none')+';'+
+      'border-radius:'+(z.shape==='round'?'50%':'2px')+';">'+
+      '</div><div class="zlbl">'+z.name+'</div>'+
+      '<div class="zshape">'+(icons[z.shape]||'\u25ac')+'</div>'+
+      '<div class="zseats">'+(z.totalSeats||'\u2014')+'</div>'+
+      '<div class="zrotlbl">'+Math.round(z.rot||0)+'\u00b0</div>'+
+      '<button class="zrm" onclick="event.stopPropagation();delZone('+i+')"><i class="bi bi-trash"></i></button>'+
+      '</div>';
+  }).join('');
 }
 
 function selectZone(i){ sel=i; renderList(); draw(); showSelPanel(); refreshSelInfo(); syncRotUI(); }
-function delZone(i){ if(!confirm(`Delete "${zones[i].name}"?`))return; zones.splice(i,1); sel=null; renderList(); hideSelPanel(); draw(); updateStats(); }
+function delZone(i){ if(!confirm('Delete "'+zones[i].name+'"?'))return; zones.splice(i,1); sel=null; renderList(); hideSelPanel(); draw(); updateStats(); }
 
 function showSelPanel(){
   document.getElementById('rotPanel').style.display='block';
@@ -681,127 +703,124 @@ function hideSelPanel(){
 function refreshSelInfo(){
   const z=zones[sel]; if(!z) return;
   const c=CAT_COLORS[z.category]||'#6A0DAD';
-  const icons={rect:'▬ Rectangle',round:'⬭ Oval',triangle:'▲ Triangle'};
+  const icons={rect:'\u25ac Rectangle',round:'\u2b2d Oval',triangle:'\u25b2 Triangle'};
   const avail=(z.totalSeats||0)-(z.bookedSeats||0);
-  document.getElementById('selInfoContent').innerHTML=`
-    <div class="selrow"><span>Name</span><span style="color:${c}">${z.name}</span></div>
-    <div class="selrow"><span>Category</span><span>${z.category.toUpperCase()}</span></div>
-    <div class="selrow"><span>Shape</span><span>${icons[z.shape]||z.shape}</span></div>
-    <div class="selrow"><span>Size</span><span>${Math.round(z.w)} × ${Math.round(z.h)}</span></div>
-    <div class="selrow"><span>Rotation</span><span style="color:#f5c842">${Math.round(z.rot||0)}°</span></div>
-    <div class="selrow"><span>Total Seats</span><span style="color:#9D4EDD">${z.totalSeats||0}</span></div>
-    <div class="selrow"><span>Available</span><span style="color:#00FF88">${avail}</span></div>`;
+  document.getElementById('selInfoContent').innerHTML=
+    '<div class="selrow"><span>Name</span><span style="color:'+c+'">'+z.name+'</span></div>'+
+    '<div class="selrow"><span>Category</span><span>'+z.category.toUpperCase()+'</span></div>'+
+    '<div class="selrow"><span>Shape</span><span>'+(icons[z.shape]||z.shape)+'</span></div>'+
+    '<div class="selrow"><span>Size</span><span>'+Math.round(z.w)+' \u00d7 '+Math.round(z.h)+'</span></div>'+
+    '<div class="selrow"><span>Rotation</span><span style="color:#f5c842">'+Math.round(z.rot||0)+'\u00b0</span></div>'+
+    '<div class="selrow"><span>Total Seats</span><span style="color:#9D4EDD">'+(z.totalSeats||0)+'</span></div>'+
+    '<div class="selrow"><span>Available</span><span style="color:#00FF88">'+avail+'</span></div>';
 }
 
 function updateStats(){
   document.getElementById('statZones').textContent=zones.length;
-  document.getElementById('statSeats').textContent=zones.reduce((s,z)=>s+(z.totalSeats||0),0);
+  document.getElementById('statSeats').textContent=zones.reduce(function(s,z){return s+(z.totalSeats||0);},0);
+  updateCatBalance();
 }
 
-// ─── PNG EXPORT ───────────────────────────────────────────────
-// Renders a clean version of the canvas (no handles/selection glow) to PNG
-function generateCleanPNG(){
-  // Temporarily deselect to draw clean (no handles)
-  const prevSel=sel; sel=null;
-  const prevZoom=zoomLevel; resetZoom();
-  draw(); // draw clean frame
-
-  const dataURL=canvas.toDataURL('image/png');
-
-  // Restore
-  sel=prevSel;
-  if(prevZoom!==1){ zoomLevel=prevZoom; canvas.style.transform=`scale(${zoomLevel})`; canvas.style.transformOrigin='top left'; }
-  draw(); // restore with selection
-
-  return dataURL;
+function catSeatsUsed(){
+  const used={};
+  zones.forEach(function(z){ used[z.category]=(used[z.category]||0)+(z.totalSeats||0); });
+  return used;
 }
 
-function exportPNG(){
-  const dataURL=generateCleanPNG();
-  document.getElementById('previewImg').src=dataURL;
-  document.getElementById('previewModal').classList.add('show');
+function updateCatBalance(){
+  const used=catSeatsUsed();
+  const panel=document.getElementById('catBalPanel');
+  if(!panel) return;
+  const CAT_C_LOCAL={platinum:'#9D4EDD',gold:'#f5c842',silver:'#c0c8d8',fanfit:'#00FF88',family:'#FF6B6B'};
+  panel.innerHTML=TICKET_CATS.map(function(t){
+    const col=CAT_C_LOCAL[t.category]||'#6A0DAD';
+    const quota=t.totalSeats||0;
+    const mapped=used[t.category]||0;
+    const pct=quota>0?Math.min(100,Math.round(mapped/quota*100)):0;
+    var state='ok', badge='OK', barCol='#00FF88';
+    if(mapped>quota&&quota>0){state='over';badge='OVER';barCol='#FF4444';}
+    else if(quota>0&&mapped===quota){state='ok';badge='FULL';barCol='#00FF88';}
+    else if(quota>0&&mapped>quota*0.85){state='warn';badge='NEAR';barCol='#f5c842';}
+    const remLabel=quota>0?(mapped>quota?(mapped-quota)+' OVER':(quota-mapped)+' left'):'no limit';
+    var html='<div class="cb-row cb-'+state+'">';
+    html+='<div class="cb-head"><span class="cb-name" style="color:'+col+'">'+t.category.toUpperCase()+'</span><span class="cb-badge '+state+'">'+badge+'</span></div>';
+    html+='<div class="cb-nums"><span>Mapped <b style="color:#fff">'+mapped+'</b> / '+(quota>0?quota:'\u221e')+' seats</span>';
+    html+='<span style="color:'+(state==='over'?'#FF4444':state==='warn'?'#f5c842':'#555')+'">'+remLabel+'</span></div>';
+    if(quota>0) html+='<div class="cb-bar"><div class="cb-bar-fill" style="width:'+pct+'%;background:'+barCol+';"></div></div>';
+    html+='</div>';
+    return html;
+  }).join('');
 }
 
-function showPreviewModal(){
-  const saved=EXISTING?.previewImage;
-  if(saved){ document.getElementById('previewImg').src=saved; document.getElementById('previewModal').classList.add('show'); }
+function updateBanner(){
+  const b=document.getElementById('inactiveBanner');
+  if(!b) return;
+  b.classList.toggle('show', zones.length>0 && !isActive);
 }
 
-function closePreviewModal(){ document.getElementById('previewModal').classList.remove('show'); }
-
-function downloadPNG(){
-  const img=document.getElementById('previewImg').src;
-  const a=document.createElement('a');
-  a.href=img;
-  a.download=`venue-map-<%= event.name.replace(/\s+/g,'-').toLowerCase() %>.png`;
-  a.click();
-  showToast('PNG downloaded!','ok');
-}
-
-// ─── SAVE ─────────────────────────────────────────────────────
-async function saveMap(withPreview=true){
-  // Build payload with every field explicitly named
-  const sections=zones.map(z=>({
-    name:        z.name,
-    category:    z.category,
-    zoneShape:   z.shape,           // ← maps to model field
-    x:           Math.round(z.x),
-    y:           Math.round(z.y),
-    zoneW:       Math.round(z.w),   // ← exact width preserved
-    zoneH:       Math.round(z.h),   // ← exact height preserved
-    zoneRot:     z.rot,             // ← 0 is valid, don't use || 0
-    totalSeats:  z.totalSeats || 0,
-    bookedSeats: z.bookedSeats || 0,
-    rows:        1,
-    seatsPerRow: 1,
-    seats:       [],
-  }));
-
+async function saveMap(withPreview){
+  if(withPreview===undefined) withPreview=true;
+  const sections=zones.map(function(z){return{
+    name:z.name, category:z.category, zoneShape:z.shape,
+    x:Math.round(z.x), y:Math.round(z.y),
+    zoneW:Math.round(z.w), zoneH:Math.round(z.h),
+    zoneRot:z.rot, totalSeats:z.totalSeats||0, bookedSeats:z.bookedSeats||0,
+    rows:1, seatsPerRow:1, seats:[],
+  };});
   const payload={
-    eventId: EVENT_ID,
-    stage:{
-      shape:  stageShape,
-      label:  document.getElementById('stageLabel').value,
-      x:      Math.round(stage.x),
-      y:      Math.round(stage.y),
-      width:  Math.round(stage.w),
-      height: Math.round(stage.h),
-    },
-    sections,
-    isActive,
-    canvasWidth:  canvas.width,
-    canvasHeight: canvas.height,
+    eventId:EVENT_ID,
+    stage:{shape:stageShape,label:document.getElementById('stageLabel').value,x:Math.round(stage.x),y:Math.round(stage.y),width:Math.round(stage.w),height:Math.round(stage.h)},
+    sections:sections, isActive:isActive,
+    canvasWidth:canvas.width, canvasHeight:canvas.height,
   };
-
-  // Capture PNG snapshot and attach to payload
-  if(withPreview){
-    try{ payload.previewImage=generateCleanPNG(); }catch(e){ console.warn('PNG capture failed:',e); }
-  }
-
-  document.getElementById('saveStatus').textContent='Saving…';
+  if(withPreview){ try{ payload.previewImage=generateCleanPNG(); }catch(e){ console.warn('PNG failed',e); } }
+  document.getElementById('saveStatus').textContent='Saving\u2026';
   try{
-    const res=await fetch(`/admin/seatmap/${EVENT_ID}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    const res=await fetch('/admin/seatmap/'+EVENT_ID,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
     const d=await res.json();
     if(d.success){
-      showToast('✅ Saved!','ok');
-      document.getElementById('saveStatus').textContent='Saved ✓';
+      showToast('Saved!','ok');
+      document.getElementById('saveStatus').textContent='Saved \u2713';
+      updateBanner();
     }else{
-      showToast('❌ '+d.message,'err');
+      showToast(d.message,'err');
       document.getElementById('saveStatus').textContent='';
     }
   }catch(err){
-    showToast('❌ '+err.message,'err');
+    showToast(err.message,'err');
     document.getElementById('saveStatus').textContent='';
   }
 }
 
 async function toggleActivate(){
-  isActive=!isActive; await saveMap();
-  document.getElementById('activateBtn').textContent=isActive?'✅ Active':'⚡ Activate';
+  isActive=!isActive;
+  await saveMap(true);
+  document.getElementById('activateBtn').textContent=isActive?'\u2705 Active':'\u26a1 Activate';
+  document.getElementById('activateBtn').className=isActive?'btn btn-green':'btn btn-amber';
+  updateBanner();
 }
 
-function clearAll(){ if(!confirm('Clear entire map?'))return; zones=[]; sel=null; renderList(); hideSelPanel(); draw(); updateStats(); }
-function showToast(msg,t='ok'){ const el=document.getElementById('toast'); el.textContent=msg; el.className='toast '+t; el.style.display='block'; setTimeout(()=>el.style.display='none',2800); }
+function generateCleanPNG(){
+  const prevSel=sel; sel=null;
+  const prevZoom=zoomLevel; resetZoom();
+  draw();
+  const dataURL=canvas.toDataURL('image/png');
+  sel=prevSel;
+  if(prevZoom!==1){ zoomLevel=prevZoom; canvas.style.transform='scale('+prevZoom+')'; canvas.style.transformOrigin='top left'; }
+  draw();
+  return dataURL;
+}
+function exportPNG(){ const d=generateCleanPNG(); document.getElementById('previewImg').src=d; document.getElementById('previewModal').classList.add('show'); }
+function showPreviewModal(){ const s=EXISTING?.previewImage; if(s){document.getElementById('previewImg').src=s;document.getElementById('previewModal').classList.add('show');} }
+function closePreviewModal(){ document.getElementById('previewModal').classList.remove('show'); }
+function downloadPNG(){
+  const img=document.getElementById('previewImg').src;
+  const a=document.createElement('a'); a.href=img;
+  a.download='venue-map-<%= event.name.replace(/\s+/g, "-").toLowerCase() %>.png';
+  a.click(); showToast('PNG downloaded!','ok');
+}
+function clearAll(){ if(!confirm('Clear entire map?'))return; zones=[]; sel=null; renderList(); hideSelPanel(); draw(); updateStats(); updateBanner(); }
+function showToast(msg,t,dur){ t=t||'ok'; dur=dur||2800; const el=document.getElementById('toast'); el.textContent=msg; el.className='toast '+t; el.style.display='block'; clearTimeout(el._tid); el._tid=setTimeout(function(){el.style.display='none';},dur); }
 </script>
 </body>
 </html>
