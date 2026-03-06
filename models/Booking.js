@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const attendeeSchema = new mongoose.Schema({
   name:    { type: String, required: true },
   age:     { type: Number, required: true },
+  gender:  { type: String, enum: ['male','female','other',''], default: '' },
   special: { type: String, default: '' },
 });
 

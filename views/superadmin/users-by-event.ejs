@@ -6,102 +6,322 @@
   <link href="https://fonts.googleapis.com/css2?family=Anton&family=Outfit:wght@400;500;600;700&family=Space+Mono&display=swap" rel="stylesheet"/>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet"/>
   <style>
-    :root{--bg:#0B0B0F;--surface:#14141C;--border:rgba(255,255,255,0.08);--accent:#9D4EDD;--text:#fff;--muted:#B3B3B3;--error:#FF4444;--success:#00FF88;}
+    :root{--bg:#0B0B0F;--surface:#14141C;--border:rgba(255,255,255,0.08);--accent:#6A0DAD;--text:#fff;--muted:#B3B3B3;--success:#00FF88;--error:#FF4444;--warn:#f5c842;}
     *{box-sizing:border-box;margin:0;padding:0;}
     body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-height:100vh;}
     .layout{display:grid;grid-template-columns:220px 1fr;min-height:100vh;}
-    .sidebar{background:var(--surface);border-right:1px solid var(--border);padding:1.5rem 1rem;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:0.3rem;overflow-y:auto;}
-    .s-logo{font-family:'Anton',sans-serif;font-size:1.3rem;letter-spacing:3px;color:#fff;text-decoration:none;display:block;padding:0 0.5rem 0.5rem;border-bottom:1px solid var(--border);margin-bottom:0.4rem;}
-    .s-logo span{color:var(--accent);}
-    .s-badge{font-family:'Space Mono',monospace;font-size:0.5rem;letter-spacing:2px;color:var(--accent);background:rgba(157,78,221,0.1);border:1px solid rgba(157,78,221,0.25);border-radius:10px;padding:0.15rem 0.6rem;margin-bottom:0.8rem;display:inline-block;}
-    .s-link{display:flex;align-items:center;gap:0.7rem;padding:0.7rem 0.8rem;color:var(--muted);text-decoration:none;border-radius:6px;font-size:0.85rem;transition:all 0.15s;border:1px solid transparent;}
-    .s-link:hover,.s-link.active{background:rgba(157,78,221,0.08);border-color:rgba(157,78,221,0.2);color:#fff;}
-    .s-link i{color:var(--accent);width:18px;}
-    .s-logout{margin-top:auto;display:flex;align-items:center;gap:0.7rem;padding:0.7rem 0.8rem;color:var(--error);text-decoration:none;border-radius:6px;font-size:0.85rem;border:1px solid transparent;transition:all 0.15s;}
-    .s-logout:hover{background:rgba(255,68,68,0.08);}
     .main{padding:2rem;overflow-x:hidden;}
-    .page-title{font-family:'Anton',sans-serif;font-size:1.8rem;letter-spacing:2px;margin-bottom:0.3rem;}
-    .page-sub{font-size:0.78rem;color:var(--muted);margin-bottom:2rem;}
-    .select-bar{display:flex;gap:1rem;align-items:flex-end;margin-bottom:2rem;flex-wrap:wrap;}
-    .f-grp{display:flex;flex-direction:column;gap:0.3rem;flex:1;min-width:240px;}
-    .f-lbl{font-family:'Space Mono',monospace;font-size:0.52rem;letter-spacing:1px;color:#555;text-transform:uppercase;}
-    .f-sel{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:7px;color:#fff;font-family:'Outfit',sans-serif;font-size:0.88rem;padding:0.62rem 0.85rem;outline:none;width:100%;}
-    .f-sel:focus{border-color:rgba(157,78,221,0.45);}
+    .page-title{font-family:'Anton',sans-serif;font-size:1.8rem;letter-spacing:2px;margin-bottom:0.2rem;}
+    .page-sub{font-size:0.78rem;color:var(--muted);margin-bottom:1.5rem;}
+
+    /* Filter bar */
+    .filter-top{display:flex;gap:0.8rem;align-items:flex-end;margin-bottom:1rem;flex-wrap:wrap;}
+    .f-grp{display:flex;flex-direction:column;gap:0.25rem;flex:1;min-width:220px;}
+    .f-lbl{font-family:'Space Mono',monospace;font-size:0.5rem;letter-spacing:1.5px;color:#555;text-transform:uppercase;}
+    .f-inp,.f-sel{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:7px;color:#fff;font-family:'Outfit',sans-serif;font-size:0.85rem;padding:0.6rem 0.85rem;outline:none;width:100%;transition:border-color 0.15s;}
+    .f-inp:focus,.f-sel:focus{border-color:rgba(106,13,173,0.45);}
     .f-sel option{background:#1a1a2e;}
-    .filter-btn{padding:0.7rem 1.5rem;background:var(--accent);color:#fff;border:none;border-radius:7px;font-family:'Outfit',sans-serif;font-weight:700;font-size:0.85rem;cursor:pointer;white-space:nowrap;}
-    .event-header{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.2rem;margin-bottom:1.5rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.8rem;}
-    .ev-name{font-family:'Anton',sans-serif;font-size:1.2rem;letter-spacing:2px;}
-    .ev-count{font-family:'Space Mono',monospace;font-size:0.65rem;letter-spacing:2px;color:var(--accent);}
-    .users-table{width:100%;border-collapse:collapse;}
-    .users-table th{font-family:'Space Mono',monospace;font-size:0.55rem;letter-spacing:2px;color:#555;text-transform:uppercase;padding:0.6rem 0.8rem;border-bottom:1px solid var(--border);text-align:left;}
-    .users-table td{padding:0.85rem 0.8rem;border-bottom:1px solid rgba(255,255,255,0.04);font-size:0.85rem;vertical-align:middle;}
-    .users-table tr:hover td{background:rgba(255,255,255,0.02);}
-    .ticket-chip{font-family:'Space Mono',monospace;font-size:0.6rem;letter-spacing:1px;background:rgba(157,78,221,0.1);border:1px solid rgba(157,78,221,0.25);color:var(--accent);padding:0.15rem 0.5rem;border-radius:4px;}
+    .filter-btn{padding:0.65rem 1.4rem;background:var(--accent);color:#fff;border:none;border-radius:7px;font-weight:700;font-size:0.83rem;cursor:pointer;white-space:nowrap;height:fit-content;}
+
+    /* Filter chips row */
+    .filter-chips{display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1.2rem;align-items:center;}
+    .chip{padding:0.28rem 0.75rem;border-radius:20px;font-size:0.72rem;cursor:pointer;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.03);color:var(--muted);transition:all 0.15s;font-family:'Space Mono',monospace;}
+    .chip.on{background:rgba(106,13,173,0.18);border-color:rgba(106,13,173,0.4);color:#bf80ff;}
+    .chip-lbl{font-size:0.62rem;color:#444;font-family:'Space Mono',monospace;letter-spacing:1px;margin-right:0.3rem;}
+
+    /* Stats */
+    .stat-row{display:flex;gap:0.8rem;margin-bottom:1.2rem;flex-wrap:wrap;}
+    .stat-box{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:0.8rem 1.1rem;display:flex;align-items:center;gap:0.7rem;min-width:120px;}
+    .stat-box i{font-size:1.2rem;color:var(--accent);}
+    .stat-val{font-family:'Anton',sans-serif;font-size:1.25rem;letter-spacing:1px;}
+    .stat-lbl{font-size:0.65rem;color:var(--muted);}
+
+    /* Bulk actions bar */
+    .bulk-bar{display:flex;gap:0.7rem;margin-bottom:1rem;flex-wrap:wrap;align-items:center;}
+    .bulk-lbl{font-family:'Space Mono',monospace;font-size:0.6rem;color:#555;letter-spacing:1px;}
+    .btn-bulk{display:flex;align-items:center;gap:0.4rem;padding:0.5rem 1rem;border-radius:6px;font-size:0.78rem;font-weight:600;cursor:pointer;border:1px solid;transition:all 0.15s;}
+    .btn-bulk-wa{background:rgba(37,211,102,0.1);border-color:rgba(37,211,102,0.3);color:#25d366;}
+    .btn-bulk-wa:hover{background:rgba(37,211,102,0.2);}
+    .btn-bulk-noshow{background:rgba(245,200,66,0.08);border-color:rgba(245,200,66,0.25);color:var(--warn);}
+    .btn-bulk-noshow:hover{background:rgba(245,200,66,0.15);}
+
+    /* Table */
+    .table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+    .table-scroll{overflow-x:auto;}
+    table{width:100%;border-collapse:collapse;}
+    th{font-family:'Space Mono',monospace;font-size:0.5rem;letter-spacing:2px;color:#555;text-transform:uppercase;padding:0.7rem 0.9rem;border-bottom:1px solid var(--border);text-align:left;white-space:nowrap;}
+    td{padding:0.75rem 0.9rem;border-bottom:1px solid rgba(255,255,255,0.04);font-size:0.82rem;vertical-align:middle;}
+    tr:last-child td{border-bottom:none;}
+    tr:hover td{background:rgba(255,255,255,0.015);}
+    tr.hidden-row{display:none;}
+
+    /* Badges */
+    .b{font-family:'Space Mono',monospace;font-size:0.55rem;letter-spacing:0.5px;padding:0.15rem 0.45rem;border-radius:4px;display:inline-block;white-space:nowrap;}
+    .b-m{background:rgba(100,181,246,0.1);border:1px solid rgba(100,181,246,0.3);color:#64b5f6;}
+    .b-f{background:rgba(244,143,177,0.1);border:1px solid rgba(244,143,177,0.3);color:#f48fb1;}
+    .b-o{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#888;}
+    .b-ticket{background:rgba(106,13,173,0.12);border:1px solid rgba(106,13,173,0.3);color:#bf80ff;}
+    .b-in{background:rgba(0,255,136,0.09);border:1px solid rgba(0,255,136,0.25);color:#00FF88;}
+    .b-out{background:rgba(255,68,68,0.08);border:1px solid rgba(255,68,68,0.2);color:#FF6666;}
+
+    /* WhatsApp button in row */
+    .btn-wa{display:inline-flex;align-items:center;gap:0.3rem;padding:0.25rem 0.6rem;border-radius:4px;font-size:0.7rem;font-weight:600;cursor:pointer;border:1px solid rgba(37,211,102,0.3);background:rgba(37,211,102,0.08);color:#25d366;text-decoration:none;transition:background 0.15s;}
+    .btn-wa:hover{background:rgba(37,211,102,0.18);}
+    .btn-wa-warn{border-color:rgba(245,200,66,0.3);background:rgba(245,200,66,0.08);color:var(--warn);}
+    .btn-wa-warn:hover{background:rgba(245,200,66,0.16);}
+
     .empty{text-align:center;padding:3rem;color:#555;}
-    @media(max-width:900px){.layout{grid-template-columns:1fr;}.sidebar{display:none;}}
-    .btn-back-dash{display:inline-flex;align-items:center;gap:0.3rem;color:var(--muted);text-decoration:none;font-size:0.78rem;font-family:'Space Mono',monospace;letter-spacing:1px;padding:0.35rem 0.75rem;border:1px solid var(--border);border-radius:5px;background:rgba(255,255,255,0.03);margin-bottom:1.5rem;transition:all 0.15s;}
-    .btn-back-dash:hover{color:#fff;border-color:rgba(255,255,255,0.2);background:rgba(255,255,255,0.06);}
+    .empty i{font-size:2.5rem;display:block;margin-bottom:0.8rem;}
+    .ev-header{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.1rem 1.4rem;margin-bottom:1.2rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.8rem;}
+    .ev-name{font-family:'Anton',sans-serif;font-size:1.1rem;letter-spacing:2px;}
+    .ev-meta{font-size:0.75rem;color:var(--muted);margin-top:0.15rem;}
+    .results-count{font-family:'Space Mono',monospace;font-size:0.65rem;color:#555;margin-bottom:0.5rem;}
+
+    /* Toast */
+    #toastMsg{position:fixed;bottom:1.5rem;right:1.5rem;background:#1a1a2a;border:1px solid rgba(106,13,173,0.4);color:#fff;padding:0.75rem 1.2rem;border-radius:8px;font-size:0.82rem;z-index:9999;display:none;box-shadow:0 8px 32px rgba(0,0,0,0.5);}
+    #toastMsg.show{display:block;}
+
+    @media(max-width:900px){.layout{grid-template-columns:1fr;}}
   </style>
 </head>
 <body>
 <div class="layout">
-    <%- include('../partials/superadmin-sidebar', { activePage: 'users-by-event' }) %>
+  <%- include('../partials/superadmin-sidebar', { activePage: 'users-by-event' }) %>
   <main class="main">
-    <h1 class="page-title">USERS BY EVENT</h1>
-    <p class="page-sub">View all attendees for a selected event.</p>
+    <div class="page-title">ATTENDEES BY EVENT</div>
+    <p class="page-sub">Every individual attendee from all paid bookings — with entry status and WhatsApp reminders.</p>
 
-    <form method="GET" action="/superadmin/users-by-event">
-      <div class="select-bar">
-        <div class="f-grp">
-          <label class="f-lbl">Select Event</label>
-          <select class="f-sel" name="eventId">
-            <option value="">— Choose an event —</option>
-            <% events.forEach(function(ev){ %>
-            <option value="<%= ev._id %>" <%= selectedEventId===ev._id.toString()?'selected':'' %>><%= ev.name %> — <%= new Date(ev.date).toLocaleDateString('en-IN') %></option>
-            <% }); %>
-          </select>
-        </div>
-        <button type="submit" class="filter-btn"><i class="bi bi-search"></i> View Users</button>
+    <!-- Event selector -->
+    <form method="GET" action="/admin/users-by-event" class="filter-top">
+      <div class="f-grp">
+        <label class="f-lbl">Select Event</label>
+        <select class="f-sel" name="eventId" onchange="this.form.submit()">
+          <option value="">— Choose an event —</option>
+          <% events.forEach(function(ev){ %>
+          <option value="<%= ev._id %>" <%= selectedEventId===ev._id.toString()?'selected':'' %>><%= ev.name %> — <%= new Date(ev.date).toLocaleDateString('en-IN') %></option>
+          <% }); %>
+        </select>
       </div>
     </form>
 
-    <% if(selectedEvent && bookings){ %>
-    <div class="event-header">
+    <% if(selectedEvent && attendees){ %>
+    <div class="ev-header">
       <div>
         <div class="ev-name"><%= selectedEvent.name.toUpperCase() %></div>
-        <div style="font-size:0.78rem;color:var(--muted);margin-top:0.2rem;"><%= new Date(selectedEvent.date).toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'}) %></div>
+        <div class="ev-meta"><%= new Date(selectedEvent.date).toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'}) %></div>
       </div>
-      <div class="ev-count"><%= bookings.length %> BOOKINGS</div>
+      <div style="font-family:'Space Mono',monospace;font-size:0.68rem;letter-spacing:2px;color:var(--accent);"><%= attendees.length %> TOTAL ATTENDEES</div>
     </div>
 
-    <% if(bookings.length===0){ %>
-    <div class="empty"><i class="bi bi-people" style="font-size:2.5rem;display:block;margin-bottom:0.8rem;"></i>No paid bookings for this event yet.</div>
-    <% } else { %>
-    <div style="overflow-x:auto;">
-    <table class="users-table">
-      <thead><tr>
-        <th>#</th><th>Name</th><th>Email</th><th>Phone</th><th>Ticket Type</th><th>Qty</th><th>Amount</th><th>Booking Ref</th><th>Date</th>
-      </tr></thead>
-      <tbody>
-      <% bookings.forEach(function(b, i){ %>
-      <tr>
-        <td style="color:var(--muted);font-family:'Space Mono',monospace;font-size:0.72rem;"><%= i+1 %></td>
-        <td><strong><%= b.user ? (b.user.firstName+' '+(b.user.lastName||'')) : '—' %></strong></td>
-        <td style="font-size:0.8rem;color:var(--muted);"><%= b.user?.email||'—' %></td>
-        <td style="font-family:'Space Mono',monospace;font-size:0.75rem;"><%= b.user?.phone||'—' %></td>
-        <td><span class="ticket-chip"><%= b.ticketType.toUpperCase() %></span></td>
-        <td style="text-align:center;"><%= b.quantity %></td>
-        <td style="font-family:'Space Mono',monospace;font-size:0.82rem;color:var(--accent);">₹<%= b.totalAmount.toLocaleString('en-IN') %></td>
-        <td style="font-family:'Space Mono',monospace;font-size:0.68rem;color:var(--muted);"><%= b.bookingRef %></td>
-        <td style="font-size:0.75rem;color:var(--muted);"><%= new Date(b.createdAt).toLocaleDateString('en-IN') %></td>
-      </tr>
-      <% }); %>
-      </tbody>
-    </table>
+    <% if(attendees.length > 0){ %>
+    <!-- Stats -->
+    <%
+      const totalMale   = attendees.filter(function(a){return a.gender==='male';}).length;
+      const totalFemale = attendees.filter(function(a){return a.gender==='female';}).length;
+      const totalEntered= attendees.filter(function(a){return a.entered;}).length;
+      const totalPending= attendees.length - totalEntered;
+    %>
+    <div class="stat-row">
+      <div class="stat-box"><i class="bi bi-people-fill"></i><div><div class="stat-val"><%= attendees.length %></div><div class="stat-lbl">Attendees</div></div></div>
+      <div class="stat-box"><i class="bi bi-door-open-fill" style="color:#00FF88;"></i><div><div class="stat-val"><%= totalEntered %></div><div class="stat-lbl">Entered</div></div></div>
+      <div class="stat-box"><i class="bi bi-hourglass-split" style="color:#FF4444;"></i><div><div class="stat-val"><%= totalPending %></div><div class="stat-lbl">Not Entered</div></div></div>
+      <div class="stat-box"><i class="bi bi-gender-male" style="color:#64b5f6;"></i><div><div class="stat-val"><%= totalMale %></div><div class="stat-lbl">Male</div></div></div>
+      <div class="stat-box"><i class="bi bi-gender-female" style="color:#f48fb1;"></i><div><div class="stat-val"><%= totalFemale %></div><div class="stat-lbl">Female</div></div></div>
     </div>
+
+    <!-- Search + Filters -->
+    <div class="filter-top" style="margin-bottom:0.6rem;">
+      <div class="f-grp" style="flex:2;">
+        <label class="f-lbl">Search</label>
+        <input class="f-inp" id="searchInp" placeholder="Name, phone, email, booking ref, seat…" oninput="applyFilters()"/>
+      </div>
+    </div>
+    <div class="filter-chips">
+      <span class="chip-lbl">GENDER</span>
+      <button class="chip on" data-filter="gender" data-val="all" onclick="setChip('gender','all',this)">All</button>
+      <button class="chip"    data-filter="gender" data-val="male"   onclick="setChip('gender','male',this)">Male</button>
+      <button class="chip"    data-filter="gender" data-val="female" onclick="setChip('gender','female',this)">Female</button>
+      <button class="chip"    data-filter="gender" data-val="other"  onclick="setChip('gender','other',this)">Other</button>
+      <span class="chip-lbl" style="margin-left:0.8rem;">STATUS</span>
+      <button class="chip on" data-filter="entry" data-val="all"      onclick="setChip('entry','all',this)">All</button>
+      <button class="chip"    data-filter="entry" data-val="entered"  onclick="setChip('entry','entered',this)">✅ Entered</button>
+      <button class="chip"    data-filter="entry" data-val="pending"  onclick="setChip('entry','pending',this)">⏳ Not Entered</button>
+      <span class="chip-lbl" style="margin-left:0.8rem;">AGE</span>
+      <button class="chip on" data-filter="age" data-val="all"   onclick="setChip('age','all',this)">All</button>
+      <button class="chip"    data-filter="age" data-val="18-25" onclick="setChip('age','18-25',this)">18–25</button>
+      <button class="chip"    data-filter="age" data-val="26-35" onclick="setChip('age','26-35',this)">26–35</button>
+      <button class="chip"    data-filter="age" data-val="36+"   onclick="setChip('age','36+',this)">36+</button>
+    </div>
+
+    <!-- Bulk actions -->
+    <div class="bulk-bar">
+      <span class="bulk-lbl">BULK ACTIONS (visible rows):</span>
+      <button class="btn-bulk btn-bulk-wa" onclick="bulkRemind('reminder')">
+        <i class="bi bi-whatsapp"></i> WhatsApp Reminder (All)
+      </button>
+      <button class="btn-bulk btn-bulk-noshow" onclick="bulkRemind('noshow')">
+        <i class="bi bi-bell-fill"></i> Remind Not-Entered
+      </button>
+    </div>
+
+    <div class="results-count" id="resultsCount"><%= attendees.length %> of <%= attendees.length %> shown</div>
+
+    <div class="table-wrap">
+      <div class="table-scroll">
+      <table id="attTable">
+        <thead><tr>
+          <th>#</th>
+          <th>Name</th>
+          <th>Age</th>
+          <th>Gender</th>
+          <th>Ticket</th>
+          <th>Seat</th>
+          <th>Booking Ref</th>
+          <th>Booked On</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr></thead>
+        <tbody>
+        <% attendees.forEach(function(a, i){ %>
+        <tr
+          data-gender="<%= a.gender||'other' %>"
+          data-age="<%= a.age||0 %>"
+          data-entry="<%= a.entered?'entered':'pending' %>"
+          data-phone="<%= a.user&&a.user.phone?a.user.phone:'' %>"
+          data-name="<%= (a.name||'').replace(/'/g,'') %>"
+          data-search="<%= ((a.name||'')+(a.user&&a.user.email?a.user.email:'')+(a.user&&a.user.phone?a.user.phone:'')+(a.bookingRef||'')+(a.seatNumber||'')).toLowerCase() %>">
+          <td style="color:var(--muted);font-family:'Space Mono',monospace;font-size:0.7rem;" class="row-num"><%= i+1 %></td>
+          <td>
+            <strong><%= a.name||'—' %></strong>
+            <% if(a.user&&a.user.email){ %><div style="font-size:0.7rem;color:#555;"><%= a.user.email %></div><% } %>
+          </td>
+          <td style="color:var(--muted);text-align:center;"><%= a.age||'—' %></td>
+          <td>
+            <% if(a.gender==='male'){ %><span class="b b-m">♂ M</span>
+            <% }else if(a.gender==='female'){ %><span class="b b-f">♀ F</span>
+            <% }else if(a.gender){ %><span class="b b-o"><%= a.gender %></span>
+            <% }else{ %><span style="color:#444;">—</span><% } %>
+          </td>
+          <td><span class="b b-ticket"><%= (a.ticketType||'—').toUpperCase() %></span></td>
+          <td style="font-family:'Space Mono',monospace;font-size:0.7rem;color:#555;"><%= a.seatNumber||'—' %></td>
+          <td style="font-family:'Space Mono',monospace;font-size:0.68rem;color:var(--accent);"><%= a.bookingRef||'—' %></td>
+          <td style="font-size:0.72rem;color:var(--muted);white-space:nowrap;"><%= new Date(a.createdAt).toLocaleDateString('en-IN',{day:'numeric',month:'short'}) %></td>
+          <td>
+            <% if(a.entered){ %>
+              <span class="b b-in"><i class="bi bi-door-open-fill"></i> Entered</span>
+            <% }else{ %>
+              <span class="b b-out"><i class="bi bi-hourglass-split"></i> Not In</span>
+            <% } %>
+          </td>
+          <td>
+            <% if(a.user&&a.user.phone){ %>
+              <% const cleanPhone=(a.user.phone||'').replace(/[^0-9]/g,''); %>
+              <% const waNum=cleanPhone.startsWith('91')?cleanPhone:'91'+cleanPhone; %>
+              <% const waMsg=a.entered
+                ? 'Hi '+a.name+'! Hope you are enjoying '+selectedEvent.name+'. Thank you for joining us!'
+                : 'Hi '+a.name+'! Reminder: '+selectedEvent.name+' is happening now at '+selectedEvent.venue+'. Please show your QR ticket at the gate. See you soon! — MEE'; %>
+              <a class="btn-wa <%= !a.entered?'btn-wa-warn':'' %>"
+                 href="https://wa.me/<%= waNum %>?text=<%= encodeURIComponent(waMsg) %>"
+                 target="_blank" title="<%= a.entered?'Send WhatsApp':'Send entry reminder' %>">
+                <i class="bi bi-whatsapp"></i><%= a.entered?'Chat':'Remind' %>
+              </a>
+            <% }else{ %>
+              <span style="color:#333;font-size:0.7rem;">No phone</span>
+            <% } %>
+          </td>
+        </tr>
+        <% }); %>
+        </tbody>
+      </table>
+      </div>
+    </div>
+
+    <% }else{ %>
+    <div class="empty"><i class="bi bi-people"></i>No paid bookings for this event yet.</div>
     <% } %>
+    <% }else if(!selectedEventId){ %>
+    <div class="empty"><i class="bi bi-funnel"></i>Select an event to view its attendees.</div>
     <% } %>
   </main>
 </div>
+
+<div id="toastMsg"></div>
+
+<script>
+var activeFilters = { gender:'all', entry:'all', age:'all' };
+
+function setChip(filter, val, btn){
+  activeFilters[filter] = val;
+  document.querySelectorAll('[data-filter="'+filter+'"]').forEach(function(c){ c.classList.remove('on'); });
+  btn.classList.add('on');
+  applyFilters();
+}
+
+function applyFilters(){
+  var q    = (document.getElementById('searchInp')||{}).value||'';
+  q = q.toLowerCase();
+  var rows = document.querySelectorAll('#attTable tbody tr');
+  var shown = 0;
+  rows.forEach(function(r, i){
+    var gender = r.dataset.gender||'other';
+    var age    = parseInt(r.dataset.age)||0;
+    var entry  = r.dataset.entry;
+    var search = r.dataset.search||'';
+
+    var gOk = activeFilters.gender==='all' || gender===activeFilters.gender;
+    var eOk = activeFilters.entry==='all'  || entry===activeFilters.entry;
+    var aOk = true;
+    if(activeFilters.age==='18-25') aOk = age>=18&&age<=25;
+    else if(activeFilters.age==='26-35') aOk = age>=26&&age<=35;
+    else if(activeFilters.age==='36+') aOk = age>=36;
+    var sOk = !q || search.includes(q);
+
+    var show = gOk&&eOk&&aOk&&sOk;
+    r.style.display = show?'':'none';
+    if(show) shown++;
+  });
+  var total = rows.length;
+  var rc = document.getElementById('resultsCount');
+  if(rc) rc.textContent = shown+' of '+total+' shown';
+  // Renumber visible rows
+  var num=1;
+  rows.forEach(function(r){
+    if(r.style.display!=='none'){
+      var nd=r.querySelector('.row-num');
+      if(nd) nd.textContent=num++;
+    }
+  });
+}
+
+function bulkRemind(type){
+  var rows = document.querySelectorAll('#attTable tbody tr');
+  var links = [];
+  rows.forEach(function(r){
+    if(r.style.display==='none') return;
+    if(type==='noshow' && r.dataset.entry!=='pending') return;
+    var phone = r.dataset.phone;
+    var name  = r.dataset.name;
+    if(!phone) return;
+    var clean = phone.replace(/[^0-9]/g,'');
+    var num   = clean.startsWith('91')?clean:'91'+clean;
+    var eventName = '<%= selectedEvent ? selectedEvent.name : "" %>';
+    var venue     = '<%= selectedEvent && selectedEvent.venue ? selectedEvent.venue : "" %>';
+    var msg = type==='noshow'
+      ? 'Hi '+name+'! We noticed you haven\'t entered '+eventName+' yet. The event is happening now at '+venue+'. Show your QR ticket at the gate — see you soon! 🎉 — MEE'
+      : 'Hi '+name+'! 🎟️ Reminder: '+eventName+' is coming up. Don\'t forget your QR ticket. See you there! — MEE Team';
+    links.push('https://wa.me/'+num+'?text='+encodeURIComponent(msg));
+  });
+  if(links.length===0){ showToast('No matching attendees with phone numbers found.'); return; }
+  if(!confirm('Open '+links.length+' WhatsApp chat windows?')) return;
+  links.forEach(function(url, i){ setTimeout(function(){ window.open(url,'_blank'); }, i*800); });
+  showToast('Opening '+links.length+' WhatsApp chats...');
+}
+
+function showToast(msg){
+  var t=document.getElementById('toastMsg');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); },3500);
+}
+</script>
 </body>
 </html>

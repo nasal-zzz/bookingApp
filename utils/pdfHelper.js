@@ -121,7 +121,7 @@ const generateTicketPDF = async ({ booking, event }) => {
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<title>NightPass Tickets — ${escHtml(booking.bookingRef)}</title>
+<title>MEE Tickets — ${escHtml(booking.bookingRef)}</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Anton&family=Outfit:wght@400;600;700&family=Space+Mono:wght@400;700&display=swap');
 

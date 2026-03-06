@@ -6,278 +6,606 @@
   <link href="https://fonts.googleapis.com/css2?family=Anton&family=Outfit:wght@400;500;600;700&family=Space+Mono&display=swap" rel="stylesheet"/>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet"/>
   <style>
-    :root{--bg:#0B0B0F;--surface:#14141C;--border:rgba(255,255,255,0.08);--accent:#9D4EDD;--text:#fff;--muted:#B3B3B3;--error:#FF4444;--success:#00FF88;}
+    :root{--bg:#0B0B0F;--surface:#14141C;--border:rgba(255,255,255,0.08);--accent:#6A0DAD;--accent2:#9D4EDD;--text:#fff;--muted:#B3B3B3;--success:#00FF88;--error:#FF4444;--warn:#f5c842;}
     *{box-sizing:border-box;margin:0;padding:0;}
     body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-height:100vh;}
-    .layout{display:grid;grid-template-columns:220px 1fr;min-height:100vh;}
-    .sidebar{background:var(--surface);border-right:1px solid var(--border);padding:1.5rem 1rem;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:0.3rem;overflow-y:auto;}
-    .s-logo{font-family:'Anton',sans-serif;font-size:1.3rem;letter-spacing:3px;color:#fff;text-decoration:none;display:block;padding:0 0.5rem 0.5rem;border-bottom:1px solid var(--border);margin-bottom:0.4rem;}
-    .s-logo span{color:var(--accent);}
-    .s-badge{font-family:'Space Mono',monospace;font-size:0.5rem;letter-spacing:2px;color:var(--accent);background:rgba(157,78,221,0.1);border:1px solid rgba(157,78,221,0.25);border-radius:10px;padding:0.15rem 0.6rem;margin-bottom:0.8rem;display:inline-block;}
+    body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(255,255,255,0.012) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.012) 1px,transparent 1px);background-size:50px 50px;pointer-events:none;}
+    .admin-layout{display:grid;grid-template-columns:220px 1fr;min-height:100vh;}
+    .main{padding:2rem;position:relative;z-index:1;overflow-x:hidden;}
+
+  /* ── Sidebar ── */
+    .sidebar{background:var(--surface);border-right:1px solid var(--border);padding:1.5rem 1rem;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:0.3rem;z-index:10;overflow-y:auto;scrollbar-width:none;-ms-overflow-style:none;}
+    .sidebar::-webkit-scrollbar{display:none;}
+    .s-logo{display:block;padding:0 0.5rem 1rem;border-bottom:1px solid var(--border);margin-bottom:0.5rem;text-decoration:none;}
+    .s-section{font-family:'Space Mono',monospace;font-size:0.52rem;letter-spacing:2px;color:var(--muted);text-transform:uppercase;padding:0.5rem 0.5rem 0.2rem;margin-top:0.3rem;}
     .s-link{display:flex;align-items:center;gap:0.7rem;padding:0.7rem 0.8rem;color:var(--muted);text-decoration:none;border-radius:6px;font-size:0.85rem;transition:all 0.15s;border:1px solid transparent;}
-    .s-link:hover,.s-link.active{background:rgba(157,78,221,0.08);border-color:rgba(157,78,221,0.2);color:#fff;}
+    .s-link:hover,.s-link.active{background:rgba(106,13,173,0.08);border-color:rgba(106,13,173,0.2);color:#fff;}
     .s-link i{color:var(--accent);width:18px;}
     .s-logout{margin-top:auto;display:flex;align-items:center;gap:0.7rem;padding:0.7rem 0.8rem;color:var(--error);text-decoration:none;border-radius:6px;font-size:0.85rem;border:1px solid transparent;transition:all 0.15s;}
     .s-logout:hover{background:rgba(255,68,68,0.08);}
-    .main{padding:2rem;overflow-x:hidden;}
-    .page-title{font-family:'Anton',sans-serif;font-size:1.8rem;letter-spacing:2px;margin-bottom:0.3rem;}
-    .page-sub{font-size:0.78rem;color:var(--muted);margin-bottom:2rem;}
-    .add-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:2rem;}
-    .card-bar{height:3px;background:linear-gradient(90deg,#9D4EDD,#6A0DAD);}
-    .card-body{padding:1.5rem;}
-    .card-head{font-family:'Anton',sans-serif;font-size:1rem;letter-spacing:2px;margin-bottom:1.2rem;}
-    .f-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;}
-    .f-grid.cols3{grid-template-columns:1fr 1fr 1fr;}
-    .f-grid.cols4{grid-template-columns:1fr 1fr 1fr 1fr;}
-    .f-grp{display:flex;flex-direction:column;gap:0.3rem;}
-    .f-lbl{font-family:'Space Mono',monospace;font-size:0.52rem;letter-spacing:1px;color:#555;text-transform:uppercase;}
-    .f-inp,.f-sel{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:7px;color:#fff;font-family:'Outfit',sans-serif;font-size:0.88rem;padding:0.62rem 0.85rem;outline:none;transition:border-color 0.18s;width:100%;}
-    .f-inp:focus,.f-sel:focus{border-color:rgba(157,78,221,0.45);}
-    .f-sel option{background:#1a1a2e;}
-    .submit-btn{display:flex;align-items:center;justify-content:center;gap:0.5rem;padding:0.8rem 2rem;background:var(--accent);color:#fff;border:none;border-radius:8px;font-weight:700;font-size:0.88rem;cursor:pointer;transition:all 0.18s;}
-    .submit-btn:hover{box-shadow:0 0 20px rgba(157,78,221,0.4);}
-    .toast{display:none;padding:0.7rem 1rem;border-radius:7px;font-size:0.82rem;margin-top:0.75rem;align-items:center;gap:0.5rem;}
-    .toast.ok{background:rgba(0,255,136,0.08);border:1px solid rgba(0,255,136,0.25);color:var(--success);display:flex;}
-    .toast.err{background:rgba(255,68,68,0.08);border:1px solid rgba(255,68,68,0.28);color:var(--error);display:flex;}
-    .coupons-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1rem;}
-    .coupon-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;transition:border-color 0.18s;}
-    .coupon-card.inactive{opacity:0.5;}
-    .coupon-card:hover{border-color:rgba(157,78,221,0.25);}
-    .cc-top{background:linear-gradient(135deg,rgba(157,78,221,0.1),rgba(106,13,173,0.05));padding:1rem 1.2rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
-    .cc-code{font-family:'Space Mono',monospace;font-size:1.1rem;letter-spacing:3px;color:var(--accent);font-weight:700;}
-    .cc-type{font-family:'Space Mono',monospace;font-size:0.55rem;letter-spacing:1px;color:#555;background:rgba(255,255,255,0.05);padding:0.15rem 0.5rem;border-radius:4px;}
-    .cc-body{padding:1rem 1.2rem;}
-    .cc-val{font-family:'Anton',sans-serif;font-size:1.8rem;letter-spacing:1px;color:#fff;margin-bottom:0.3rem;}
-    .cc-desc{font-size:0.78rem;color:var(--muted);margin-bottom:0.8rem;}
-    .cc-meta{display:flex;gap:0.8rem;flex-wrap:wrap;font-family:'Space Mono',monospace;font-size:0.6rem;color:#555;margin-bottom:0.8rem;}
-    .cc-actions{display:flex;gap:0.5rem;}
-    .btn-sm{display:inline-flex;align-items:center;gap:0.3rem;padding:0.32rem 0.65rem;border-radius:4px;font-size:0.72rem;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text);transition:all 0.15s;}
-    .btn-tog{color:#f5c842;border-color:rgba(245,200,66,0.3);}
-    .btn-tog:hover{background:rgba(245,200,66,0.1);}
-    .btn-del{color:var(--error);border-color:rgba(255,68,68,0.3);}
-    .btn-del:hover{background:rgba(255,68,68,0.1);}
-    .badge-on{background:rgba(0,255,136,0.08);border:1px solid rgba(0,255,136,0.3);color:var(--success);font-size:0.55rem;padding:0.1rem 0.45rem;border-radius:10px;font-family:'Space Mono',monospace;}
-    .badge-off{background:rgba(255,68,68,0.08);border:1px solid rgba(255,68,68,0.3);color:var(--error);font-size:0.55rem;padding:0.1rem 0.45rem;border-radius:10px;font-family:'Space Mono',monospace;}
-    .empty{text-align:center;padding:3rem;color:#555;}
-    @media(max-width:900px){.layout{grid-template-columns:1fr;}.sidebar{display:none;}.f-grid{grid-template-columns:1fr;}.f-grid.cols3,.f-grid.cols4{grid-template-columns:1fr 1fr;}}
-    .btn-back-dash{display:inline-flex;align-items:center;gap:0.3rem;color:var(--muted);text-decoration:none;font-size:0.78rem;font-family:'Space Mono',monospace;letter-spacing:1px;padding:0.35rem 0.75rem;border:1px solid var(--border);border-radius:5px;background:rgba(255,255,255,0.03);margin-bottom:1.5rem;transition:all 0.15s;}
-    .btn-back-dash:hover{color:#fff;border-color:rgba(255,255,255,0.2);background:rgba(255,255,255,0.06);}
+
+    .page-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;}
+    .page-title{font-family:'Anton',sans-serif;font-size:2rem;letter-spacing:2px;}
+    .btn-new{display:inline-flex;align-items:center;gap:0.5rem;background:var(--accent);color:#fff;padding:0.65rem 1.4rem;border-radius:7px;font-weight:700;font-size:0.85rem;letter-spacing:1px;border:none;cursor:pointer;transition:box-shadow 0.2s;}
+    .btn-new:hover{box-shadow:0 0 24px rgba(106,13,173,0.5);}
+
+    /* Stats */
+    .stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:0.9rem;margin-bottom:1.8rem;}
+    .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.1rem 1.2rem;position:relative;overflow:hidden;}
+    .stat-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(106,13,173,0.04),transparent);pointer-events:none;}
+    .stat-val{font-family:'Anton',sans-serif;font-size:1.9rem;color:var(--accent2);}
+    .stat-lbl{font-size:0.72rem;color:var(--muted);margin-top:0.15rem;}
+    .stat-icon{position:absolute;right:0.9rem;top:50%;transform:translateY(-50%);font-size:1.8rem;opacity:0.06;}
+
+    /* Toolbar */
+    .toolbar{background:var(--surface);border:1px solid var(--border);border-radius:10px 10px 0 0;border-bottom:none;}
+    .tabs{display:flex;border-bottom:1px solid var(--border);overflow-x:auto;}
+    .tab-btn{display:flex;align-items:center;gap:0.4rem;padding:0.9rem 1.2rem;font-family:'Space Mono',monospace;font-size:0.6rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);background:none;border:none;cursor:pointer;transition:all 0.15s;border-bottom:2px solid transparent;white-space:nowrap;}
+    .tab-btn:hover{color:#fff;}
+    .tab-btn.active{color:#fff;border-bottom-color:var(--accent);}
+    .tc{background:rgba(106,13,173,0.2);border:1px solid rgba(144,78,221,0.3);border-radius:10px;padding:0.1rem 0.45rem;font-size:0.58rem;margin-left:0.2rem;}
+    .tab-btn.active .tc{background:rgba(106,13,173,0.4);}
+
+    .filters-row{display:flex;align-items:center;gap:0.8rem;padding:0.8rem 1.2rem;flex-wrap:wrap;border-bottom:1px solid var(--border);}
+    .sw{position:relative;flex:1;min-width:200px;}
+    .sw i{position:absolute;left:0.75rem;top:50%;transform:translateY(-50%);color:var(--muted);font-size:0.9rem;}
+    .si{width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:6px;color:#fff;padding:0.55rem 0.9rem 0.55rem 2.2rem;font-family:'Outfit',sans-serif;font-size:0.85rem;outline:none;transition:border 0.15s;}
+    .si:focus{border-color:var(--accent);}
+    .fs{background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:6px;color:#fff;padding:0.55rem 0.8rem;font-family:'Outfit',sans-serif;font-size:0.82rem;outline:none;cursor:pointer;}
+    .fs:focus{border-color:var(--accent);}
+    .fs option{background:#1a1a2e;}
+    .fc{font-family:'Space Mono',monospace;font-size:0.63rem;color:var(--muted);white-space:nowrap;}
+
+    /* Table */
+    .table-wrap{background:var(--surface);border:1px solid var(--border);border-top:none;border-radius:0 0 10px 10px;overflow:hidden;}
+    .tscroll{overflow-x:auto;}
+    table{width:100%;border-collapse:collapse;}
+    th{font-family:'Space Mono',monospace;font-size:0.54rem;letter-spacing:2px;color:var(--muted);text-transform:uppercase;padding:0.8rem 1rem;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap;}
+    td{padding:0.9rem 1rem;border-bottom:1px solid rgba(255,255,255,0.04);font-size:0.83rem;vertical-align:middle;}
+    tr:last-child td{border-bottom:none;}
+    tr:hover td{background:rgba(255,255,255,0.015);}
+
+    /* Badges */
+    .b{display:inline-flex;align-items:center;gap:0.25rem;font-family:'Space Mono',monospace;font-size:0.55rem;letter-spacing:1px;padding:0.18rem 0.52rem;border-radius:20px;white-space:nowrap;}
+    .b-act{background:rgba(0,255,136,0.08);border:1px solid rgba(0,255,136,0.25);color:var(--success);}
+    .b-exp{background:rgba(255,68,68,0.08);border:1px solid rgba(255,68,68,0.25);color:var(--error);}
+    .b-ina{background:rgba(179,179,179,0.08);border:1px solid rgba(179,179,179,0.2);color:var(--muted);}
+    .b-feat{background:rgba(245,200,66,0.1);border:1px solid rgba(245,200,66,0.3);color:var(--warn);}
+    .b-pct{background:rgba(106,13,173,0.15);border:1px solid rgba(144,78,221,0.3);color:var(--accent2);}
+    .b-flt{background:rgba(0,200,255,0.08);border:1px solid rgba(0,200,255,0.25);color:#00C8FF;}
+
+    .code-pill{font-family:'Space Mono',monospace;font-size:0.8rem;letter-spacing:2px;background:rgba(106,13,173,0.12);border:1px solid rgba(144,78,221,0.25);border-radius:5px;padding:0.25rem 0.6rem;color:#d8b4fe;cursor:pointer;transition:all 0.15s;}
+    .code-pill:hover{background:rgba(106,13,173,0.28);border-color:rgba(144,78,221,0.5);}
+
+    /* Usage bar */
+    .ur{display:flex;align-items:center;gap:0.5rem;}
+    .ubw{flex:1;background:rgba(255,255,255,0.06);border-radius:20px;height:4px;min-width:50px;}
+    .ub{height:4px;border-radius:20px;background:linear-gradient(90deg,var(--accent),var(--accent2));}
+    .ut{font-family:'Space Mono',monospace;font-size:0.63rem;color:var(--muted);white-space:nowrap;}
+
+    /* Small buttons */
+    .bs{display:inline-flex;align-items:center;gap:0.3rem;padding:0.32rem 0.72rem;border-radius:5px;font-size:0.72rem;font-weight:600;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text);transition:all 0.15s;white-space:nowrap;}
+    .bs:hover{border-color:var(--accent);color:var(--accent);}
+    .bs.d{border-color:rgba(255,68,68,0.3);color:var(--error);}
+    .bs.d:hover{background:rgba(255,68,68,0.08);}
+    .bs.w{border-color:rgba(245,200,66,0.3);color:var(--warn);}
+    .bs.w:hover{background:rgba(245,200,66,0.08);}
+    .bs.s{border-color:rgba(0,255,136,0.3);color:var(--success);}
+    .bs.s:hover{background:rgba(0,255,136,0.08);}
+    .bs.a{border-color:rgba(106,13,173,0.4);color:var(--accent2);}
+    .bs.a:hover{background:rgba(106,13,173,0.12);}
+    .ar{display:flex;gap:0.35rem;flex-wrap:wrap;}
+
+    /* Usage Drawer */
+    .udr{display:none;}
+    .udr.open{display:table-row-group;}
+    .udr td{padding:0;border-bottom:none;}
+    .udi{padding:1rem 1.4rem 1.4rem;background:rgba(106,13,173,0.03);border-top:1px solid rgba(106,13,173,0.1);}
+    .udt{font-family:'Space Mono',monospace;font-size:0.58rem;letter-spacing:2px;color:var(--accent2);text-transform:uppercase;margin-bottom:0.9rem;display:flex;align-items:center;gap:0.5rem;}
+    .us{display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1rem;}
+    .usc{background:rgba(106,13,173,0.08);border:1px solid rgba(106,13,173,0.15);border-radius:8px;padding:0.6rem 1rem;text-align:center;min-width:90px;}
+    .usv{font-family:'Anton',sans-serif;font-size:1.4rem;color:var(--accent2);}
+    .usl{font-size:0.62rem;color:var(--muted);font-family:'Space Mono',monospace;}
+    .utbl{width:100%;border-collapse:collapse;font-size:0.78rem;}
+    .utbl th{font-family:'Space Mono',monospace;font-size:0.52rem;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;padding:0.5rem 0.8rem;border-bottom:1px solid var(--border);text-align:left;}
+    .utbl td{padding:0.6rem 0.8rem;border-bottom:1px solid rgba(255,255,255,0.03);}
+    .utbl tr:last-child td{border-bottom:none;}
+    .nou{color:var(--muted);font-size:0.8rem;text-align:center;padding:1.5rem;font-family:'Space Mono',monospace;}
+
+    /* Modal */
+    .mo{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.78);backdrop-filter:blur(6px);z-index:1000;align-items:center;justify-content:center;padding:1rem;}
+    .mo.open{display:flex;}
+    .mc{background:var(--surface);border:1px solid var(--border);border-radius:14px;width:100%;max-width:680px;max-height:92vh;overflow-y:auto;box-shadow:0 24px 60px rgba(0,0,0,0.6);}
+    .mh{padding:1.3rem 1.6rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--surface);z-index:2;}
+    .mt{font-family:'Anton',sans-serif;font-size:1.3rem;letter-spacing:2px;}
+    .mx{background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;padding:0.2rem 0.4rem;border-radius:4px;transition:color 0.15s;}
+    .mx:hover{color:#fff;}
+    .mb{padding:1.4rem 1.6rem;}
+    .fg2{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+    .fg{display:flex;flex-direction:column;gap:0.4rem;}
+    .fg.s2{grid-column:span 2;}
+    .fl{font-size:0.72rem;color:var(--muted);font-family:'Space Mono',monospace;letter-spacing:1px;text-transform:uppercase;}
+    .fi{background:var(--bg);border:1px solid var(--border);border-radius:6px;color:#fff;padding:0.65rem 0.9rem;font-family:'Outfit',sans-serif;font-size:0.88rem;outline:none;width:100%;transition:border 0.15s;}
+    .fi:focus{border-color:var(--accent);}
+    .fi option{background:var(--surface);}
+    .fh{font-size:0.7rem;color:var(--muted);margin-top:-0.1rem;}
+    .cr{display:flex;align-items:center;gap:0.6rem;font-size:0.85rem;}
+    .cr input{width:16px;height:16px;accent-color:var(--accent);cursor:pointer;}
+    .mft{display:flex;gap:0.8rem;justify-content:flex-end;margin-top:1.5rem;padding-top:1.2rem;border-top:1px solid var(--border);}
+    .bg{background:none;border:1px solid var(--border);color:var(--muted);padding:0.65rem 1.2rem;border-radius:6px;cursor:pointer;font-family:'Outfit',sans-serif;font-size:0.85rem;transition:all 0.15s;}
+    .bg:hover{border-color:var(--muted);color:#fff;}
+    .bsv{display:inline-flex;align-items:center;gap:0.4rem;background:var(--accent);color:#fff;padding:0.65rem 1.4rem;border-radius:6px;font-weight:700;font-size:0.85rem;border:none;cursor:pointer;transition:box-shadow 0.2s;}
+    .bsv:hover{box-shadow:0 0 20px rgba(106,13,173,0.4);}
+
+    /* Delete confirm */
+    .dc{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:1100;align-items:center;justify-content:center;}
+    .dc.open{display:flex;}
+    .dcb{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:2rem;width:380px;max-width:95vw;text-align:center;}
+    .dcb h3{font-family:'Anton',sans-serif;font-size:1.4rem;margin-bottom:0.6rem;color:var(--error);}
+    .dcb p{font-size:0.87rem;color:var(--muted);margin-bottom:1.5rem;}
+    .dcbt{display:flex;gap:0.8rem;justify-content:center;}
+
+    .nr{padding:3rem;text-align:center;color:var(--muted);}
+    .nr i{font-size:2.2rem;display:block;margin-bottom:0.8rem;opacity:0.4;}
+    #toast{display:none;position:fixed;bottom:1.5rem;right:1.5rem;background:var(--surface);border:1px solid rgba(0,255,136,0.3);border-radius:8px;padding:0.75rem 1.2rem;font-size:0.83rem;color:var(--success);z-index:9999;box-shadow:0 8px 30px rgba(0,0,0,0.5);}
+
+    @media(max-width:960px){
+      .admin-layout{grid-template-columns:1fr;}
+      .sidebar{display:none;}
+      .stats-row{grid-template-columns:repeat(2,1fr);}
+      .fg2{grid-template-columns:1fr;}
+      .fg.s2{grid-column:span 1;}
+    }
   </style>
 </head>
 <body>
-<div class="layout">
-    <%- include('../partials/admin-sidebar', { activePage: 'coupons' }) %>
-    <%- include('../partials/admin-confirm') %>
-    <main class="main">
-    <h1 class="page-title">COUPONS</h1>
-    <p class="page-sub">Create discount codes — fixed ₹ or percentage off. Used at checkout.</p>
+<div class="admin-layout">
+  <%- include('../partials/admin-sidebar', { activePage: 'coupons' }) %>
+  <main class="main">
 
-    <div class="add-card">
-      <div class="card-bar"></div>
-      <div class="card-body">
-        <div class="card-head">CREATE NEW COUPON</div>
-        <div class="f-grid cols4">
-          <div class="f-grp"><label class="f-lbl">Coupon Code *</label><input class="f-inp" id="cpCode" placeholder="e.g. PARTY10" style="text-transform:uppercase;" oninput="this.value=this.value.toUpperCase()"/></div>
-          <div class="f-grp"><label class="f-lbl">Type *</label>
-            <select class="f-sel" id="cpType">
-              <option value="fixed">Fixed (₹)</option>
-              <option value="percent">Percentage (%)</option>
-            </select>
-          </div>
-          <div class="f-grp"><label class="f-lbl">Discount Value *</label><input class="f-inp" type="number" id="cpValue" placeholder="100"/></div>
-          <div class="f-grp"><label class="f-lbl">Min Order (₹)</label><input class="f-inp" type="number" id="cpMinOrder" placeholder="0"/></div>
-        </div>
-        <div class="f-grid cols3">
-          <div class="f-grp"><label class="f-lbl">Max Uses (0=unlimited)</label><input class="f-inp" type="number" id="cpMaxUses" placeholder="0"/></div>
-          <div class="f-grp"><label class="f-lbl">Valid From</label><input class="f-inp" type="date" id="cpFrom"/></div>
-          <div class="f-grp"><label class="f-lbl">Valid Until</label><input class="f-inp" type="date" id="cpUntil"/></div>
-        </div>
-        <div class="f-grid" style="grid-template-columns:1fr;">
-          <div class="f-grp"><label class="f-lbl">Description (optional)</label><input class="f-inp" id="cpDesc" placeholder="e.g. Early bird discount"/></div>
-        </div>
-        <button class="submit-btn" onclick="createCoupon()"><i class="bi bi-tag-fill"></i> Create Coupon</button>
-        <div class="toast" id="cpToast"></div>
+    <div class="page-hd">
+      <div class="page-title">COUPONS</div>
+      <button class="btn-new" onclick="openCreate()"><i class="bi bi-plus-lg"></i> New Coupon</button>
+    </div>
+
+    <%
+      const now2 = new Date();
+      function cpnExpired(c){ return c.validUntil && now2 > new Date(c.validUntil); }
+      function cpnActive(c){ return c.isActive && !cpnExpired(c) && (!c.validFrom||now2>=new Date(c.validFrom)) && (!c.maxUses||c.usedCount<c.maxUses); }
+      function cpnStatus(c){ return cpnExpired(c)?'expired':(cpnActive(c)?'active':'inactive'); }
+      const totAll     = coupons.length;
+      const totAct     = coupons.filter(function(c){return cpnActive(c);}).length;
+      const totExp     = coupons.filter(function(c){return cpnExpired(c);}).length;
+      const totFeat    = coupons.filter(function(c){return c.isFeatured;}).length;
+      const totIna     = coupons.filter(function(c){return !cpnActive(c)&&!cpnExpired(c);}).length;
+      const totUses    = coupons.reduce(function(s,c){return s+(c.usedCount||0);},0);
+      const totSaved   = coupons.reduce(function(s,c){return s+(c.usages||[]).reduce(function(ss,b){return ss+(b.discount||0);},0);},0);
+    %>
+
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-val"><%= totAll %></div>
+        <div class="stat-lbl">Total Coupons</div>
+        <i class="bi bi-tag stat-icon"></i>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val"><%= totAct %></div>
+        <div class="stat-lbl">Active Now</div>
+        <i class="bi bi-lightning-fill stat-icon"></i>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val"><%= totExp %></div>
+        <div class="stat-lbl">Expired</div>
+        <i class="bi bi-clock-history stat-icon"></i>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val"><%= totUses %></div>
+        <div class="stat-lbl">Total Redemptions</div>
+        <i class="bi bi-graph-up stat-icon"></i>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val">₹<%= totSaved.toLocaleString('en-IN') %></div>
+        <div class="stat-lbl">Total Discounted</div>
+        <i class="bi bi-cash stat-icon"></i>
       </div>
     </div>
 
-    <h2 style="font-family:'Anton',sans-serif;font-size:1.2rem;letter-spacing:2px;margin-bottom:1rem;">ALL COUPONS (<%= coupons.length %>)</h2>
-    <% if(coupons.length===0){ %>
-    <div class="empty"><i class="bi bi-tags" style="font-size:2.5rem;display:block;margin-bottom:0.8rem;"></i>No coupons yet.</div>
-    <% } else { %>
-    <div class="coupons-grid">
-      <% coupons.forEach(function(c){ %>
-      <div class="coupon-card <%= c.isActive?'':'inactive' %>" id="cc-<%= c._id %>">
-        <div class="cc-top">
-          <div class="cc-code"><%= c.code %></div>
-          <div style="display:flex;align-items:center;gap:0.5rem;">
-            <span class="cc-type"><%= c.type.toUpperCase() %></span>
-            <span class="<%= c.isActive?'badge-on':'badge-off' %>" id="cbadge-<%= c._id %>"><%= c.isActive?'ACTIVE':'OFF' %></span>
-          </div>
-        </div>
-        <div class="cc-body">
-          <div class="cc-val"><%= c.type==='percent'?c.value+'% OFF':'₹'+c.value+' OFF' %></div>
-          <% if(c.description){ %><div class="cc-desc"><%= c.description %></div><% } %>
-          <div class="cc-meta">
-            <% if(c.minOrder>0){ %><span>Min ₹<%= c.minOrder %></span><% } %>
-            <span>Used: <%= c.usedCount %><% if(c.maxUses>0){ %>/<%= c.maxUses %><% } %></span>
-            <% if(c.validUntil){ %><span>Expires <%= new Date(c.validUntil).toLocaleDateString('en-IN') %></span><% } %>
-          </div>
-          <div class="cc-actions">
-            <button class="btn-sm btn-tog" onclick="toggleCoupon('<%= c._id %>')">
-              <i class="bi bi-eye<%= c.isActive?'-slash':'' %>-fill" id="ceye-<%= c._id %>"></i>
-              <span id="ctxt-<%= c._id %>"><%= c.isActive?'Disable':'Enable' %></span>
-            </button>
-            <form method="POST" action="/admin/coupons/<%= c._id %>/delete" onsubmit="return confirm('Delete <%= c.code %>?')" style="display:inline;">
-              <button type="submit" class="btn-sm btn-del"><i class="bi bi-trash3-fill"></i> Delete</button>
-            </form>
-          </div>
-        </div>
+    <!-- Toolbar: tabs + search + filters -->
+    <div class="toolbar">
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="all"      onclick="swTab('all',this)"><i class="bi bi-grid-fill"></i> All <span class="tc" id="tc-all"><%= totAll %></span></button>
+        <button class="tab-btn"        data-tab="active"   onclick="swTab('active',this)"><i class="bi bi-lightning-fill"></i> Active <span class="tc" id="tc-act"><%= totAct %></span></button>
+        <button class="tab-btn"        data-tab="expired"  onclick="swTab('expired',this)"><i class="bi bi-clock-history"></i> Expired <span class="tc" id="tc-exp"><%= totExp %></span></button>
+        <button class="tab-btn"        data-tab="featured" onclick="swTab('featured',this)"><i class="bi bi-star-fill"></i> Featured <span class="tc" id="tc-feat"><%= totFeat %></span></button>
+        <button class="tab-btn"        data-tab="inactive" onclick="swTab('inactive',this)"><i class="bi bi-pause-circle"></i> Inactive <span class="tc" id="tc-ina"><%= totIna %></span></button>
+        <button class="tab-btn"        data-tab="used"     onclick="swTab('used',this)"><i class="bi bi-receipt"></i> Used <span class="tc" id="tc-used">0</span></button>
       </div>
-      <% }); %>
+      <div class="filters-row">
+        <div class="sw"><i class="bi bi-search"></i><input class="si" id="srch" placeholder="Search code or description…" oninput="applyF()"/></div>
+        <select class="fs" id="fType" onchange="applyF()">
+          <option value="">All Types</option>
+          <option value="fixed">₹ Fixed</option>
+          <option value="percent">% Percent</option>
+        </select>
+        <select class="fs" id="fSort" onchange="applyF()">
+          <option value="newest">Newest First</option>
+          <option value="oldest">Oldest First</option>
+          <option value="uses-high">Most Used</option>
+          <option value="uses-low">Least Used</option>
+          <option value="value-high">Highest Value</option>
+          <option value="expiry-soon">Expiring Soon</option>
+        </select>
+        <span class="fc" id="fcnt"></span>
+      </div>
     </div>
-    <% } %>
+
+    <!-- Table -->
+    <div class="table-wrap">
+      <div class="tscroll">
+      <table id="cpnTbl">
+        <thead><tr>
+          <th>Code</th>
+          <th>Discount</th>
+          <th>Validity</th>
+          <th>Usage</th>
+          <th>Restrictions</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr></thead>
+        <tbody id="cpnBody">
+        <% coupons.forEach(function(c){ %>
+          <%
+            var exp2   = cpnExpired(c);
+            var act2   = cpnActive(c);
+            var sk     = cpnStatus(c);
+            var maxU2  = c.maxUses||0;
+            var pct2   = maxU2>0?Math.min(100,Math.round(((c.usedCount||0)/maxU2)*100)):0;
+            var dL     = c.validUntil?Math.ceil((new Date(c.validUntil)-now2)/86400000):9999;
+            var tSaved = (c.usages||[]).reduce(function(s,b){return s+(b.discount||0);},0);
+            var tTix   = (c.usages||[]).reduce(function(s,b){return s+(b.quantity||0);},0);
+          %>
+          <tr class="cr"
+              data-code="<%= c.code.toLowerCase() %>"
+              data-desc="<%= (c.description||'').toLowerCase() %>"
+              data-type="<%= c.type||'fixed' %>"
+              data-status="<%= sk %>"
+              data-featured="<%= c.isFeatured?'yes':'no' %>"
+              data-uses="<%= c.usedCount||0 %>"
+              data-value="<%= c.value||0 %>"
+              data-expiry="<%= c.validUntil?new Date(c.validUntil).getTime():9999999999999 %>"
+              data-created="<%= new Date(c.createdAt).getTime() %>">
+
+            <td>
+              <span class="code-pill" onclick="cpCopy('<%= c.code %>')" title="Click to copy"><i class="bi bi-tag-fill" style="font-size:0.65rem;"></i> <%= c.code %></span>
+              <% if(c.isFeatured){ %><span class="b b-feat" style="margin-left:4px;vertical-align:middle;"><i class="bi bi-star-fill"></i> featured</span><% } %>
+              <div style="font-size:0.7rem;color:var(--muted);margin-top:0.3rem;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="<%= c.description %>"><%= c.description||'—' %></div>
+            </td>
+
+            <td>
+              <span class="b <%= c.type==='percent'?'b-pct':'b-flt' %>">
+                <% if(c.type==='percent'){ %><%= c.value %>% OFF<% }else{ %>₹<%= c.value %> OFF<% } %>
+              </span>
+              <% if(tSaved>0){ %><div style="font-size:0.7rem;color:var(--success);margin-top:0.3rem;">₹<%= tSaved.toLocaleString('en-IN') %> saved by users</div><% } %>
+            </td>
+
+            <td style="font-size:0.78rem;">
+              <% if(c.validFrom){ %><div style="color:var(--muted);font-size:0.66rem;">From</div><div><%= new Date(c.validFrom).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) %></div><% } %>
+              <% if(c.validUntil){ %>
+                <div style="color:var(--muted);font-size:0.66rem;margin-top:0.25rem;">Until</div>
+                <div style="color:<%= exp2?'var(--error)':(dL<=3?'var(--warn)':'inherit') %>">
+                  <%= new Date(c.validUntil).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) %>
+                  <% if(!exp2&&dL<=7){ %><span style="font-size:0.63rem;color:var(--warn);"> (<%= dL %>d left)</span><% } %>
+                  <% if(exp2){ %><span style="font-size:0.63rem;color:var(--error);"> expired</span><% } %>
+                </div>
+              <% }else{ %><div style="color:var(--muted);font-size:0.7rem;margin-top:0.3rem;">No expiry</div><% } %>
+            </td>
+
+            <td>
+              <div class="ur">
+                <% if(maxU2>0){ %><div class="ubw"><div class="ub" style="width:<%= pct2 %>%"></div></div><span class="ut"><%= c.usedCount||0 %>/<%= maxU2 %></span>
+                <% }else{ %><span class="ut"><%= c.usedCount||0 %> uses</span><% } %>
+              </div>
+              <% if((c.usedCount||0)>0){ %>
+                <button class="bs a" style="margin-top:0.4rem;font-size:0.68rem;" onclick="swDr('<%= c._id %>')">
+                  <i class="bi bi-chevron-down" id="dri-<%= c._id %>"></i> View Details
+                </button>
+              <% } %>
+            </td>
+
+            <td style="font-size:0.75rem;">
+              <% if(c.minOrder>0){ %><div style="color:var(--muted);">Min ₹<%= c.minOrder %></div><% } %>
+              <% if(c.minTickets>0){ %><div style="color:var(--warn);">Min <%= c.minTickets %> ticket<%= c.minTickets>1?'s':'' %></div><% } %>
+              <% if(!c.minOrder&&!c.minTickets){ %><span style="color:#333;">None</span><% } %>
+            </td>
+
+            <td>
+              <% if(exp2){ %><span class="b b-exp"><i class="bi bi-clock"></i> expired</span>
+              <% }else if(act2){ %><span class="b b-act"><i class="bi bi-circle-fill" style="font-size:5px;"></i> active</span>
+              <% }else{ %><span class="b b-ina">inactive</span><% } %>
+            </td>
+
+            <td><div class="ar">
+              <button class="bs" onclick='openEdit(<%- JSON.stringify({_id:c._id,code:c.code,type:c.type||"fixed",value:c.value,minOrder:c.minOrder||0,minTickets:c.minTickets||0,maxUses:c.maxUses||"",validFrom:c.validFrom||"",validUntil:c.validUntil||"",description:c.description||"",isActive:c.isActive,isFeatured:!!c.isFeatured}) %>')><i class="bi bi-pencil"></i></button>
+              <form method="POST" action="/admin/coupons/<%= c._id %>/toggle" style="display:inline;">
+                <button class="bs <%= act2?'w':'s' %>" type="submit" title="<%= act2?'Pause':'Enable' %>"><i class="bi bi-<%= act2?'pause':'play' %>-fill"></i></button>
+              </form>
+              <form method="POST" action="/admin/coupons/<%= c._id %>/feature" style="display:inline;">
+                <button class="bs" type="submit" title="<%= c.isFeatured?'Remove featured':'Mark featured' %>">
+                  <i class="bi bi-star<%= c.isFeatured?'-fill':'' %>" style="<%= c.isFeatured?'color:var(--warn)':'' %>"></i>
+                </button>
+              </form>
+              <button class="bs d" onclick="confDel('<%= c._id %>','<%= c.code %>')"><i class="bi bi-trash3"></i></button>
+            </div></td>
+          </tr>
+
+          <!-- Usage Drawer -->
+          <tr><td colspan="7" style="padding:0;border-bottom:none;"></td></tr>
+          <tbody class="udr" id="udr-<%= c._id %>">
+            <tr><td colspan="7" style="padding:0;">
+            <div class="udi">
+              <div class="udt"><i class="bi bi-receipt-cutoff"></i> Redemption Details — <%= c.code %></div>
+              <% if(c.usages&&c.usages.length>0){ %>
+                <%
+                  var uAvg = Math.round(tSaved/(c.usages.length||1));
+                %>
+                <div class="us">
+                  <div class="usc"><div class="usv"><%= c.usages.length %></div><div class="usl">Orders</div></div>
+                  <div class="usc"><div class="usv"><%= tTix %></div><div class="usl">Tickets</div></div>
+                  <div class="usc"><div class="usv" style="color:var(--success);">₹<%= tSaved.toLocaleString('en-IN') %></div><div class="usl">Total Saved</div></div>
+                  <div class="usc"><div class="usv" style="color:var(--warn);">₹<%= uAvg.toLocaleString('en-IN') %></div><div class="usl">Avg per Use</div></div>
+                </div>
+                <table class="utbl">
+                  <thead><tr>
+                    <th>Ref</th><th>Customer</th><th>Event</th><th>Ticket</th>
+                    <th style="text-align:center;">Qty</th>
+                    <th>Original</th><th>Discount</th><th>Paid</th><th>Date</th>
+                  </tr></thead>
+                  <tbody>
+                  <% c.usages.forEach(function(u){ %>
+                  <tr>
+                    <td style="font-family:'Space Mono',monospace;color:var(--accent2);font-size:0.68rem;"><%= u.bookingRef %></td>
+                    <td>
+                      <div style="font-weight:600;"><%= u.user?(u.user.firstName+' '+(u.user.lastName||'')):'Unknown' %></div>
+                      <div style="color:var(--muted);font-size:0.68rem;"><%= u.user?u.user.phone:'' %></div>
+                    </td>
+                    <td>
+                      <div style="color:#d8b4fe;font-size:0.8rem;"><%= u.event?u.event.name:'Unknown Event' %></div>
+                      <div style="color:var(--muted);font-size:0.68rem;"><%= u.event?new Date(u.event.date).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}):'' %></div>
+                    </td>
+                    <td style="text-transform:capitalize;font-size:0.78rem;"><%= u.ticketType||'—' %></td>
+                    <td style="text-align:center;font-family:'Space Mono',monospace;font-size:0.75rem;"><%= u.quantity %></td>
+                    <td style="color:var(--muted);font-family:'Space Mono',monospace;font-size:0.73rem;">₹<%= ((u.subtotal||0)+(u.discount||0)).toFixed(0) %></td>
+                    <td style="color:var(--success);font-family:'Space Mono',monospace;font-size:0.73rem;">−₹<%= (u.discount||0).toFixed(0) %></td>
+                    <td style="font-weight:700;font-family:'Space Mono',monospace;font-size:0.73rem;">₹<%= (u.totalAmount||0).toFixed(0) %></td>
+                    <td style="color:var(--muted);font-size:0.7rem;white-space:nowrap;"><%= new Date(u.createdAt).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) %></td>
+                  </tr>
+                  <% }); %>
+                  </tbody>
+                </table>
+              <% }else{ %>
+                <div class="nou"><i class="bi bi-inbox" style="display:block;font-size:1.8rem;margin-bottom:0.5rem;opacity:0.3;"></i>No redemptions yet.</div>
+              <% } %>
+            </div>
+            </td></tr>
+          </tbody>
+
+        <% }); %>
+        </tbody>
+      </table>
+      </div>
+      <div class="nr" id="noRows" style="display:none;"><i class="bi bi-search"></i>No coupons match your filters.</div>
+      <% if(coupons.length===0){ %>
+        <div class="nr"><i class="bi bi-tag"></i>No coupons yet. <a href="#" onclick="openCreate()" style="color:var(--accent);">Create your first →</a></div>
+      <% } %>
+    </div>
+
   </main>
 </div>
-<style>
-.f-inp.is-invalid{border-color:#FF4444 !important;background:rgba(255,68,68,0.04);}
-.f-inp.is-valid{border-color:#00FF88 !important;}
-.f-err{font-size:0.7rem;color:#FF4444;margin-top:0.25rem;font-family:'Space Mono',monospace;display:none;}
-.f-err.show{display:block;}
-</style>
+
+<!-- ══════ CREATE / EDIT MODAL ══════ -->
+<div class="mo" id="cpnMo">
+  <div class="mc">
+    <div class="mh">
+      <div class="mt" id="mT">NEW COUPON</div>
+      <button class="mx" onclick="closeMo()"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div class="mb">
+      <form id="cpnFm" method="POST" action="/admin/coupons">
+        <div class="fg2">
+          <div class="fg"><label class="fl">Coupon Code *</label><input class="fi" name="code" id="f_code" placeholder="e.g. PARTY25" required style="text-transform:uppercase;" oninput="this.value=this.value.toUpperCase()"/></div>
+          <div class="fg"><label class="fl">Discount Type *</label>
+            <select class="fi" name="type" id="f_type">
+              <option value="fixed">₹ Fixed Amount</option>
+              <option value="percent">% Percentage</option>
+            </select>
+          </div>
+          <div class="fg"><label class="fl">Discount Value *</label><input class="fi" name="value" id="f_val" type="number" min="1" placeholder="100" required/></div>
+          <div class="fg"><label class="fl">Max Uses <span style="color:#555;font-size:0.65rem;">(0=unlimited)</span></label><input class="fi" name="maxUses" id="f_mx" type="number" min="0" placeholder="0"/></div>
+          <div class="fg"><label class="fl">Min Order Amount (₹)</label><input class="fi" name="minOrder" id="f_mo" type="number" min="0" placeholder="0"/><span class="fh">Cart total must reach this</span></div>
+          <div class="fg"><label class="fl">Min Tickets <span style="color:#555;font-size:0.65rem;">(0=any)</span></label><input class="fi" name="minTickets" id="f_mt" type="number" min="0" placeholder="0"/><span class="fh">Quantity in cart</span></div>
+          <div class="fg"><label class="fl">Valid From</label><input class="fi" name="validFrom" id="f_vf" type="date"/></div>
+          <div class="fg"><label class="fl">Valid Until</label><input class="fi" name="validUntil" id="f_vu" type="date"/></div>
+          <div class="fg s2"><label class="fl">Description</label><input class="fi" name="description" id="f_ds" placeholder="e.g. Early bird discount for Silver tickets"/></div>
+          <div class="fg"><label class="fl">Status</label><div class="cr"><input type="checkbox" name="isActive" id="f_ia" value="on" checked/><span>Active (usable now)</span></div></div>
+          <div class="fg"><label class="fl">Featured</label><div class="cr"><input type="checkbox" name="isFeatured" id="f_if" value="on"/><span>Mark as Featured</span></div></div>
+        </div>
+        <div class="mft">
+          <button type="button" class="bg" onclick="closeMo()">Cancel</button>
+          <button type="submit" class="bsv" id="mSub"><i class="bi bi-check-lg"></i> Create Coupon</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ DELETE CONFIRM ══════ -->
+<div class="dc" id="dcMo">
+  <div class="dcb">
+    <h3><i class="bi bi-exclamation-triangle-fill"></i> Delete Coupon</h3>
+    <p>Delete <strong id="dcCode"></strong>? This cannot be undone.</p>
+    <div class="dcbt">
+      <button class="bg" onclick="document.getElementById('dcMo').classList.remove('open')">Cancel</button>
+      <form id="dcFm" method="POST"><button type="submit" class="bsv" style="background:var(--error);">Delete</button></form>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
 <script>
-function cpMark(id, valid, msg) {
-  const el = document.getElementById(id);
-  const errEl = el && el.parentElement.querySelector('.f-err');
-  if (!el) return valid;
-  el.classList.toggle('is-invalid', !valid);
-  el.classList.toggle('is-valid', valid && !!el.value.trim());
-  if (errEl) { errEl.textContent = msg||''; errEl.classList.toggle('show', !valid && !!msg); }
-  return valid;
+var curTab = 'all';
+
+function swTab(tab, btn) {
+  curTab = tab;
+  document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  applyF();
 }
 
-// Add error divs and live validation on load
-document.addEventListener('DOMContentLoaded', function() {
-  ['cpCode','cpValue','cpMinOrder','cpMaxUses','cpFrom','cpUntil'].forEach(function(id) {
-    const el = document.getElementById(id);
-    if (!el) return;
-    if (!el.parentElement.querySelector('.f-err')) {
-      const e = document.createElement('div'); e.className = 'f-err';
-      el.parentElement.appendChild(e);
-    }
-    el.addEventListener('input', function() {
-      if (el.classList.contains('is-invalid')) cpValidateSingle(id);
-    });
-    el.addEventListener('blur', function() { cpValidateSingle(id); });
+function applyF() {
+  var q  = document.getElementById('srch').value.toLowerCase().trim();
+  var tp = document.getElementById('fType').value;
+  var so = document.getElementById('fSort').value;
+  var rows = Array.from(document.querySelectorAll('.cr'));
+
+  rows.forEach(function(r) {
+    var sk=r.dataset.status, ft=r.dataset.featured, us=parseInt(r.dataset.uses)||0;
+    var tok = curTab==='all'||
+              (curTab==='active'&&sk==='active')||
+              (curTab==='expired'&&sk==='expired')||
+              (curTab==='featured'&&ft==='yes')||
+              (curTab==='inactive'&&sk==='inactive')||
+              (curTab==='used'&&us>0);
+    var sqk = !q||(r.dataset.code&&r.dataset.code.includes(q))||(r.dataset.desc&&r.dataset.desc.includes(q));
+    var ttk = !tp||r.dataset.type===tp;
+    r._sh = tok&&sqk&&ttk;
   });
 
-  // Date cross-validation: validUntil must be after validFrom
-  document.getElementById('cpUntil').addEventListener('change', validateDateRange);
-  document.getElementById('cpFrom').addEventListener('change', validateDateRange);
-});
-
-function validateDateRange() {
-  const from = document.getElementById('cpFrom').value;
-  const until = document.getElementById('cpUntil').value;
-  if (from && until && until < from) {
-    cpMark('cpUntil', false, 'Valid Until must be after Valid From.');
-    return false;
-  }
-  // Check if until is in the past
-  if (until) {
-    const d = new Date(until); d.setHours(23,59,59,999);
-    if (d < new Date()) {
-      cpMark('cpUntil', false, 'Expiry date is in the past.');
-      return false;
+  // Gather pairs (row + its drawer siblings)
+  var tbody = document.getElementById('cpnBody');
+  var kids  = Array.from(tbody.children);
+  var pairs = [];
+  for (var i=0; i<kids.length; i++) {
+    if (kids[i].classList&&kids[i].classList.contains('cr')) {
+      var drws=[];
+      var j=i+1;
+      while(j<kids.length&&!(kids[j].classList&&kids[j].classList.contains('cr'))){ drws.push(kids[j]); j++; }
+      pairs.push({row:kids[i],drws:drws});
     }
-    cpMark('cpUntil', true, '');
   }
-  return true;
-}
 
-function cpValidateSingle(id) {
-  const el = document.getElementById(id);
-  if (!el) return true;
-  const val = el.value.trim();
-  if (id === 'cpCode') {
-    if (!val) return cpMark(id, false, 'Coupon code is required.');
-    if (!/^[A-Z0-9_-]+$/.test(val.toUpperCase())) return cpMark(id, false, 'Only letters, numbers, _ and - allowed.');
-    if (val.length < 3) return cpMark(id, false, 'Minimum 3 characters.');
-    return cpMark(id, true, '');
-  }
-  if (id === 'cpValue') {
-    if (!val) return cpMark(id, false, 'Discount value is required.');
-    if (isNaN(val) || Number(val) <= 0) return cpMark(id, false, 'Must be a positive number.');
-    const type = document.getElementById('cpType').value;
-    if (type === 'percent' && Number(val) > 100) return cpMark(id, false, 'Percentage cannot exceed 100.');
-    return cpMark(id, true, '');
-  }
-  if (id === 'cpMinOrder' || id === 'cpMaxUses') {
-    if (val && (isNaN(val) || Number(val) < 0)) return cpMark(id, false, 'Must be 0 or a positive number.');
-    if (val) cpMark(id, true, '');
-    return true;
-  }
-  if (id === 'cpFrom' || id === 'cpUntil') {
-    validateDateRange();
-    return true;
-  }
-  return true;
-}
-
-// Re-validate value when type changes (percent vs fixed)
-document.addEventListener('DOMContentLoaded', function() {
-  document.getElementById('cpType').addEventListener('change', function() {
-    if (document.getElementById('cpValue').value) cpValidateSingle('cpValue');
+  pairs.sort(function(a,b){
+    var da=a.row.dataset,db=b.row.dataset;
+    if(so==='newest')      return Number(db.created)-Number(da.created);
+    if(so==='oldest')      return Number(da.created)-Number(db.created);
+    if(so==='uses-high')   return Number(db.uses)-Number(da.uses);
+    if(so==='uses-low')    return Number(da.uses)-Number(db.uses);
+    if(so==='value-high')  return Number(db.value)-Number(da.value);
+    if(so==='expiry-soon') return Number(da.expiry)-Number(db.expiry);
+    return 0;
   });
-});
 
-async function createCoupon(){
-  const code=document.getElementById('cpCode').value.trim();
-  const type=document.getElementById('cpType').value;
-  const value=document.getElementById('cpValue').value;
-  const t=document.getElementById('cpToast');
+  pairs.forEach(function(p){
+    tbody.appendChild(p.row);
+    p.drws.forEach(function(d){ tbody.appendChild(d); });
+  });
 
-  // Validate all fields before submitting
-  const v1 = cpValidateSingle('cpCode');
-  const v2 = cpValidateSingle('cpValue');
-  const vd = validateDateRange();
-  if (!v1 || !v2 || !vd) {
-    t.textContent='Please fix the errors above.';t.className='toast err';
-    setTimeout(()=>t.className='toast',4000);
-    return;
-  }
+  var vis=0,na=0,ne=0,nf=0,ni=0,nu=0;
+  pairs.forEach(function(p){
+    var sh=p.row._sh;
+    p.row.style.display=sh?'':'none';
+    p.drws.forEach(function(d){ d.style.display=sh?'':'none'; });
+    if(sh)vis++;
+    var sk=p.row.dataset.status,ft=p.row.dataset.featured,us=parseInt(p.row.dataset.uses)||0;
+    if(sk==='active')  na++;
+    if(sk==='expired') ne++;
+    if(sk==='inactive')ni++;
+    if(ft==='yes')     nf++;
+    if(us>0)           nu++;
+  });
 
-  const minOrder = document.getElementById('cpMinOrder').value || 0;
-  const maxUses  = document.getElementById('cpMaxUses').value || 0;
-  if (minOrder && (isNaN(minOrder) || Number(minOrder) < 0)) {
-    t.textContent='Min order must be a positive number.';t.className='toast err';
-    setTimeout(()=>t.className='toast',4000); return;
-  }
-
-  try{
-    const res=await fetch('/admin/coupons',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({code,type,value,minOrder,
-        maxUses,
-        validFrom:document.getElementById('cpFrom').value||null,
-        validUntil:document.getElementById('cpUntil').value||null,
-        description:document.getElementById('cpDesc').value})});
-    const d=await res.json();
-    if(d.success){t.textContent='✓ Coupon created!';t.className='toast ok';setTimeout(()=>location.reload(),1200);}
-    else{t.textContent=d.message||'Failed';t.className='toast err';}
-    setTimeout(()=>t.className='toast',4000);
-  }catch(e){t.textContent='Network error.';t.className='toast err';}
+  document.getElementById('noRows').style.display = vis===0&&rows.length>0?'block':'none';
+  document.getElementById('fcnt').textContent = vis<rows.length?('Showing '+vis+' of '+rows.length):'';
+  document.getElementById('tc-all').textContent  = pairs.length;
+  document.getElementById('tc-act').textContent  = na;
+  document.getElementById('tc-exp').textContent  = ne;
+  document.getElementById('tc-feat').textContent = nf;
+  document.getElementById('tc-ina').textContent  = ni;
+  document.getElementById('tc-used').textContent = nu;
 }
-async function toggleCoupon(id){
-  const res=await fetch(`/admin/coupons/${id}/toggle`,{method:'POST',credentials:'include'});
-  const d=await res.json();
-  if(d.success){
-    const card=document.getElementById('cc-'+id);
-    const badge=document.getElementById('cbadge-'+id);
-    const eye=document.getElementById('ceye-'+id);
-    const txt=document.getElementById('ctxt-'+id);
-    if(d.isActive){card.classList.remove('inactive');badge.className='badge-on';badge.textContent='ACTIVE';eye.className='bi bi-eye-slash-fill';txt.textContent='Disable';}
-    else{card.classList.add('inactive');badge.className='badge-off';badge.textContent='OFF';eye.className='bi bi-eye-fill';txt.textContent='Enable';}
-  }
+
+function swDr(id){
+  var el=document.getElementById('udr-'+id);
+  var ic=document.getElementById('dri-'+id);
+  if(!el)return;
+  var op=el.classList.toggle('open');
+  if(ic)ic.className=op?'bi bi-chevron-up':'bi bi-chevron-down';
 }
+
+function cpCopy(c){
+  navigator.clipboard.writeText(c).then(function(){ showT('Copied: '+c); });
+}
+
+function showT(m){
+  var t=document.getElementById('toast');
+  t.textContent='✓ '+m; t.style.display='block';
+  setTimeout(function(){ t.style.display='none'; },2500);
+}
+
+function openCreate(){
+  document.getElementById('mT').textContent   = 'NEW COUPON';
+  document.getElementById('mSub').innerHTML   = '<i class="bi bi-check-lg"></i> Create Coupon';
+  document.getElementById('cpnFm').action     = '/admin/coupons';
+  document.getElementById('f_code').value     = '';
+  document.getElementById('f_code').disabled  = false;
+  document.getElementById('f_type').value     = 'fixed';
+  document.getElementById('f_val').value      = '';
+  document.getElementById('f_mx').value       = '';
+  document.getElementById('f_mo').value       = '';
+  document.getElementById('f_mt').value       = '';
+  document.getElementById('f_vf').value       = '';
+  document.getElementById('f_vu').value       = '';
+  document.getElementById('f_ds').value       = '';
+  document.getElementById('f_ia').checked     = true;
+  document.getElementById('f_if').checked     = false;
+  document.getElementById('cpnMo').classList.add('open');
+}
+
+function openEdit(c){
+  document.getElementById('mT').textContent   = 'EDIT COUPON';
+  document.getElementById('mSub').innerHTML   = '<i class="bi bi-check-lg"></i> Save Changes';
+  document.getElementById('cpnFm').action     = '/admin/coupons/'+c._id+'/edit';
+  document.getElementById('f_code').value     = c.code;
+  document.getElementById('f_code').disabled  = false;
+  document.getElementById('f_type').value     = c.type||'fixed';
+  document.getElementById('f_val').value      = c.value||'';
+  document.getElementById('f_mx').value       = c.maxUses||'';
+  document.getElementById('f_mo').value       = c.minOrder||'';
+  document.getElementById('f_mt').value       = c.minTickets||'';
+  function fd(d){ if(!d)return''; return new Date(d).toISOString().slice(0,10); }
+  document.getElementById('f_vf').value       = fd(c.validFrom);
+  document.getElementById('f_vu').value       = fd(c.validUntil);
+  document.getElementById('f_ds').value       = c.description||'';
+  document.getElementById('f_ia').checked     = c.isActive!==false;
+  document.getElementById('f_if').checked     = !!c.isFeatured;
+  document.getElementById('cpnMo').classList.add('open');
+}
+
+function closeMo(){ document.getElementById('cpnMo').classList.remove('open'); }
+
+function confDel(id,code){
+  document.getElementById('dcCode').textContent = code;
+  document.getElementById('dcFm').action = '/admin/coupons/'+id+'/delete';
+  document.getElementById('dcMo').classList.add('open');
+}
+
+document.getElementById('cpnMo').addEventListener('click',function(e){ if(e.target===this)closeMo(); });
+document.getElementById('dcMo').addEventListener('click',function(e){ if(e.target===this)this.classList.remove('open'); });
+
+// Add feature route if missing
+// Init
+applyF();
 </script>
 </body>
 </html>

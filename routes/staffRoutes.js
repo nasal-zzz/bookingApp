@@ -151,6 +151,22 @@ router.post('/api/scan', staffAuth, async (req, res) => {
       });
       await booking.save();
 
+      // Save scan log for all group tickets
+      try {
+        const ScanLog = require('../models/ScanLog');
+        for (const t of booking.tickets) {
+          await ScanLog.create({
+            booking: booking._id, event: booking.event._id,
+            ticketId: t.ticketId || booking.bookingRef, bookingRef,
+            attendeeName: t.attendee?.name || '', attendeeAge: t.attendee?.age || 0,
+            attendeeGender: t.attendee?.gender || '',
+            ticketType: t.category || booking.ticketType || '',
+            scannedBy: u.username, staffName: u.name || u.username,
+            isGroup: true, groupSize: booking.tickets.length,
+          });
+        }
+      } catch(slErr) { console.error('ScanLog save error:', slErr.message, slErr); }
+
       return res.json({
         success: true, status: 'valid',
         message: `Group entry granted ✓ (${booking.tickets.length} people)`,
@@ -195,6 +211,20 @@ router.post('/api/scan', staffAuth, async (req, res) => {
     ticket.usedAt = new Date();
     ticket.usedBy = u.username;
     await booking.save();
+
+    // Save scan log
+    try {
+      const ScanLog = require('../models/ScanLog');
+      await ScanLog.create({
+        booking: booking._id, event: booking.event._id,
+        ticketId: ticket.ticketId || booking.bookingRef, bookingRef: booking.bookingRef,
+        attendeeName: ticket.attendee?.name || '', attendeeAge: ticket.attendee?.age || 0,
+        attendeeGender: ticket.attendee?.gender || '',
+        ticketType: ticket.category || booking.ticketType || '',
+        scannedBy: u.username, staffName: u.name || u.username,
+        isGroup: false, groupSize: 1,
+      });
+    } catch(slErr) { console.error('ScanLog save error:', slErr.message, slErr); }
 
     return res.json({
       success: true, status: 'valid',

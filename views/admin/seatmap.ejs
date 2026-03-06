@@ -61,6 +61,14 @@
     .rf-btn:hover{border-color:#6A0DAD;color:#9D4EDD;}
     .edit-wrap{background:#0B0B0F;border-radius:8px;padding:0.7rem;border:1px solid rgba(106,13,173,0.2);}
     .hint{background:rgba(106,13,173,0.07);border:1px solid rgba(106,13,173,0.15);border-radius:6px;padding:0.5rem 0.6rem;font-size:0.63rem;color:#666;line-height:1.7;}
+    /* Color pickers */
+    .color-row{display:flex;align-items:center;gap:0.4rem;margin-bottom:0.45rem;flex-wrap:wrap;}
+    .clr-swatch{width:22px;height:22px;border-radius:4px;border:2px solid transparent;cursor:pointer;transition:transform 0.12s,border-color 0.12s;flex-shrink:0;}
+    .clr-swatch:hover{transform:scale(1.2);}
+    .clr-swatch.active{border-color:#fff;transform:scale(1.15);}
+    .clr-custom{width:26px;height:26px;border-radius:4px;border:1.5px solid rgba(255,255,255,0.15);cursor:pointer;padding:0;background:none;overflow:hidden;flex-shrink:0;}
+    .clr-custom::-webkit-color-swatch-wrapper{padding:0;}
+    .clr-custom::-webkit-color-swatch{border:none;border-radius:3px;}
     .hint b{color:#9D4EDD;}
     .canvas-area{flex:1;display:flex;flex-direction:column;overflow:hidden;}
     .ctoolbar{padding:0.45rem 0.8rem;background:#14141C;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;gap:0.5rem;flex-shrink:0;flex-wrap:wrap;}
@@ -119,57 +127,80 @@
 
 <nav>
   <div>
-    <div class="logo">NIGHT<span>PASS</span> <span style="font-size:0.52rem;color:#444;">ZONE BUILDER</span></div>
+    <div class="logo">M<span>EE</span> <span style="font-size:0.52rem;color:#444;">ZONE BUILDER</span></div>
     <div class="event-name"><%= event.name %></div>
   </div>
   <div class="nav-right">
     <span class="save-status" id="saveStatus"></span>
     <button class="btn btn-teal"   onclick="exportPNG()"><i class="bi bi-image"></i> Export PNG</button>
     <button class="btn btn-amber"  onclick="flipLayout()"><i class="bi bi-arrow-down-up"></i> Flip</button>
-    <button class="btn btn-outline" onclick="location.href='/admin'">&#8592; Back</button>
+    <button class="btn btn-outline" onclick="location.href='/admin'">← Back</button>
     <button class="btn btn-red"    onclick="clearAll()"><i class="bi bi-trash"></i> Clear</button>
     <button class="btn btn-purple" onclick="saveMap()"><i class="bi bi-floppy"></i> Save</button>
     <button class="btn <%= seatMap && seatMap.isActive ? 'btn-green' : 'btn-amber' %>" id="activateBtn" onclick="toggleActivate()">
-      <%= seatMap && seatMap.isActive ? '&#9989; Active' : '&#9889; Activate' %>
+      <%= seatMap && seatMap.isActive ? '✅ Active' : '⚡ Activate' %>
     </button>
   </div>
 </nav>
 
 <div class="inactive-banner" id="inactiveBanner">
   <i class="bi bi-exclamation-triangle-fill"></i>
-  <span>This seat map is <b>saved but not activated</b> &#8212; users cannot see it until you activate it.</span>
+  <span>This seat map is <b>saved but not activated</b> — users cannot see it until you activate it.</span>
   <button class="ib-btn" onclick="toggleActivate()"><i class="bi bi-lightning-fill"></i> Activate Now</button>
 </div>
 
 <div class="workspace">
   <div class="panel">
     <div class="ps">
-      <div class="pt">&#127917; Stage</div>
+      <div class="pt">🎭 Stage</div>
       <label class="lbl">Label</label>
       <input class="inp" id="stageLabel" value="<%= (seatMap&&seatMap.stage)?seatMap.stage.label:'STAGE' %>" oninput="draw()"/>
+      <label class="lbl">Stage Color</label>
+      <div class="color-row" id="stageColorRow">
+        <div class="clr-swatch active" style="background:#6A0DAD;" data-color="#6A0DAD" onclick="setStageColor('#6A0DAD',this)"></div>
+        <div class="clr-swatch" style="background:#C0392B;" data-color="#C0392B" onclick="setStageColor('#C0392B',this)"></div>
+        <div class="clr-swatch" style="background:#1A6B3C;" data-color="#1A6B3C" onclick="setStageColor('#1A6B3C',this)"></div>
+        <div class="clr-swatch" style="background:#1A3A6B;" data-color="#1A3A6B" onclick="setStageColor('#1A3A6B',this)"></div>
+        <div class="clr-swatch" style="background:#8B6914;" data-color="#8B6914" onclick="setStageColor('#8B6914',this)"></div>
+        <div class="clr-swatch" style="background:#2C2C2C;" data-color="#2C2C2C" onclick="setStageColor('#2C2C2C',this)"></div>
+        <input type="color" class="clr-custom" id="stageColorCustom" value="#6A0DAD" oninput="setStageColor(this.value,null)" title="Custom color"/>
+      </div>
       <label class="lbl">Shape</label>
       <div class="sgrid">
-        <button class="sbtn <%=(!seatMap||!seatMap.stage||seatMap.stage.shape==='rectangle')?'on':''%>" data-stage="rectangle" onclick="setStageShape('rectangle',this)"><em>&#9644;</em>Rectangle</button>
-        <button class="sbtn <%=(seatMap&&seatMap.stage&&seatMap.stage.shape==='semicircle')?'on':''%>" data-stage="semicircle" onclick="setStageShape('semicircle',this)"><em>&#8978;</em>Semicircle</button>
-        <button class="sbtn <%=(seatMap&&seatMap.stage&&seatMap.stage.shape==='thrust')?'on':''%>" data-stage="thrust" onclick="setStageShape('thrust',this)"><em>&#11137;</em>Thrust</button>
-        <button class="sbtn <%=(seatMap&&seatMap.stage&&seatMap.stage.shape==='intheround')?'on':''%>" data-stage="intheround" onclick="setStageShape('intheround',this)"><em>&#9676;</em>In-Round</button>
+        <button class="sbtn <%=(!seatMap||!seatMap.stage||seatMap.stage.shape==='rectangle')?'on':''%>" data-stage="rectangle" onclick="setStageShape('rectangle',this)"><em>▬</em>Rectangle</button>
+        <button class="sbtn <%=(seatMap&&seatMap.stage&&seatMap.stage.shape==='semicircle')?'on':''%>" data-stage="semicircle" onclick="setStageShape('semicircle',this)"><em>⌒</em>Semicircle</button>
+        <button class="sbtn <%=(seatMap&&seatMap.stage&&seatMap.stage.shape==='thrust')?'on':''%>" data-stage="thrust" onclick="setStageShape('thrust',this)"><em>⬡</em>Thrust</button>
+        <button class="sbtn <%=(seatMap&&seatMap.stage&&seatMap.stage.shape==='intheround')?'on':''%>" data-stage="intheround" onclick="setStageShape('intheround',this)"><em>◎</em>In-Round</button>
       </div>
     </div>
     <div class="ps">
-      <div class="pt">&#10133; Add Zone</div>
+      <div class="pt">➕ Add Zone</div>
       <label class="lbl">Zone Name</label>
       <input class="inp" id="newName" placeholder="e.g. FRONT, VIP LEFT"/>
       <label class="lbl">Ticket Category</label>
       <select class="inp" id="newCat">
         <% event.ticketTypes.forEach(t=>{ %>
-        <option value="<%= t.category %>"><%= t.category.toUpperCase() %> &#183; &#8377;<%= t.price %></option>
+        <option value="<%= t.category %>"><%= t.category.toUpperCase() %> · ₹<%= t.price %></option>
         <% }); %>
       </select>
       <label class="lbl">Zone Shape</label>
       <div class="sgrid3">
-        <button class="sbtn on" id="zs-rect"     onclick="setZoneShape('rect',this)"><em>&#9644;</em>Rect</button>
-        <button class="sbtn"   id="zs-round"    onclick="setZoneShape('round',this)"><em>&#11053;</em>Oval</button>
-        <button class="sbtn"   id="zs-triangle" onclick="setZoneShape('triangle',this)"><em>&#9650;</em>Triangle</button>
+        <button class="sbtn on" id="zs-rect"     onclick="setZoneShape('rect',this)"><em>▬</em>Rect</button>
+        <button class="sbtn"   id="zs-round"    onclick="setZoneShape('round',this)"><em>⬭</em>Oval</button>
+        <button class="sbtn"   id="zs-triangle" onclick="setZoneShape('triangle',this)"><em>▲</em>Triangle</button>
+      </div>
+      <label class="lbl">Zone Color Override</label>
+      <div class="color-row" id="zoneColorRow">
+        <div class="clr-swatch" style="background:default;" data-color="" onclick="setNewZoneColor('',this)" title="Use category color">
+          <span style="font-size:0.55rem;color:#888;line-height:22px;display:block;text-align:center;">CAT</span>
+        </div>
+        <div class="clr-swatch" style="background:#FF4444;" data-color="#FF4444" onclick="setNewZoneColor('#FF4444',this)"></div>
+        <div class="clr-swatch" style="background:#FF8C00;" data-color="#FF8C00" onclick="setNewZoneColor('#FF8C00',this)"></div>
+        <div class="clr-swatch" style="background:#00C8B4;" data-color="#00C8B4" onclick="setNewZoneColor('#00C8B4',this)"></div>
+        <div class="clr-swatch" style="background:#4FC3F7;" data-color="#4FC3F7" onclick="setNewZoneColor('#4FC3F7',this)"></div>
+        <div class="clr-swatch" style="background:#E040FB;" data-color="#E040FB" onclick="setNewZoneColor('#E040FB',this)"></div>
+        <div class="clr-swatch" style="background:#fff;" data-color="#ffffff" onclick="setNewZoneColor('#ffffff',this)"></div>
+        <input type="color" class="clr-custom" id="newZoneColorCustom" value="#6A0DAD" oninput="setNewZoneColor(this.value,null)" title="Custom color"/>
       </div>
       <label class="lbl">Total Seats in Zone</label>
       <input class="inp" id="newTotalSeats" type="number" min="0" max="9999" placeholder="e.g. 200" value="0"/>
@@ -177,11 +208,24 @@
       <button class="btn btn-purple" style="width:100%;justify-content:center;" onclick="addZone()"><i class="bi bi-plus-circle"></i> Add Zone</button>
     </div>
     <div class="ps" id="editPanel" style="display:none;">
-      <div class="pt">&#9999;&#65039; Edit Selected Zone</div>
+      <div class="pt">✏️ Edit Selected Zone</div>
       <div class="edit-wrap">
         <label class="lbl">Total Seats</label>
         <input class="inp" id="selTotalSeats" type="number" min="0" placeholder="Seats in zone" oninput="updateSelSeats()"/>
         <div id="selSeatsHint" style="font-size:0.6rem;margin-bottom:0.45rem;color:#555;font-family:'Space Mono',monospace;"></div>
+        <label class="lbl">Zone Color Override</label>
+        <div class="color-row" id="selZoneColorRow">
+          <div class="clr-swatch active" style="background:#0B0B0F;border:1.5px dashed #444;" data-color="" onclick="setSelZoneColor('',this)" title="Use category color">
+            <span style="font-size:0.5rem;color:#888;line-height:18px;display:block;text-align:center;">CAT</span>
+          </div>
+          <div class="clr-swatch" style="background:#FF4444;" data-color="#FF4444" onclick="setSelZoneColor('#FF4444',this)"></div>
+          <div class="clr-swatch" style="background:#FF8C00;" data-color="#FF8C00" onclick="setSelZoneColor('#FF8C00',this)"></div>
+          <div class="clr-swatch" style="background:#00C8B4;" data-color="#00C8B4" onclick="setSelZoneColor('#00C8B4',this)"></div>
+          <div class="clr-swatch" style="background:#4FC3F7;" data-color="#4FC3F7" onclick="setSelZoneColor('#4FC3F7',this)"></div>
+          <div class="clr-swatch" style="background:#E040FB;" data-color="#E040FB" onclick="setSelZoneColor('#E040FB',this)"></div>
+          <div class="clr-swatch" style="background:#fff;" data-color="#ffffff" onclick="setSelZoneColor('#ffffff',this)"></div>
+          <input type="color" class="clr-custom" id="selZoneColorCustom" value="#6A0DAD" oninput="setSelZoneColor(this.value,null)" title="Custom color"/>
+        </div>
         <label class="lbl">Category</label>
         <select class="inp" id="selCategory" onchange="updateSelCategory()">
           <% event.ticketTypes.forEach(t=>{ %>
@@ -193,8 +237,8 @@
     <div class="ps" id="rotPanel" style="display:none;">
       <div class="rot-wrap">
         <div class="rot-head">
-          <span>&#128260; Rotation</span>
-          <span class="rot-deg" id="rotDegLabel">0&#176;</span>
+          <span>🔄 Rotation</span>
+          <span class="rot-deg" id="rotDegLabel">0°</span>
         </div>
         <div class="dial-wrap">
           <div class="dial" id="dialEl">
@@ -204,37 +248,37 @@
         </div>
         <input type="range" class="rot-slider" id="rotSlider" min="0" max="359" value="0" oninput="onSlider(this.value)"/>
         <div class="rot-presets">
-          <button class="rp-btn" onclick="setRot(0)">0&#176;</button>
-          <button class="rp-btn" onclick="setRot(45)">45&#176;</button>
-          <button class="rp-btn" onclick="setRot(90)">90&#176;</button>
-          <button class="rp-btn" onclick="setRot(135)">135&#176;</button>
-          <button class="rp-btn" onclick="setRot(180)">180&#176;</button>
-          <button class="rp-btn" onclick="setRot(225)">225&#176;</button>
-          <button class="rp-btn" onclick="setRot(270)">270&#176;</button>
-          <button class="rp-btn" onclick="setRot(315)">315&#176;</button>
+          <button class="rp-btn" onclick="setRot(0)">0°</button>
+          <button class="rp-btn" onclick="setRot(45)">45°</button>
+          <button class="rp-btn" onclick="setRot(90)">90°</button>
+          <button class="rp-btn" onclick="setRot(135)">135°</button>
+          <button class="rp-btn" onclick="setRot(180)">180°</button>
+          <button class="rp-btn" onclick="setRot(225)">225°</button>
+          <button class="rp-btn" onclick="setRot(270)">270°</button>
+          <button class="rp-btn" onclick="setRot(315)">315°</button>
         </div>
         <div class="rot-fine">
-          <button class="rf-btn" onclick="nudgeRot(-15)">-15&#176;</button>
-          <button class="rf-btn" onclick="nudgeRot(-5)">-5&#176;</button>
-          <button class="rf-btn" onclick="nudgeRot(-1)">-1&#176;</button>
-          <button class="rf-btn" onclick="nudgeRot(1)">+1&#176;</button>
-          <button class="rf-btn" onclick="nudgeRot(5)">+5&#176;</button>
-          <button class="rf-btn" onclick="nudgeRot(15)">+15&#176;</button>
+          <button class="rf-btn" onclick="nudgeRot(-15)">-15°</button>
+          <button class="rf-btn" onclick="nudgeRot(-5)">-5°</button>
+          <button class="rf-btn" onclick="nudgeRot(-1)">-1°</button>
+          <button class="rf-btn" onclick="nudgeRot(1)">+1°</button>
+          <button class="rf-btn" onclick="nudgeRot(5)">+5°</button>
+          <button class="rf-btn" onclick="nudgeRot(15)">+15°</button>
         </div>
       </div>
     </div>
     <div class="ps" style="flex:1;">
-      <div class="pt">&#128203; Zones (<span id="zoneCount">0</span>)</div>
+      <div class="pt">📋 Zones (<span id="zoneCount">0</span>)</div>
       <div class="zlist" id="zoneList"><div style="color:#444;font-size:0.73rem;">No zones yet.</div></div>
     </div>
     <div class="ps">
       <div class="hint">
-        <b>Drag</b> zone body &#8594; move<br/>
-        <b>Drag handles</b> &#8594; resize<br/>
-        <b>Drag &#8635; handle</b> &#8594; rotate<br/>
-        <b>[ / ]</b> &#8594; rotate &#177;5&#176;<br/>
-        <b>Del</b> &#8594; delete selected<br/>
-        <b>Export PNG</b> &#8594; saves map image
+        <b>Drag</b> zone body → move<br/>
+        <b>Drag handles</b> → resize<br/>
+        <b>Drag ↻ handle</b> → rotate<br/>
+        <b>[ / ]</b> → rotate ±5°<br/>
+        <b>Del</b> → delete selected<br/>
+        <b>Export PNG</b> → saves map image
       </div>
     </div>
   </div>
@@ -242,11 +286,11 @@
   <div class="canvas-area">
     <div class="ctoolbar">
       <span style="font-size:0.67rem;color:#666;">Tool:</span>
-      <button class="tbtn on" id="tool-select" onclick="setTool('select')">&#9997; Select / Move</button>
-      <button class="tbtn" id="tool-delete" onclick="setTool('delete')">&#128465; Delete Zone</button>
+      <button class="tbtn on" id="tool-select" onclick="setTool('select')">✍ Select / Move</button>
+      <button class="tbtn" id="tool-delete" onclick="setTool('delete')">🗑 Delete Zone</button>
       <div style="margin-left:auto;display:flex;align-items:center;gap:0.45rem;">
         <span style="font-size:0.63rem;color:#666;">Zoom:</span>
-        <button class="tbtn" onclick="zoom(-0.1)">&#8722;</button>
+        <button class="tbtn" onclick="zoom(-0.1)">−</button>
         <span id="zoomLbl" style="font-size:0.67rem;color:#888;width:34px;text-align:center;">100%</span>
         <button class="tbtn" onclick="zoom(0.1)">+</button>
         <button class="tbtn" onclick="resetZoom()">Reset</button>
@@ -258,7 +302,7 @@
   </div>
 
   <div class="rpanel">
-    <div class="rpt">&#128202; Overview</div>
+    <div class="rpt">📊 Overview</div>
     <div class="sbox"><div class="snum" id="statZones">0</div><div class="slbl">Zones</div></div>
     <div class="sbox"><div class="snum" id="statSeats">0</div><div class="slbl">Total Seats</div></div>
     <div class="cat-bal">
@@ -282,7 +326,7 @@
 
 <div class="modal-bg" id="previewModal">
   <div class="modal">
-    <button class="modal-close" onclick="closePreviewModal()">&#10005;</button>
+    <button class="modal-close" onclick="closePreviewModal()">✕</button>
     <h3>VENUE MAP PREVIEW</h3>
     <img id="previewImg" src="" alt="Venue map"/>
     <div class="modal-actions">
@@ -301,6 +345,8 @@ const EXISTING    = <%- JSON.stringify(seatMap || null) %>;
 const CAT_COLORS  = {platinum:'#9D4EDD',gold:'#f5c842',silver:'#c0c8d8',fanfit:'#00FF88',family:'#FF6B6B'};
 
 let stageShape = EXISTING?.stage?.shape || 'rectangle';
+let stageColor = EXISTING?.stage?.color || '#6A0DAD';
+let newZoneColorOverride = '';
 let zones      = [];
 let isActive   = EXISTING?.isActive || false;
 let newZoneShape = 'rect';
@@ -337,6 +383,7 @@ if(EXISTING?.sections?.length){
     w:           (s.zoneW > 0) ? s.zoneW : 200,
     h:           (s.zoneH > 0) ? s.zoneH : 100,
     rot:         (s.zoneRot != null) ? Number(s.zoneRot) : 0,
+    colorOverride: s.colorOverride || '',
     totalSeats:  s.totalSeats  || 0,
     bookedSeats: s.bookedSeats || 0,
   }));
@@ -344,6 +391,14 @@ if(EXISTING?.sections?.length){
 }
 
 renderList(); draw(); updateStats(); updateCatBalance(); updateBanner();
+// Sync stage color swatch on load
+(function(){
+  document.querySelectorAll('#stageColorRow .clr-swatch').forEach(function(s){
+    s.classList.toggle('active', s.dataset.color===stageColor);
+  });
+  var sc=document.getElementById('stageColorCustom');
+  if(sc) sc.value=stageColor||'#6A0DAD';
+})();
 
 const dialEl     = document.getElementById('dialEl');
 const dialNeedle = document.getElementById('dialNeedle');
@@ -393,7 +448,7 @@ function catRemaining(category, excludeIdx){
   const t=TICKET_CATS.find(x=>x.category===category);
   if(!t||!t.totalSeats) return Infinity;
   const used=zones.reduce((s,z,i)=>s+(i===excludeIdx?0:(z.category===category?z.totalSeats||0:0)),0);
-  return t.totalSeats-used;
+  return t.totalSeats-used; // full quota check (booked shown as warning separately)
 }
 function validateCatSeats(category, newZoneSeats, excludeZoneIdx){
   const rem=catRemaining(category,excludeZoneIdx);
@@ -407,10 +462,15 @@ function validateCatSeats(category, newZoneSeats, excludeZoneIdx){
 function validateCatSeatsMsg(category, newZoneSeats, excludeZoneIdx){
   const t=TICKET_CATS.find(x=>x.category===category);
   if(!t||!t.totalSeats) return null;
+  const booked=t.bookedSeats||0;
   const used=zones.reduce((s,z,i)=>s+(i===excludeZoneIdx?0:(z.category===category?z.totalSeats||0:0)),0);
   const total=used+newZoneSeats;
+  const available=t.totalSeats-booked; // seats not yet booked by users
   if(total>t.totalSeats){
-    return '"'+category.toUpperCase()+'" quota is '+t.totalSeats+'. You mapped '+total+' ('+used+' existing + '+newZoneSeats+' new). Over by '+(total-t.totalSeats)+'.';
+    return '"'+category.toUpperCase()+'" quota is '+t.totalSeats+(booked>0?' ('+booked+' already booked by users)':'')+'. You mapped '+total+'. Over by '+(total-t.totalSeats)+'.';
+  }
+  if(booked>0&&total>available){
+    return '⚠ Warning: "'+category.toUpperCase()+'" has '+booked+' tickets already sold. Mapping '+total+' zones seats but only '+(t.totalSeats-booked)+' remain unsold.';
   }
   return null;
 }
@@ -468,12 +528,39 @@ function addZone(){
   let yOff=stageAtBottom?30:stage.y+stage.h+50;
   zones.forEach(z=>{const b=z.y+z.h+20;if(!stageAtBottom&&b>yOff)yOff=b;});
   const xOff=80+(zones.length%3)*220;
-  zones.push({id:uid(),name,category:cat,shape:newZoneShape,x:xOff,y:yOff,w:200,h:100,rot:0,totalSeats,bookedSeats:0});
+  zones.push({id:uid(),name,category:cat,shape:newZoneShape,colorOverride:newZoneColorOverride,x:xOff,y:yOff,w:200,h:100,rot:0,totalSeats,bookedSeats:0});
   document.getElementById('newName').value='';
   document.getElementById('newTotalSeats').value='0';
   document.getElementById('newSeatsHint').textContent='';
   sel=zones.length-1;
   renderList(); draw(); updateStats(); showSelPanel(); refreshSelInfo(); syncRotUI(); updateBanner();
+}
+
+// ─── COLOR FUNCTIONS ──────────────────────────────────────────
+function setStageColor(color, btn){
+  stageColor=color;
+  document.getElementById('stageColorCustom').value=color||'#6A0DAD';
+  document.querySelectorAll('#stageColorRow .clr-swatch').forEach(function(s){ s.classList.toggle('active', s.dataset.color===color); });
+  draw();
+}
+function setNewZoneColor(color, btn){
+  newZoneColorOverride=color;
+  document.querySelectorAll('#zoneColorRow .clr-swatch').forEach(function(s){ s.classList.toggle('active', s.dataset.color===color); });
+  if(color) document.getElementById('newZoneColorCustom').value=color;
+}
+function setSelZoneColor(color, btn){
+  if(sel===null) return;
+  zones[sel].colorOverride=color;
+  document.querySelectorAll('#selZoneColorRow .clr-swatch').forEach(function(s){ s.classList.toggle('active', s.dataset.color===color); });
+  if(color) document.getElementById('selZoneColorCustom').value=color;
+  draw(); refreshSelInfo();
+}
+function syncColorUI(){
+  if(sel===null) return;
+  const col=zones[sel].colorOverride||'';
+  document.querySelectorAll('#selZoneColorRow .clr-swatch').forEach(function(s){ s.classList.toggle('active', s.dataset.color===col); });
+  const customInput=document.getElementById('selZoneColorCustom');
+  if(customInput) customInput.value=col||'#6A0DAD';
 }
 
 function draw(){
@@ -491,7 +578,7 @@ function drawStage(){
   const lbl=document.getElementById('stageLabel').value||'STAGE';
   const {x,y,w,h}=stage;
   ctx.save();
-  ctx.fillStyle='rgba(106,13,173,0.18)'; ctx.strokeStyle='#6A0DAD'; ctx.lineWidth=2;
+  const sc=stageColor||'#6A0DAD'; ctx.fillStyle=sc+'2e'; ctx.strokeStyle=sc; ctx.lineWidth=2;
   if(stageShape==='rectangle'){ctx.beginPath();ctx.roundRect(x,y,w,h,10);ctx.fill();ctx.stroke();}
   else if(stageShape==='semicircle'){
     ctx.beginPath();
@@ -504,14 +591,14 @@ function drawStage(){
     ctx.lineTo(x+w/2-35,y+h+50);ctx.lineTo(x+w/2-35,y+h);
     ctx.lineTo(x+50,y+h);ctx.closePath();ctx.fill();ctx.stroke();
   }else{ctx.beginPath();ctx.arc(x+w/2,y+h/2,Math.min(w,h)*0.45,0,Math.PI*2);ctx.fill();ctx.stroke();}
-  ctx.fillStyle='#bf80ff'; ctx.font='bold 13px "Space Mono",monospace';
+  ctx.fillStyle=sc+'dd'||'#bf80ff'; ctx.font='bold 13px "Space Mono",monospace';
   ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(lbl,x+w/2,y+h/2);
   drawHandles(x,y,w,h,'#6A0DAD');
   ctx.restore();
 }
 function drawZone(z,isSel){
   const {x,y,w,h,name,category,shape,totalSeats,bookedSeats}=z;
-  const rot=d2r(z.rot||0), color=CAT_COLORS[category]||'#6A0DAD', cx=x+w/2, cy=y+h/2;
+  const rot=d2r(z.rot||0), color=z.colorOverride||CAT_COLORS[category]||'#6A0DAD', cx=x+w/2, cy=y+h/2;
   const catInfo=TICKET_CATS.find(t=>t.category===category);
   ctx.save(); ctx.translate(cx,cy); ctx.rotate(rot);
   if(isSel){ctx.shadowColor=color;ctx.shadowBlur=22;}
@@ -526,7 +613,7 @@ function drawZone(z,isSel){
   const fs=Math.max(9,Math.min(14,w/(name.length*0.78)));
   ctx.fillStyle='#fff'; ctx.font='bold '+fs+'px "Montserrat",sans-serif';
   ctx.textAlign='center'; ctx.textBaseline='middle';
-  const lY=shape==='triangle'?h*0.1:-10;
+  const lY=shape==='triangle'?(h*0.12):-10;
   ctx.fillText(name,0,lY);
   ctx.fillStyle=color; ctx.font='600 10px "Poppins",sans-serif';
   ctx.fillText(category.toUpperCase()+' \u00b7 \u20b9'+(catInfo?.price||''),0,lY+13);
@@ -692,6 +779,7 @@ function showSelPanel(){
   if(sel!==null){
     document.getElementById('selTotalSeats').value=zones[sel].totalSeats||0;
     document.getElementById('selCategory').value=zones[sel].category;
+    syncColorUI();
   }
 }
 function hideSelPanel(){
@@ -741,10 +829,12 @@ function updateCatBalance(){
     if(mapped>quota&&quota>0){state='over';badge='OVER';barCol='#FF4444';}
     else if(quota>0&&mapped===quota){state='ok';badge='FULL';barCol='#00FF88';}
     else if(quota>0&&mapped>quota*0.85){state='warn';badge='NEAR';barCol='#f5c842';}
+    const booked=t.bookedSeats||0;
     const remLabel=quota>0?(mapped>quota?(mapped-quota)+' OVER':(quota-mapped)+' left'):'no limit';
+    const bookedLabel=booked>0?(' · '+booked+' sold'):'';
     var html='<div class="cb-row cb-'+state+'">';
     html+='<div class="cb-head"><span class="cb-name" style="color:'+col+'">'+t.category.toUpperCase()+'</span><span class="cb-badge '+state+'">'+badge+'</span></div>';
-    html+='<div class="cb-nums"><span>Mapped <b style="color:#fff">'+mapped+'</b> / '+(quota>0?quota:'\u221e')+' seats</span>';
+    html+='<div class="cb-nums"><span>Mapped <b style="color:#fff">'+mapped+'</b> / '+(quota>0?quota:'\u221e')+' seats<span style="color:#f5c842">'+bookedLabel+'</span></span>';
     html+='<span style="color:'+(state==='over'?'#FF4444':state==='warn'?'#f5c842':'#555')+'">'+remLabel+'</span></div>';
     if(quota>0) html+='<div class="cb-bar"><div class="cb-bar-fill" style="width:'+pct+'%;background:'+barCol+';"></div></div>';
     html+='</div>';
@@ -761,7 +851,7 @@ function updateBanner(){
 async function saveMap(withPreview){
   if(withPreview===undefined) withPreview=true;
   const sections=zones.map(function(z){return{
-    name:z.name, category:z.category, zoneShape:z.shape,
+    name:z.name, category:z.category, zoneShape:z.shape, colorOverride:z.colorOverride||'',
     x:Math.round(z.x), y:Math.round(z.y),
     zoneW:Math.round(z.w), zoneH:Math.round(z.h),
     zoneRot:z.rot, totalSeats:z.totalSeats||0, bookedSeats:z.bookedSeats||0,
@@ -769,7 +859,7 @@ async function saveMap(withPreview){
   };});
   const payload={
     eventId:EVENT_ID,
-    stage:{shape:stageShape,label:document.getElementById('stageLabel').value,x:Math.round(stage.x),y:Math.round(stage.y),width:Math.round(stage.w),height:Math.round(stage.h)},
+    stage:{shape:stageShape,label:document.getElementById('stageLabel').value,color:stageColor,x:Math.round(stage.x),y:Math.round(stage.y),width:Math.round(stage.w),height:Math.round(stage.h)},
     sections:sections, isActive:isActive,
     canvasWidth:canvas.width, canvasHeight:canvas.height,
   };

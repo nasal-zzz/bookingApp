@@ -1,3 +1,357 @@
+// const express = require('express');
+// const router  = express.Router();
+// const Staff   = require('../models/Staff');
+// const Coupon  = require('../models/Coupon');
+// const Booking = require('../models/Booking');
+// const Event   = require('../models/Event');
+// const ScanLog = require('../models/ScanLog');
+
+// // ── Default superadmin credentials ──
+// const SUPER_ADMIN = {
+//   username: process.env.SUPER_ADMIN_USER || 'superadmin',
+//   password: process.env.SUPER_ADMIN_PASS || 'MEE@SuperAdmin2026',
+// };
+
+// // ── Auth middleware ── accepts superAdminLoggedIn OR staffLoggedIn with superadmin role
+// const superAuth = (req, res, next) => {
+//   const isSuperAdmin = req.session.superAdminLoggedIn ||
+//     (req.session.staffLoggedIn && req.session.staffUser?.role === 'superadmin');
+//   if (isSuperAdmin) return next();
+//   if (req.method === 'POST' && req.path === '/login') return next();
+//   const isJson = req.headers['content-type']?.includes('application/json') || req.xhr;
+//   if (isJson) return res.status(401).json({ success: false, message: 'Not authenticated.' });
+//   return res.redirect('/staff/login');
+// };
+
+// // ── LOGIN ──
+// router.get('/login', (req, res) => {
+//   if (req.session.superAdminLoggedIn || req.session.staffLoggedIn) return res.redirect('/superadmin');
+//   return res.redirect('/staff/login#superadmin');
+// });
+
+// router.post('/login', async (req, res) => {
+//   const { username, password } = req.body;
+//   if (username === SUPER_ADMIN.username && password === SUPER_ADMIN.password) {
+//     // Upsert superadmin record in Staff DB so they appear in admin panel
+//     try {
+//       await Staff.findOneAndUpdate(
+//         { username },
+//         {
+//           username,
+//           password,
+//           firstName: 'Super',
+//           lastName: 'Admin',
+//           email: process.env.SUPER_ADMIN_EMAIL || 'superadmin@mee.local',
+//           phone: process.env.SUPER_ADMIN_PHONE || '0000000000',
+//           role: 'superadmin',
+//           isActive: true,
+//           canScanQR: true,
+//           canViewBookings: true,
+//           canManageEvents: true,
+//         },
+//         { upsert: true, new: true }
+//       );
+//     } catch(e) { /* non-fatal */ }
+//     req.session.superAdminLoggedIn = true;
+//     req.session.superAdminUser = username;
+//     req.session.staffLoggedIn = true;
+//     req.session.staffUser = { username, role: 'superadmin', name: 'Super Admin' };
+//     await new Promise((r, j) => req.session.save(e => e ? j(e) : r()));
+//     return res.redirect('/superadmin');
+//   }
+//   // Also try DB staff with superadmin role
+//   try {
+//     const member = await Staff.findOne({ username, role: 'superadmin' });
+//     if (member && member.password === password && member.isActive) {
+//       req.session.superAdminLoggedIn = true;
+//       req.session.superAdminUser = username;
+//       req.session.staffLoggedIn = true;
+//       req.session.staffUser = { id: member._id.toString(), username, role: 'superadmin', name: member.firstName + ' ' + (member.lastName||'') };
+//       await new Promise((r, j) => req.session.save(e => e ? j(e) : r()));
+//       return res.redirect('/superadmin');
+//     }
+//   } catch(e) {}
+//   res.render('superadmin/login', { title: 'Super Admin Login — MEE', error: 'Invalid credentials.' });
+// });
+
+// router.get('/logout', (req, res) => {
+//   req.session.destroy(() => res.redirect('/staff/login'));
+// });
+
+// // ── PUBLIC: Coupon validation (used by checkout — no auth needed) ──
+// router.post('/api/validate-coupon', async (req, res) => {
+//   try {
+//     const { code, orderAmount } = req.body;
+//     if (!code) return res.json({ success: false, message: 'No coupon code provided.' });
+//     const coupon = await Coupon.findOne({ code: code.toUpperCase().trim(), isActive: true });
+//     if (!coupon) return res.json({ success: false, message: 'Invalid coupon code.' });
+//     const now = new Date();
+//     if (coupon.validFrom && now < new Date(coupon.validFrom)) return res.json({ success: false, message: 'Coupon not yet active.' });
+//     if (coupon.validUntil) {
+//       const expiry = new Date(coupon.validUntil); expiry.setHours(23,59,59,999);
+//       if (now > expiry) return res.json({ success: false, message: 'Coupon has expired.' });
+//     }
+//     if (coupon.maxUses > 0 && coupon.usedCount >= coupon.maxUses) return res.json({ success: false, message: 'Coupon usage limit reached.' });
+//     const amount   = parseFloat(orderAmount) || 0;
+//     const quantity = parseInt(req.body.quantity) || 1;
+//     if (coupon.minOrder > 0 && amount < coupon.minOrder) return res.json({ success: false, message: 'Minimum order amount ₹' + coupon.minOrder + ' required.' });
+//     if (coupon.minTickets > 0 && quantity < coupon.minTickets) return res.json({ success: false, message: 'Minimum ' + coupon.minTickets + ' ticket' + (coupon.minTickets>1?'s':'') + ' required to use this coupon.' });
+//     const discount = coupon.type === 'percent'
+//       ? Math.round((amount * coupon.value) / 100)
+//       : coupon.value;
+//     res.json({ success: true, discount: Math.min(discount, amount), code: coupon.code, description: coupon.description });
+//   } catch (err) { console.error('Coupon validate error:', err); res.json({ success: false, message: 'Server error.' }); }
+// });
+
+// router.use(superAuth);
+
+// // ── DASHBOARD ──
+// router.get('/', async (req, res) => {
+//   try {
+//     const [staffCount, totalBookings, totalRevenue, coupons] = await Promise.all([
+//       Staff.countDocuments(),
+//       Booking.countDocuments({ paymentStatus: 'paid' }),
+//       Booking.aggregate([{ $match: { paymentStatus: 'paid' } }, { $group: { _id: null, total: { $sum: '$totalAmount' } } }]),
+//       Coupon.countDocuments(),
+//     ]);
+//     const currentAdmin = req.session.staffUser || { username: req.session.superAdminUser || 'superadmin', name: 'Super Admin', role: 'superadmin' };
+//     res.render('superadmin/dashboard', {
+//       title: 'Super Admin — MEE',
+//       staffCount, totalBookings,
+//       totalRevenue: totalRevenue[0]?.total || 0,
+//       coupons,
+//       currentAdmin,
+//     });
+//   } catch (err) {
+//     res.render('superadmin/dashboard', { title: 'Super Admin', staffCount: 0, totalBookings: 0, totalRevenue: 0, coupons: 0, currentAdmin: req.session.staffUser || { name: 'Super Admin', role: 'superadmin' } });
+//   }
+// });
+
+// // ── STAFF MANAGEMENT ──
+// router.get('/staff', async (req, res) => {
+//   try {
+//     const staff = await Staff.find().sort({ createdAt: -1 });
+//     const currentAdmin = req.session.staffUser || { username: req.session.superAdminUser || 'superadmin', name: 'Super Admin', role: 'superadmin' };
+//     res.render('superadmin/staff', { title: 'Staff Management — MEE', staff, currentAdmin });
+//   } catch (err) {
+//     res.render('superadmin/staff', { title: 'Staff Management', staff: [] });
+//   }
+// });
+
+// router.post('/staff', async (req, res) => {
+//   try {
+//     const { firstName, lastName, email, phone, role, canScanQR, canViewBookings, canManageEvents,
+//             manualUsername, manualPassword } = req.body;
+
+//     let username, password;
+
+//     if (manualUsername && manualUsername.trim()) {
+//       // Manual credentials provided
+//       username = manualUsername.trim().toLowerCase().replace(/\s+/g, '-');
+//       if (!manualPassword || manualPassword.trim().length < 4)
+//         return res.json({ success: false, message: 'Password must be at least 4 characters.' });
+//       password = manualPassword.trim();
+//       // Check username is unique
+//       const taken = await Staff.findOne({ username });
+//       if (taken) return res.json({ success: false, message: `Username "${username}" is already taken.` });
+//     } else {
+//       // Auto-generate username and password
+//       const prefix   = role === 'admin' ? 'admin' : 'staff';
+//       const baseUser = `${prefix}-${firstName.toLowerCase().replace(/[^a-z0-9]/g, '')}`;
+//       const existing = await Staff.findOne({ username: baseUser });
+//       username = existing ? `${baseUser}${Math.floor(Math.random() * 900) + 100}` : baseUser;
+//       const last3 = (phone || '000').slice(-3);
+//       password = `${username}-${last3}`;
+//     }
+
+//     const member = await Staff.create({
+//       firstName, lastName: lastName || '', email, phone: phone || '',
+//       username, password, role: role || 'staff',
+//       canScanQR: canScanQR === 'on', canViewBookings: canViewBookings === 'on', canManageEvents: canManageEvents === 'on',
+//       createdBy: null,
+//     });
+//     res.json({ success: true, username: member.username, password: member.password, id: member._id });
+//   } catch (err) {
+//     res.json({ success: false, message: err.code === 11000 ? 'Email or username already exists.' : err.message });
+//   }
+// });
+
+// router.post('/staff/:id/toggle', async (req, res) => {
+//   try {
+//     const member = await Staff.findById(req.params.id);
+//     if (!member) return res.json({ success: false, message: 'Not found' });
+//     member.isActive = !member.isActive;
+//     await member.save();
+//     res.json({ success: true, isActive: member.isActive });
+//   } catch (err) { res.json({ success: false, message: err.message }); }
+// });
+
+// router.post('/staff/:id/delete', async (req, res) => {
+//   try {
+//     await Staff.findByIdAndDelete(req.params.id);
+//     res.redirect('/superadmin/staff');
+//   } catch (err) { res.redirect('/superadmin/staff'); }
+// });
+
+// // ── COUPON MANAGEMENT ──
+// router.get('/coupons', async (req, res) => {
+//   try {
+//     const coupons = await Coupon.find().sort({ createdAt: -1 });
+//     const currentAdmin = req.session.staffUser || { username: req.session.superAdminUser || 'superadmin', name: 'Super Admin', role: 'superadmin' };
+//     res.render('superadmin/coupons', { title: 'Coupons — MEE', coupons, currentAdmin });
+//   } catch (err) {
+//     res.render('superadmin/coupons', { title: 'Coupons', coupons: [] });
+//   }
+// });
+
+// router.post('/coupons', async (req, res) => {
+//   try {
+//     const { code, type, value, minOrder, maxUses, validFrom, validUntil, description } = req.body;
+//     // Validate: expiry date must not be in the past
+//     if (validUntil) {
+//       const expiry = new Date(validUntil);
+//       expiry.setHours(23,59,59,999); // end of that day
+//       if (expiry < new Date()) {
+//         return res.json({ success: false, message: 'Expiry date cannot be in the past. Please choose a future date.' });
+//       }
+//     }
+//     if (!code || !code.trim()) return res.json({ success: false, message: 'Coupon code is required.' });
+//     if (!value || parseFloat(value) <= 0) return res.json({ success: false, message: 'Discount value must be greater than 0.' });
+//     const coupon = await Coupon.create({
+//       code: code.toUpperCase().trim(),
+//       type: type || 'fixed',
+//       value: parseFloat(value),
+//       minOrder: parseFloat(minOrder) || 0,
+//       maxUses: parseInt(maxUses) || 0,
+//       validFrom: validFrom || null,
+//       validUntil: validUntil || null,
+//       description: description || '',
+//     });
+//     res.json({ success: true, couponId: coupon._id });
+//   } catch (err) {
+//     res.json({ success: false, message: err.code === 11000 ? 'Coupon code already exists.' : err.message });
+//   }
+// });
+
+// router.post('/coupons/:id/toggle', async (req, res) => {
+//   try {
+//     const c = await Coupon.findById(req.params.id);
+//     if (!c) return res.json({ success: false });
+//     c.isActive = !c.isActive;
+//     await c.save();
+//     res.json({ success: true, isActive: c.isActive });
+//   } catch (err) { res.json({ success: false, message: err.message }); }
+// });
+
+// router.post('/coupons/:id/delete', async (req, res) => {
+//   try {
+//     await Coupon.findByIdAndDelete(req.params.id);
+//     res.redirect('/superadmin/coupons');
+//   } catch (err) { res.redirect('/superadmin/coupons'); }
+// });
+
+// // ── USERS BY EVENT ──
+// router.get('/users-by-event', async (req, res) => {
+//   try {
+//     const events = await Event.find().sort({ date: -1 }).select('name date');
+//     const selectedEventId = req.query.eventId;
+//     let bookings = [];
+//     let selectedEvent = null;
+//     if (selectedEventId) {
+//       selectedEvent = await Event.findById(selectedEventId).select('name date');
+//       bookings = await Booking.find({ event: selectedEventId, paymentStatus: 'paid' })
+//         .populate('user', 'firstName lastName email phone')
+//         .sort({ createdAt: -1 });
+//     }
+//     res.render('superadmin/users-by-event', { title: 'Users by Event', events, bookings, selectedEvent, selectedEventId: selectedEventId || '', coupons: [], currentAdmin: req.session.staffUser || { name: 'Super Admin', role: 'superadmin' } });
+//   } catch (err) {
+//     console.error('[SA] users-by-event error:', err.message);
+//     res.render('superadmin/error', { title: 'Error — Super Admin', status: 500, errTitle: 'LOAD FAILED', errMessage: 'Could not load attendee data.', errDetail: process.env.NODE_ENV !== 'production' ? err.message : null });
+//   }
+// });
+
+// // ── API: Validate coupon (used by booking page) ──
+// // This replaces the hardcoded coupons in booking-details.ejs
+// // validate-coupon moved to public routes above
+
+// // ── ONE-TIME REPAIR: Fix existing bookings with "PENDING" in qrData ──
+// router.post('/api/repair-qr', async (req, res) => {
+//   try {
+//     const { generateQRCode, buildQRPayload, buildGroupQRPayload } = require('../utils/qrHelper');
+//     // Find all paid bookings where any ticket has "PENDING" in qrData
+//     const bookings = await Booking.find({ paymentStatus: 'paid' });
+//     let fixed = 0, skipped = 0;
+//     for (const booking of bookings) {
+//       let changed = false;
+//       const isGroup = booking.tickets.length > 1 && booking.tickets[0]?.qrData?.includes('"grp":true');
+//       if (isGroup) {
+//         // Check if group QR has PENDING
+//         const first = booking.tickets[0];
+//         if (first.qrData && first.qrData.includes('"PENDING"')) {
+//           const oldPayload = JSON.parse(first.qrData);
+//           const newPayload = { ...oldPayload, b: booking.bookingRef };
+//           const newQR = await generateQRCode(newPayload).catch(() => '');
+//           const newData = JSON.stringify(newPayload);
+//           booking.tickets.forEach(t => { t.qrData = newData; if(newQR) t.qrCode = newQR; });
+//           changed = true;
+//         }
+//       } else {
+//         for (const t of booking.tickets) {
+//           if (t.qrData && t.qrData.includes('"PENDING"')) {
+//             const oldPayload = JSON.parse(t.qrData);
+//             const newPayload = { ...oldPayload, b: booking.bookingRef };
+//             const newQR = await generateQRCode(newPayload).catch(() => '');
+//             t.qrData = JSON.stringify(newPayload);
+//             if (newQR) t.qrCode = newQR;
+//             changed = true;
+//           }
+//         }
+//       }
+//       if (changed) { await booking.save(); fixed++; }
+//       else skipped++;
+//     }
+//     res.json({ success: true, message: `Fixed ${fixed} bookings, ${skipped} already OK.`, fixed, skipped });
+//   } catch(err) {
+//     res.json({ success: false, message: err.message });
+//   }
+// });
+
+// // ── Superadmin error handler ──
+// // ── Superadmin: Entered Tickets (Scan Log) ──
+// router.get('/entered-tickets', async (req, res) => {
+//   try {
+//     const currentAdmin = req.session.staffUser || { username: req.session.superAdminUser || 'superadmin', name: 'Super Admin', role: 'superadmin' };
+//     const events = await Event.find().sort({ date: -1 }).lean();
+//     const selectedEventId = req.query.eventId || (events[0]?._id?.toString() || '');
+//     let logs = [];
+//     let selectedEvent = null;
+//     if (selectedEventId) {
+//       selectedEvent = await Event.findById(selectedEventId).lean();
+//       logs = await ScanLog.find({ event: selectedEventId })
+//         .populate('booking', 'bookingRef ticketType quantity totalAmount')
+//         .sort({ scannedAt: -1 })
+//         .lean();
+//     }
+//     res.render('superadmin/entered-tickets', { title: 'Entered Tickets — SuperAdmin', events, logs, selectedEvent, selectedEventId, currentAdmin });
+//   } catch(err) { console.error(err); res.status(500).send('Error loading entered tickets'); }
+// });
+
+
+// router.use((err, req, res, next) => {
+//   console.error('[SUPERADMIN ERROR]', req.path, err.message);
+//   const isJson = req.headers['content-type']?.includes('application/json') || req.xhr;
+//   if (isJson) return res.status(500).json({ success: false, message: err.message });
+//   res.status(500).render('superadmin/error', {
+//     title:      'Error — Super Admin',
+//     status:     500,
+//     errTitle:   'SOMETHING WENT WRONG',
+//     errMessage: 'An unexpected error occurred in the Super Admin panel.',
+//     errDetail:  process.env.NODE_ENV !== 'production' ? err.message : null,
+//   });
+// });
+
+// module.exports = router;
+
 const express = require('express');
 const router  = express.Router();
 const Staff   = require('../models/Staff');
@@ -5,6 +359,7 @@ const Coupon  = require('../models/Coupon');
 const Booking = require('../models/Booking');
 const Event   = require('../models/Event');
 const ScanLog = require('../models/ScanLog');
+const User    = require('../models/User');
 
 // ── Default superadmin credentials ──
 const SUPER_ADMIN = {
@@ -92,8 +447,10 @@ router.post('/api/validate-coupon', async (req, res) => {
       if (now > expiry) return res.json({ success: false, message: 'Coupon has expired.' });
     }
     if (coupon.maxUses > 0 && coupon.usedCount >= coupon.maxUses) return res.json({ success: false, message: 'Coupon usage limit reached.' });
-    const amount = parseFloat(orderAmount) || 0;
-    if (coupon.minOrder > 0 && amount < coupon.minOrder) return res.json({ success: false, message: 'Min order ₹' + coupon.minOrder + ' required.' });
+    const amount   = parseFloat(orderAmount) || 0;
+    const quantity = parseInt(req.body.quantity) || 1;
+    if (coupon.minOrder > 0 && amount < coupon.minOrder) return res.json({ success: false, message: 'Minimum order amount ₹' + coupon.minOrder + ' required.' });
+    if (coupon.minTickets > 0 && quantity < coupon.minTickets) return res.json({ success: false, message: 'Minimum ' + coupon.minTickets + ' ticket' + (coupon.minTickets>1?'s':'') + ' required to use this coupon.' });
     const discount = coupon.type === 'percent'
       ? Math.round((amount * coupon.value) / 100)
       : coupon.value;
@@ -194,51 +551,87 @@ router.post('/staff/:id/delete', async (req, res) => {
 // ── COUPON MANAGEMENT ──
 router.get('/coupons', async (req, res) => {
   try {
-    const coupons = await Coupon.find().sort({ createdAt: -1 });
     const currentAdmin = req.session.staffUser || { username: req.session.superAdminUser || 'superadmin', name: 'Super Admin', role: 'superadmin' };
-    res.render('superadmin/coupons', { title: 'Coupons — MEE', coupons, currentAdmin });
+    const events     = await Event.find({}, 'name date').sort({ date: -1 }).lean();
+    const rawCoupons = await Coupon.find().sort({ createdAt: -1 }).lean();
+
+    const codes = rawCoupons.map(c => c.code);
+    const usageBookings = await Booking.find({
+      couponCode: { $in: codes }, paymentStatus: 'paid',
+    }).populate('event', 'name date venue').populate('user', 'firstName lastName phone email').sort({ createdAt: -1 }).lean();
+
+    const usageMap = {};
+    for (const b of usageBookings) {
+      if (!usageMap[b.couponCode]) usageMap[b.couponCode] = [];
+      usageMap[b.couponCode].push(b);
+    }
+
+    const now = new Date();
+    const coupons = rawCoupons.map(c => ({
+      ...c,
+      usages:    usageMap[c.code] || [],
+      isExpired: !!(c.validUntil && now > new Date(c.validUntil)),
+    }));
+
+    res.render('superadmin/coupons', { title: 'Coupons — Super Admin', coupons, events, currentAdmin });
   } catch (err) {
-    res.render('superadmin/coupons', { title: 'Coupons', coupons: [] });
+    console.error('SA coupons error:', err);
+    res.status(500).send('Error loading coupons: ' + err.message);
   }
 });
 
 router.post('/coupons', async (req, res) => {
   try {
-    const { code, type, value, minOrder, maxUses, validFrom, validUntil, description } = req.body;
-    // Validate: expiry date must not be in the past
-    if (validUntil) {
-      const expiry = new Date(validUntil);
-      expiry.setHours(23,59,59,999); // end of that day
-      if (expiry < new Date()) {
-        return res.json({ success: false, message: 'Expiry date cannot be in the past. Please choose a future date.' });
-      }
-    }
-    if (!code || !code.trim()) return res.json({ success: false, message: 'Coupon code is required.' });
-    if (!value || parseFloat(value) <= 0) return res.json({ success: false, message: 'Discount value must be greater than 0.' });
-    const coupon = await Coupon.create({
-      code: code.toUpperCase().trim(),
-      type: type || 'fixed',
-      value: parseFloat(value),
-      minOrder: parseFloat(minOrder) || 0,
-      maxUses: parseInt(maxUses) || 0,
-      validFrom: validFrom || null,
-      validUntil: validUntil || null,
+    const { code, type, value, minOrder, minTickets, maxUses, validFrom, validUntil, description, isActive, isFeatured } = req.body;
+    if (!code || !code.trim()) return res.redirect('/superadmin/coupons?err=Code+required');
+    if (!value || parseFloat(value) <= 0) return res.redirect('/superadmin/coupons?err=Value+must+be+greater+than+0');
+    await Coupon.create({
+      code: code.toUpperCase().trim(), type: type || 'fixed',
+      value: parseFloat(value), minOrder: parseFloat(minOrder) || 0,
+      minTickets: parseInt(minTickets) || 0, maxUses: parseInt(maxUses) || 0,
+      validFrom: validFrom || null, validUntil: validUntil || null,
       description: description || '',
+      isActive: isActive === 'on' || isActive === true,
+      isFeatured: isFeatured === 'on' || isFeatured === true,
     });
-    res.json({ success: true, couponId: coupon._id });
+    res.redirect('/superadmin/coupons');
   } catch (err) {
-    res.json({ success: false, message: err.code === 11000 ? 'Coupon code already exists.' : err.message });
+    res.redirect('/superadmin/coupons?err=' + encodeURIComponent(err.code === 11000 ? 'Coupon code already exists.' : err.message));
+  }
+});
+
+router.post('/coupons/:id/edit', async (req, res) => {
+  try {
+    const { code, type, value, minOrder, minTickets, maxUses, validFrom, validUntil, description, isActive, isFeatured } = req.body;
+    await Coupon.findByIdAndUpdate(req.params.id, {
+      code: code.toUpperCase().trim(), type: type || 'fixed',
+      value: parseFloat(value), minOrder: parseFloat(minOrder) || 0,
+      minTickets: parseInt(minTickets) || 0, maxUses: parseInt(maxUses) || 0,
+      validFrom: validFrom || null, validUntil: validUntil || null,
+      description: description || '',
+      isActive: isActive === 'on' || isActive === true,
+      isFeatured: isFeatured === 'on' || isFeatured === true,
+    });
+    res.redirect('/superadmin/coupons');
+  } catch (err) {
+    res.redirect('/superadmin/coupons?err=' + encodeURIComponent(err.message));
   }
 });
 
 router.post('/coupons/:id/toggle', async (req, res) => {
   try {
     const c = await Coupon.findById(req.params.id);
-    if (!c) return res.json({ success: false });
-    c.isActive = !c.isActive;
-    await c.save();
-    res.json({ success: true, isActive: c.isActive });
-  } catch (err) { res.json({ success: false, message: err.message }); }
+    if (c) { c.isActive = !c.isActive; await c.save(); }
+    res.redirect('/superadmin/coupons');
+  } catch (err) { res.redirect('/superadmin/coupons'); }
+});
+
+router.post('/coupons/:id/feature', async (req, res) => {
+  try {
+    const c = await Coupon.findById(req.params.id);
+    if (c) { c.isFeatured = !c.isFeatured; await c.save(); }
+    res.redirect('/superadmin/coupons');
+  } catch (err) { res.redirect('/superadmin/coupons'); }
 });
 
 router.post('/coupons/:id/delete', async (req, res) => {
@@ -248,23 +641,44 @@ router.post('/coupons/:id/delete', async (req, res) => {
   } catch (err) { res.redirect('/superadmin/coupons'); }
 });
 
-// ── USERS BY EVENT ──
+// ── USERS BY EVENT (ATTENDEES) ──
 router.get('/users-by-event', async (req, res) => {
   try {
-    const events = await Event.find().sort({ date: -1 }).select('name date');
-    const selectedEventId = req.query.eventId;
-    let bookings = [];
-    let selectedEvent = null;
+    const currentAdmin = req.session.staffUser || { username: req.session.superAdminUser || 'superadmin', name: 'Super Admin', role: 'superadmin' };
+    const isSuperAdmin = true;
+    const events = await Event.find().sort({ date: -1 }).select('name date').lean();
+    const selectedEventId = req.query.eventId || '';
+    let bookings = [], selectedEvent = null;
     if (selectedEventId) {
-      selectedEvent = await Event.findById(selectedEventId).select('name date');
+      selectedEvent = await Event.findById(selectedEventId).select('name date venue').lean();
       bookings = await Booking.find({ event: selectedEventId, paymentStatus: 'paid' })
-        .populate('user', 'firstName lastName email phone')
-        .sort({ createdAt: -1 });
+        .populate('user', 'firstName lastName email phone').sort({ createdAt: -1 }).lean();
+      const enteredRefs = new Set(
+        (await ScanLog.find({ event: selectedEventId }).select('bookingRef').lean()).map(l => l.bookingRef)
+      );
+      const attendees = [];
+      bookings.forEach(b => {
+        (b.tickets || []).forEach(t => {
+          attendees.push({
+            bookingRef: b.bookingRef, ticketType: b.ticketType,
+            totalAmount: b.totalAmount, quantity: b.quantity,
+            couponCode: b.couponCode || null, createdAt: b.createdAt,
+            user: b.user, ticketId: t.ticketId,
+            name:   t.attendee?.name || (b.user ? (b.user.firstName + ' ' + (b.user.lastName || '')) : '—'),
+            age:    t.attendee?.age  || null,
+            gender: t.attendee?.gender || '',
+            seatNumber: t.seatNumber || null,
+            isUsed: t.isUsed || false, usedAt: t.usedAt || null,
+            entered: enteredRefs.has(b.bookingRef),
+          });
+        });
+      });
+      return res.render('superadmin/users-by-event', { title: 'Attendees — Super Admin', events, bookings, attendees, selectedEvent, selectedEventId, currentAdmin, isSuperAdmin });
     }
-    res.render('superadmin/users-by-event', { title: 'Users by Event', events, bookings, selectedEvent, selectedEventId: selectedEventId || '', coupons: [], currentAdmin: req.session.staffUser || { name: 'Super Admin', role: 'superadmin' } });
+    res.render('superadmin/users-by-event', { title: 'Attendees — Super Admin', events, bookings: [], attendees: [], selectedEvent: null, selectedEventId, currentAdmin, isSuperAdmin });
   } catch (err) {
     console.error('[SA] users-by-event error:', err.message);
-    res.render('superadmin/error', { title: 'Error — Super Admin', status: 500, errTitle: 'LOAD FAILED', errMessage: 'Could not load attendee data.', errDetail: process.env.NODE_ENV !== 'production' ? err.message : null });
+    res.status(500).send('Error: ' + err.message);
   }
 });
 
@@ -334,6 +748,56 @@ router.get('/entered-tickets', async (req, res) => {
   } catch(err) { console.error(err); res.status(500).send('Error loading entered tickets'); }
 });
 
+
+
+// ── BOOKINGS ──
+router.get('/bookings', async (req, res) => {
+  try {
+    const currentAdmin = req.session.staffUser || { username: req.session.superAdminUser || 'superadmin', name: 'Super Admin', role: 'superadmin' };
+    const events = await Event.find({}, 'name date').sort({ date: -1 }).lean();
+    const bookings = await Booking.find()
+      .populate('user', 'firstName lastName phone email')
+      .populate('event', 'name date _id')
+      .sort({ createdAt: -1 })
+      .lean();
+    res.render('superadmin/bookings', { title: 'Bookings — Super Admin', bookings, events, currentAdmin });
+  } catch (err) {
+    console.error('[SA] bookings error:', err.message);
+    res.status(500).send('Error loading bookings: ' + err.message);
+  }
+});
+
+// ── PAYMENTS ──
+router.get('/payments', async (req, res) => {
+  try {
+    const currentAdmin = req.session.staffUser || { username: req.session.superAdminUser || 'superadmin', name: 'Super Admin', role: 'superadmin' };
+    const events = await Event.find({}, 'name date').sort({ date: -1 }).lean();
+    const bookings = await Booking.find()
+      .populate('user', 'firstName lastName phone email')
+      .populate('event', 'name date _id')
+      .sort({ createdAt: -1 })
+      .lean();
+
+    // Build per-event revenue stats
+    const evMap = {};
+    bookings.filter(b => b.paymentStatus === 'paid').forEach(b => {
+      const evId  = b.event ? b.event._id.toString() : 'unknown';
+      const evName = b.event ? b.event.name : 'Unknown';
+      if (!evMap[evId]) evMap[evId] = { _id: evId, name: evName, revenue: 0, count: 0 };
+      evMap[evId].revenue += b.totalAmount || 0;
+      evMap[evId].count++;
+    });
+    const eventStats = Object.values(evMap).map(e => ({
+      ...e,
+      avgAmount: e.count > 0 ? Math.round(e.revenue / e.count) : 0,
+    })).sort((a, b) => b.revenue - a.revenue);
+
+    res.render('superadmin/payments', { title: 'Payments — Super Admin', bookings, events, eventStats, currentAdmin });
+  } catch (err) {
+    console.error('[SA] payments error:', err.message);
+    res.status(500).send('Error loading payments: ' + err.message);
+  }
+});
 
 router.use((err, req, res, next) => {
   console.error('[SUPERADMIN ERROR]', req.path, err.message);

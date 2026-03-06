@@ -18,6 +18,23 @@
     .s-link i{color:var(--accent);width:18px;}
     .s-logout{margin-top:auto;display:flex;align-items:center;gap:0.7rem;padding:0.7rem 0.8rem;color:var(--error);text-decoration:none;border-radius:6px;font-size:0.85rem;border:1px solid transparent;transition:all 0.15s;}
     .s-logout:hover{background:rgba(255,68,68,0.08);}
+/* ── Sidebar ── */
+    .sidebar{background:var(--surface);border-right:1px solid var(--border);padding:1.5rem 1rem;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:0.3rem;z-index:10;overflow-y:auto;scrollbar-width:none;-ms-overflow-style:none;}
+    .sidebar::-webkit-scrollbar{display:none;}
+    .s-logo{display:block;padding:0 0.5rem 1rem;border-bottom:1px solid var(--border);margin-bottom:0.5rem;text-decoration:none;}
+    .s-section{font-family:'Space Mono',monospace;font-size:0.52rem;letter-spacing:2px;color:var(--muted);text-transform:uppercase;padding:0.5rem 0.5rem 0.2rem;margin-top:0.3rem;}
+    .s-link{display:flex;align-items:center;gap:0.7rem;padding:0.7rem 0.8rem;color:var(--muted);text-decoration:none;border-radius:6px;font-size:0.85rem;transition:all 0.15s;border:1px solid transparent;}
+    .s-link:hover,.s-link.active{background:rgba(106,13,173,0.08);border-color:rgba(106,13,173,0.2);color:#fff;}
+    .s-link i{color:var(--accent);width:18px;}
+    .s-logout{margin-top:auto;display:flex;align-items:center;gap:0.7rem;padding:0.7rem 0.8rem;color:var(--error);text-decoration:none;border-radius:6px;font-size:0.85rem;border:1px solid transparent;transition:all 0.15s;}
+    .s-logout:hover{background:rgba(255,68,68,0.08);}
+
+    .page-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;}
+    .page-title{font-family:'Anton',sans-serif;font-size:2rem;letter-spacing:2px;}
+    .btn-new{display:inline-flex;align-items:center;gap:0.5rem;background:var(--accent);color:#fff;padding:0.65rem 1.4rem;border-radius:7px;font-weight:700;font-size:0.85rem;letter-spacing:1px;border:none;cursor:pointer;transition:box-shadow 0.2s;}
+    .btn-new:hover{box-shadow:0 0 24px rgba(106,13,173,0.5);}
+
+
     .main{padding:2rem;overflow-x:hidden;}
     .page-title{font-family:'Anton',sans-serif;font-size:1.8rem;letter-spacing:2px;margin-bottom:0.3rem;}
     .page-sub{font-size:0.78rem;color:var(--muted);margin-bottom:2rem;}
@@ -60,9 +77,25 @@
 <body>
 <div class="layout">
     <%- include('../partials/admin-sidebar', { activePage: 'entered-tickets' }) %>
+    <%- include('../partials/admin-confirm') %>
+
   <main class="main">
-    <h1 class="page-title">ENTERED TICKETS</h1>
-    <p class="page-sub">All attendees who have scanned in at the venue — real-time gate log.</p>
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.8rem;margin-bottom:0.3rem;">
+      <h1 class="page-title">ENTERED TICKETS</h1>
+      <div style="display:flex;align-items:center;gap:0.6rem;">
+        <span id="autoRefreshLbl" style="font-family:'Space Mono',monospace;font-size:0.6rem;color:#555;letter-spacing:1px;">AUTO-REFRESH: ON</span>
+        <button onclick="toggleAutoRefresh()" id="arBtn" style="padding:0.35rem 0.8rem;background:rgba(0,255,136,0.08);border:1px solid rgba(0,255,136,0.25);color:#00FF88;border-radius:5px;font-size:0.72rem;cursor:pointer;font-family:'Space Mono',monospace;">⏸ Pause</button>
+        <button onclick="manualRefresh()" style="padding:0.35rem 0.8rem;background:rgba(106,13,173,0.1);border:1px solid rgba(106,13,173,0.3);color:#bf80ff;border-radius:5px;font-size:0.72rem;cursor:pointer;font-family:'Space Mono',monospace;">↻ Refresh</button>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.8rem;margin-bottom:1.5rem;">
+      <p class="page-sub" style="margin-bottom:0;">Real-time gate log. <span id="lastRefreshed" style="color:#555;font-size:0.7rem;"></span></p>
+      <div style="display:flex;align-items:center;gap:0.7rem;">
+        <span id="autoRefreshStatus" style="font-family:'Space Mono',monospace;font-size:0.58rem;color:#555;letter-spacing:1px;"></span>
+        <button onclick="manualRefresh()" style="background:rgba(0,255,136,0.08);border:1px solid rgba(0,255,136,0.2);color:#00FF88;padding:0.4rem 0.9rem;border-radius:6px;font-size:0.75rem;font-family:'Space Mono',monospace;cursor:pointer;display:flex;align-items:center;gap:0.4rem;"><i class="bi bi-arrow-clockwise"></i> Refresh</button>
+        <button id="autoBtn" onclick="toggleAuto()" style="background:rgba(106,13,173,0.1);border:1px solid rgba(106,13,173,0.3);color:#bf80ff;padding:0.4rem 0.9rem;border-radius:6px;font-size:0.75rem;font-family:'Space Mono',monospace;cursor:pointer;">⏱ Auto: OFF</button>
+      </div>
+    </div>
 
     <form method="GET" action="/admin/entered-tickets" class="filter-bar">
       <div class="f-grp">
@@ -124,7 +157,7 @@
           </td>
           <td style="font-family:'Space Mono',monospace;font-size:0.68rem;color:var(--muted);"><%= log.ticketId %></td>
           <td style="font-family:'Space Mono',monospace;font-size:0.68rem;color:#bf80ff;"><%= log.bookingRef %></td>
-          <td style="font-size:0.8rem;color:var(--muted);"><%= log.scannedBy || '—' %></td>
+          <td style="font-size:0.8rem;color:var(--muted);"><%= log.staffName || log.scannedBy || '—' %></td>
           <td style="font-family:'Space Mono',monospace;font-size:0.7rem;color:var(--muted);white-space:nowrap;"><%= new Date(log.scannedAt).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}) %></td>
         </tr>
         <% }); %>
@@ -143,6 +176,89 @@ function filterTable(q){
     r.style.display = r.textContent.toLowerCase().includes(q) ? '' : 'none';
   });
 }
+
+// ── Auto-refresh ──
+var autoInterval = null;
+var autoOn = false;
+var refreshSecs = 30;
+var countdown = refreshSecs;
+
+function manualRefresh(){
+  window.location.reload();
+}
+
+function toggleAuto(){
+  autoOn = !autoOn;
+  var btn = document.getElementById('autoBtn');
+  if(autoOn){
+    countdown = refreshSecs;
+    btn.style.background = 'rgba(0,255,136,0.1)';
+    btn.style.borderColor = 'rgba(0,255,136,0.3)';
+    btn.style.color = '#00FF88';
+    btn.textContent = '⏱ Auto: ON';
+    autoInterval = setInterval(function(){
+      countdown--;
+      var st = document.getElementById('autoRefreshStatus');
+      if(st) st.textContent = 'Refreshing in '+countdown+'s';
+      if(countdown<=0){ window.location.reload(); }
+    }, 1000);
+  } else {
+    clearInterval(autoInterval);
+    btn.style.background = 'rgba(106,13,173,0.1)';
+    btn.style.borderColor = 'rgba(106,13,173,0.3)';
+    btn.style.color = '#bf80ff';
+    btn.textContent = '⏱ Auto: OFF';
+    var st = document.getElementById('autoRefreshStatus');
+    if(st) st.textContent = '';
+  }
+}
+
+// Auto-refresh
+var arInterval = null;
+var arOn = true;
+var AR_SECONDS = 30;
+
+function setLastRefreshed(){
+  var el = document.getElementById('lastRefreshed');
+  if(el) el.textContent = 'Last refreshed: ' + new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+}
+
+function manualRefresh(){
+  setLastRefreshed();
+  location.reload();
+}
+
+function toggleAutoRefresh(){
+  arOn = !arOn;
+  var btn = document.getElementById('arBtn');
+  var lbl = document.getElementById('autoRefreshLbl');
+  if(arOn){
+    btn.textContent = '⏸ Pause';
+    btn.style.color = '#00FF88';
+    btn.style.borderColor = 'rgba(0,255,136,0.25)';
+    btn.style.background  = 'rgba(0,255,136,0.08)';
+    if(lbl) lbl.textContent = 'AUTO-REFRESH: ON';
+    startAR();
+  } else {
+    btn.textContent = '▶ Resume';
+    btn.style.color = '#f5c842';
+    btn.style.borderColor = 'rgba(245,200,66,0.25)';
+    btn.style.background  = 'rgba(245,200,66,0.06)';
+    if(lbl) lbl.textContent = 'AUTO-REFRESH: OFF';
+    clearInterval(arInterval);
+  }
+}
+
+function startAR(){
+  clearInterval(arInterval);
+  arInterval = setInterval(function(){
+    setLastRefreshed();
+    location.reload();
+  }, AR_SECONDS * 1000);
+}
+
+setLastRefreshed();
+startAR();
 </script>
 </body>
 </html>

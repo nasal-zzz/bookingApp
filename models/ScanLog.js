@@ -11,6 +11,7 @@ const scanLogSchema = new mongoose.Schema({
   attendeeGender:{ type: String, default: '' },
   ticketType: { type: String, default: '' },
   scannedBy:  { type: String, default: '' },  // staff username
+  staffName:  { type: String, default: '' },  // staff full name
   scannedAt:  { type: Date,   default: Date.now },
   isGroup:    { type: Boolean, default: false },
   groupSize:  { type: Number,  default: 1 },

@@ -69,6 +69,23 @@
     .form-inp:focus{border-color:rgba(106,13,173,0.4);}
     .form-inp.err{border-color:#FF4444;}
     .form-inp[readonly]{opacity:0.55;cursor:not-allowed;}
+    /* Dark styled select - override browser default white dropdown */
+    select.form-inp{
+      appearance:none; -webkit-appearance:none;
+      background:rgba(255,255,255,0.04) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236A0DAD' stroke-width='1.8' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 0.85rem center;
+      color:#fff;
+      cursor:pointer;
+    }
+    select.form-inp option{
+      background:#1a1a2e;
+      color:#fff;
+      padding:0.5rem;
+    }
+    select.form-inp option:checked,
+    select.form-inp option:hover{
+      background:#6A0DAD;
+      color:#fff;
+    }
     .field-err{font-size:0.68rem;color:#FF4444;margin-top:0.22rem;display:none;align-items:center;gap:0.25rem;}
     .field-err.show{display:flex;}
     .special-toggle{display:flex;align-items:center;gap:0.45rem;font-size:0.78rem;color:#B3B3B3;cursor:pointer;margin-top:0.75rem;}
@@ -113,7 +130,7 @@
     .rzp-badge{font-family:var(--font-mono);font-size:0.65rem;background:#072654;color:#5a9dff;border:1px solid rgba(90,157,255,0.3);padding:0.12rem 0.45rem;border-radius:3px;}
 
     /* Mobile bottom bar */
-    .mob-bar{display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(11,11,15,0.97);backdrop-filter:blur(20px);border-top:1px solid rgba(255,255,255,0.08);padding:0.9rem 1.4rem;z-index:50;align-items:center;justify-content:space-between;gap:1rem;}
+    .mob-bar{display:none !important;}
     .mob-bar-total{font-family:var(--font-display);font-size:1.7rem;color:var(--accent);letter-spacing:1px;}
     .mob-bar-lbl{font-size:0.65rem;color:#B3B3B3;font-family:var(--font-mono);}
     .btn-mob-pay{background:var(--accent);color:#fff;font-family:var(--font-body);font-weight:700;font-size:0.88rem;padding:0.8rem 1.6rem;border:none;border-radius:6px;cursor:pointer;white-space:nowrap;}
@@ -188,8 +205,11 @@
           <button class="pf-btn-retry" onclick="retryFromOverlay()">
             <i class="bi bi-arrow-clockwise"></i> Retry Payment
           </button>
-          <a href="/booking/seatmap/<%= event._id %>" class="pf-btn-back">
-            <i class="bi bi-arrow-left"></i> Back to Seat Selection
+          <button class="pf-btn-back" onclick="closePayFailed()">
+            <i class="bi bi-arrow-left"></i> Back to Details
+          </button>
+          <a href="/booking/seatmap/<%= event._id %>" class="pf-btn-seat" style="font-size:0.72rem;color:#555;text-decoration:none;display:flex;align-items:center;gap:0.3rem;margin-top:0.5rem;justify-content:center;">
+            <i class="bi bi-map"></i> Change seat selection
           </a>
         </div>
       </div>
@@ -402,9 +422,9 @@
       qty = Math.min(urlQty, _maxQ);
 
       // Update zone banner
-      document.getElementById('zbZone').textContent=selZone?(selZone+' Zone'):selTypeName.toUpperCase()+' ZONE';
-      document.getElementById('zbMeta').textContent=selTypeName.toUpperCase()+' · ₹'+price.toLocaleString('en-IN')+' per person';
-      document.getElementById('sumZone').textContent=selZone||selTypeName.toUpperCase();
+      var _ezbZone=document.getElementById('zbZone'); if(_ezbZone) _ezbZone.textContent=selZone?(selZone+' Zone'):selTypeName.toUpperCase()+' ZONE';
+      var _ezbMeta=document.getElementById('zbMeta'); if(_ezbMeta) _ezbMeta.textContent=selTypeName.toUpperCase()+' · ₹'+price.toLocaleString('en-IN')+' per person';
+      var _esumZone=document.getElementById('sumZone'); if(_esumZone) _esumZone.textContent=selZone||selTypeName.toUpperCase();
 
     }catch(e){console.warn('Init error:',e);}
     setQtyDisplay(); updateChips(); updateAttendeeForms(); updateSummary();
@@ -534,6 +554,8 @@
   }
 
   // ─── SUMMARY ─────────────────────────────────────────────────────
+  function setEl(id, val){ var e=document.getElementById(id); if(e) e.textContent=val; }
+
   function updateSummary(){
     const sub = qty * price;
     // Auto-apply combo offer if qty meets minimum
@@ -546,36 +568,32 @@
     const disc = Math.max(couponApplied ? discAmt : 0, comboDisc);
     const total = Math.max(sub - disc + CONV_FEE, 0);
 
-    document.getElementById('sumType').textContent=selTypeName||'—';
-    document.getElementById('sumPrice').textContent=price?'₹'+price.toLocaleString('en-IN'):'—';
-    document.getElementById('sumQty').textContent='× '+qty;
-    document.getElementById('sumSub').textContent=price?'₹'+sub.toLocaleString('en-IN'):'—';
-    document.getElementById('sumTotal').textContent=price?'₹'+total.toLocaleString('en-IN'):'—';
-    document.getElementById('qtyTotalAmt').textContent=price?'₹'+sub.toLocaleString('en-IN'):'—';
-    document.getElementById('mobTotal').textContent=price?'₹'+total.toLocaleString('en-IN'):'—';
+    setEl('sumType',     selTypeName||'—');
+    setEl('sumPrice',    price?'₹'+price.toLocaleString('en-IN'):'—');
+    setEl('sumQty',      '× '+qty);
+    setEl('sumSub',      price?'₹'+sub.toLocaleString('en-IN'):'—');
+    setEl('sumTotal',    price?'₹'+total.toLocaleString('en-IN'):'—');
+    setEl('qtyTotalAmt', price?'₹'+sub.toLocaleString('en-IN'):'—');
+    setEl('mobTotal',    price?'₹'+total.toLocaleString('en-IN'):'—');
 
-    const discRow = document.getElementById('discRow');
-    const discVal = document.getElementById('discVal');
-    // Show combo offer nudge
+    const discRow  = document.getElementById('discRow');
+    const discVal  = document.getElementById('discVal');
     const comboNudge = document.getElementById('comboOfferNudge');
     if (comboMin > 0 && comboAmt > 0) {
       if (qty >= comboMin) {
-        // Combo applied!
-        discRow.classList.add('show');
-        discVal.textContent = '-₹'+disc.toLocaleString('en-IN');
-        discVal.style.color = '#f5c842';
+        if(discRow) discRow.classList.add('show');
+        if(discVal){ discVal.textContent='-₹'+disc.toLocaleString('en-IN'); discVal.style.color='#f5c842'; }
         if(comboNudge) comboNudge.style.display='none';
       } else {
-        // Show nudge: "Add X more for ₹Y off"
         const need = comboMin - qty;
-        if(comboNudge){ comboNudge.style.display='flex'; comboNudge.querySelector('.cn-text').textContent=`Add ${need} more ticket${need>1?'s':''} → get ₹${comboAmt.toLocaleString('en-IN')} off!`; }
-        if(!couponApplied) discRow.classList.remove('show');
-        else { discRow.classList.add('show'); discVal.textContent='-₹'+(couponApplied?discAmt:0).toLocaleString('en-IN'); discVal.style.color='#00FF88'; }
+        if(comboNudge){ comboNudge.style.display='flex'; var cnTxt=comboNudge.querySelector('.cn-text'); if(cnTxt) cnTxt.textContent='Add '+need+' more ticket'+(need>1?'s':'')+' → get ₹'+comboAmt.toLocaleString('en-IN')+' off!'; }
+        if(!couponApplied){ if(discRow) discRow.classList.remove('show'); }
+        else { if(discRow) discRow.classList.add('show'); if(discVal){ discVal.textContent='-₹'+(couponApplied?discAmt:0).toLocaleString('en-IN'); discVal.style.color='#00FF88'; } }
       }
     } else {
       if(comboNudge) comboNudge.style.display='none';
-      if(couponApplied){discRow.classList.add('show');discVal.textContent='-₹'+discAmt.toLocaleString('en-IN');discVal.style.color='#00FF88';}
-      else discRow.classList.remove('show');
+      if(couponApplied){ if(discRow) discRow.classList.add('show'); if(discVal){ discVal.textContent='-₹'+discAmt.toLocaleString('en-IN'); discVal.style.color='#00FF88'; } }
+      else { if(discRow) discRow.classList.remove('show'); }
     }
     return total;
   }
@@ -593,7 +611,7 @@
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
-      body: JSON.stringify({ code: code, orderAmount: orderAmount })
+      body: JSON.stringify({ code: code, orderAmount: orderAmount, quantity: qty })
     })
     .then(function(r){ return r.json(); })
     .then(function(d){
@@ -692,8 +710,14 @@
     setLoading(false);
   }
 
+  function closePayFailed() {
+    document.getElementById('payFailedOverlay').classList.remove('show');
+    setLoading(false);
+  }
+
   function retryFromOverlay() {
     document.getElementById('payFailedOverlay').classList.remove('show');
+    setLoading(false); // re-enable Pay Now button
     if (_lastPayData) {
       setTimeout(function(){ launchRazorpay(_lastPayData); }, 200);
     } else {
@@ -814,7 +838,7 @@
     document.getElementById('paySpinner').style.display=on?'block':'none';
   }
 
-  if(window.innerWidth<=860)document.getElementById('mobBar').style.display='flex';
+  // mob-bar removed
   </script>
 </body>
 </html>

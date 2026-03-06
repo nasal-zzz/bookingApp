@@ -19,6 +19,7 @@ const sectionSchema = new mongoose.Schema({
 
   // ─ Zone visual properties saved by zone-builder ─
   zoneShape:   { type: String, enum: ['rect', 'round', 'triangle'], default: 'rect' },
+  colorOverride: { type: String, default: '' },
   zoneW:       { type: Number, default: 200 },
   zoneH:       { type: Number, default: 100 },
   zoneRot:     { type: Number, default: 0 },   // degrees; 0 IS a valid saved value
@@ -40,6 +41,7 @@ const sectionSchema = new mongoose.Schema({
 // ── Stage ──
 const stageSchema = new mongoose.Schema({
   shape:  { type: String, enum: ['rectangle','semicircle','thrust','intheround'], default: 'rectangle' },
+  color:  { type: String, default: '#bdb1c5' },
   label:  { type: String, default: 'STAGE' },
   x:      { type: Number, default: 100 },
   y:      { type: Number, default: 30 },

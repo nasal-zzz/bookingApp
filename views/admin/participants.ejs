@@ -11,56 +11,77 @@
     body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-height:100vh;}
     body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(255,255,255,0.012) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.012) 1px,transparent 1px);background-size:50px 50px;pointer-events:none;}
     .admin-layout{display:grid;grid-template-columns:220px 1fr;min-height:100vh;}
-    .sidebar{background:var(--surface);border-right:1px solid var(--border);padding:1.5rem 1rem;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:0.3rem;z-index:10;overflow-y:auto;}
-    .s-logo{display:block;padding:0 0.5rem 1.2rem;border-bottom:1px solid var(--border);margin-bottom:0.8rem;}
-    .s-section{font-family:'Space Mono',monospace;font-size:0.52rem;letter-spacing:2px;color:var(--muted);padding:0.5rem;margin-top:0.5rem;}
-    .s-link{display:flex;align-items:center;gap:0.7rem;padding:0.7rem 0.8rem;color:var(--muted);text-decoration:none;border-radius:6px;font-size:0.85rem;transition:all 0.15s;border:1px solid transparent;}
-    .s-link:hover,.s-link.active{background:rgba(106,13,173,0.07);border-color:rgba(106,13,173,0.15);color:#fff;}
-    .s-link i{color:var(--accent);width:18px;}
-    .s-logout{margin-top:auto;display:flex;align-items:center;gap:0.7rem;padding:0.7rem 0.8rem;color:var(--error);text-decoration:none;border-radius:6px;font-size:0.85rem;border:1px solid transparent;}
-    .s-logout:hover{background:rgba(255,92,92,0.08);}
     .main{padding:2rem;position:relative;z-index:1;}
-    .page-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;margin-bottom:1.5rem;}
+    .page-title{font-family:'Anton',sans-serif;font-size:2rem;letter-spacing:2px;margin-bottom:0.2rem;}
+    .page-sub{font-size:0.78rem;color:var(--muted);margin-bottom:1.5rem;}
+
+    /* ── Sidebar ── */
+    .sidebar{background:var(--surface);border-right:1px solid var(--border);padding:1.5rem 1rem;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:0.3rem;z-index:10;overflow-y:auto;scrollbar-width:none;-ms-overflow-style:none;}
+    .sidebar::-webkit-scrollbar{display:none;}
+    .s-logo{display:block;padding:0 0.5rem 1rem;border-bottom:1px solid var(--border);margin-bottom:0.5rem;text-decoration:none;}
+    .s-section{font-family:'Space Mono',monospace;font-size:0.52rem;letter-spacing:2px;color:var(--muted);text-transform:uppercase;padding:0.5rem 0.5rem 0.2rem;margin-top:0.3rem;}
+    .s-link{display:flex;align-items:center;gap:0.7rem;padding:0.7rem 0.8rem;color:var(--muted);text-decoration:none;border-radius:6px;font-size:0.85rem;transition:all 0.15s;border:1px solid transparent;}
+    .s-link:hover,.s-link.active{background:rgba(106,13,173,0.08);border-color:rgba(106,13,173,0.2);color:#fff;}
+    .s-link i{color:var(--accent);width:18px;}
+    .s-logout{margin-top:auto;display:flex;align-items:center;gap:0.7rem;padding:0.7rem 0.8rem;color:var(--error);text-decoration:none;border-radius:6px;font-size:0.85rem;border:1px solid transparent;transition:all 0.15s;}
+    .s-logout:hover{background:rgba(255,68,68,0.08);}
+
+    .page-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;}
     .page-title{font-family:'Anton',sans-serif;font-size:2rem;letter-spacing:2px;}
+    .btn-new{display:inline-flex;align-items:center;gap:0.5rem;background:var(--accent);color:#fff;padding:0.65rem 1.4rem;border-radius:7px;font-weight:700;font-size:0.85rem;letter-spacing:1px;border:none;cursor:pointer;transition:box-shadow 0.2s;}
+    .btn-new:hover{box-shadow:0 0 24px rgba(106,13,173,0.5);}
+
+
     .filter-bar{display:flex;gap:0.8rem;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;}
     .f-sel{background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:7px;color:#fff;font-family:'Outfit',sans-serif;font-size:0.88rem;padding:0.6rem 0.85rem;outline:none;min-width:260px;}
-    .f-sel:focus{border-color:rgba(106,13,173,0.45);}
-    .search-inp{flex:1;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:7px;color:#fff;font-family:'Outfit',sans-serif;font-size:0.88rem;padding:0.6rem 0.85rem;outline:none;min-width:200px;}
-    .search-inp:focus{border-color:rgba(106,13,173,0.45);}
-    .stat-row{display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1.5rem;}
-    .stat-chip{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:0.7rem 1.2rem;display:flex;align-items:center;gap:0.6rem;font-size:0.82rem;}
-    .stat-chip i{color:var(--accent);}
-    .stat-num{font-family:'Anton',sans-serif;font-size:1.3rem;letter-spacing:1px;color:#fff;}
+    .f-sel option{background:#1a1a2e;}
+    .search-inp{flex:1;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:7px;color:#fff;font-family:'Outfit',sans-serif;font-size:0.85rem;padding:0.6rem 0.85rem;outline:none;min-width:180px;}
+    .search-inp:focus,.f-sel:focus{border-color:rgba(106,13,173,0.45);}
+
+    /* Staff cards */
+    .staff-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem;margin-bottom:2rem;}
+    .staff-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;transition:border-color 0.2s;}
+    .staff-card:hover{border-color:rgba(106,13,173,0.3);}
+    .sc-head{padding:1rem 1.2rem 0.8rem;display:flex;align-items:center;gap:0.8rem;border-bottom:1px solid var(--border);}
+    .sc-avatar{width:40px;height:40px;border-radius:50%;background:rgba(106,13,173,0.2);border:2px solid rgba(106,13,173,0.4);display:flex;align-items:center;justify-content:center;font-family:'Anton',sans-serif;font-size:1.1rem;color:var(--accent);flex-shrink:0;}
+    .sc-name{font-weight:700;font-size:0.92rem;}
+    .sc-role{font-size:0.65rem;color:var(--muted);font-family:'Space Mono',monospace;}
+    .sc-stats{display:grid;grid-template-columns:1fr 1fr 1fr;padding:0.8rem 1.2rem;}
+    .sc-stat{text-align:center;}
+    .sc-stat-val{font-family:'Anton',sans-serif;font-size:1.3rem;color:#fff;}
+    .sc-stat-lbl{font-size:0.58rem;color:#555;font-family:'Space Mono',monospace;letter-spacing:1px;}
+    .sc-last{padding:0 1.2rem 0.8rem;font-size:0.7rem;color:#555;}
+
+    /* Scan log table */
+    .section-title{font-family:'Space Mono',monospace;font-size:0.55rem;letter-spacing:3px;color:#555;text-transform:uppercase;margin-bottom:0.8rem;}
     .table-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
     .table-scroll{overflow-x:auto;}
     table{width:100%;border-collapse:collapse;}
-    th{font-family:'Space Mono',monospace;font-size:0.54rem;letter-spacing:2px;color:var(--muted);text-transform:uppercase;padding:0.8rem 1rem;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap;}
-    td{padding:0.75rem 1rem;border-bottom:1px solid rgba(255,255,255,0.04);font-size:0.82rem;vertical-align:middle;}
+    th{font-family:'Space Mono',monospace;font-size:0.5rem;letter-spacing:2px;color:#555;text-transform:uppercase;padding:0.7rem 1rem;border-bottom:1px solid var(--border);text-align:left;white-space:nowrap;}
+    td{padding:0.7rem 1rem;border-bottom:1px solid rgba(255,255,255,0.04);font-size:0.82rem;vertical-align:middle;}
     tr:last-child td{border-bottom:none;}
     tr:hover td{background:rgba(255,255,255,0.015);}
-    .badge-m{background:rgba(106,13,173,0.15);color:#bf80ff;border:1px solid rgba(106,13,173,0.3);font-size:0.6rem;padding:0.1rem 0.45rem;border-radius:8px;font-family:'Space Mono',monospace;}
-    .badge-f{background:rgba(255,92,150,0.1);color:#ff92b4;border:1px solid rgba(255,92,150,0.3);font-size:0.6rem;padding:0.1rem 0.45rem;border-radius:8px;font-family:'Space Mono',monospace;}
-    .badge-o{background:rgba(255,255,255,0.06);color:#999;border:1px solid rgba(255,255,255,0.12);font-size:0.6rem;padding:0.1rem 0.45rem;border-radius:8px;font-family:'Space Mono',monospace;}
-    .badge-g{background:rgba(0,255,136,0.07);color:#00FF88;border:1px solid rgba(0,255,136,0.2);font-size:0.6rem;padding:0.1rem 0.45rem;border-radius:8px;font-family:'Space Mono',monospace;}
-    .ref{font-family:'Space Mono',monospace;font-size:0.68rem;color:var(--accent);}
-    .empty{text-align:center;padding:4rem 2rem;color:#555;}
-    @media(max-width:900px){.admin-layout{grid-template-columns:1fr;}.sidebar{display:none;}}
-    .btn-back-dash{display:inline-flex;align-items:center;gap:0.3rem;color:var(--muted);text-decoration:none;font-size:0.78rem;font-family:'Space Mono',monospace;letter-spacing:1px;padding:0.35rem 0.75rem;border:1px solid var(--border);border-radius:5px;background:rgba(255,255,255,0.03);margin-bottom:1.5rem;transition:all 0.15s;}
-    .btn-back-dash:hover{color:#fff;border-color:rgba(255,255,255,0.2);background:rgba(255,255,255,0.06);}
+
+    .b{font-family:'Space Mono',monospace;font-size:0.55rem;padding:0.14rem 0.42rem;border-radius:4px;display:inline-block;}
+    .b-staff{background:rgba(106,13,173,0.1);border:1px solid rgba(106,13,173,0.3);color:#bf80ff;}
+    .b-admin{background:rgba(245,200,66,0.1);border:1px solid rgba(245,200,66,0.3);color:#f5c842;}
+    .b-grp{background:rgba(0,255,136,0.08);border:1px solid rgba(0,255,136,0.2);color:#00FF88;}
+    .b-single{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);color:#888;}
+
+    .empty{text-align:center;padding:3rem;color:#555;}
+    .empty i{font-size:2.5rem;display:block;margin-bottom:0.8rem;}
+    @media(max-width:900px){.admin-layout{grid-template-columns:1fr;}}
   </style>
 </head>
 <body>
 <div class="admin-layout">
-    <%- include('../partials/admin-sidebar', { activePage: 'participants' }) %>
+  <%- include('../partials/admin-sidebar', { activePage: 'participants' }) %>
+  <%- include('../partials/admin-confirm') %>
+               
   <main class="main">
-    <div class="page-header">
-      <div>
-        <div class="page-title">PARTICIPANTS</div>
-        <div style="font-size:0.78rem;color:var(--muted);margin-top:0.2rem;">People who entered events via QR scan</div>
-      </div>
-    </div>
+    <div class="page-title">STAFF ACTIVITY</div>
+    <p class="page-sub">Scan logs per staff member — who scanned what, when, and how many.</p>
 
-    <!-- Event selector + search -->
     <form method="GET" action="/admin/participants" class="filter-bar" id="filterForm">
       <select class="f-sel" name="event" onchange="this.form.submit()">
         <% events.forEach(function(ev){ %>
@@ -69,73 +90,102 @@
         </option>
         <% }); %>
       </select>
-      <input class="search-inp" id="searchInp" placeholder="Search by name, ref, ticket type…" oninput="filterTable()" />
+      <input class="search-inp" id="searchInp" placeholder="Search by attendee name, ref, staff…" oninput="filterTable()"/>
     </form>
 
     <% if(logs.length > 0){ %>
-    <!-- Stats -->
-    <div class="stat-row">
-      <div class="stat-chip"><i class="bi bi-people-fill"></i><div><div class="stat-num"><%= logs.length %></div><div style="font-size:0.68rem;color:var(--muted);">Total Scanned</div></div></div>
-      <div class="stat-chip"><i class="bi bi-person-fill" style="color:#bf80ff;"></i><div><div class="stat-num"><%= logs.filter(l=>l.attendeeGender==='male').length %></div><div style="font-size:0.68rem;color:var(--muted);">Male</div></div></div>
-      <div class="stat-chip"><i class="bi bi-person-fill" style="color:#ff92b4;"></i><div><div class="stat-num"><%= logs.filter(l=>l.attendeeGender==='female').length %></div><div style="font-size:0.68rem;color:var(--muted);">Female</div></div></div>
-      <div class="stat-chip"><i class="bi bi-qr-code-scan"></i><div><div class="stat-num"><%= logs.filter(l=>l.isGroup).length %></div><div style="font-size:0.68rem;color:var(--muted);">Group Entries</div></div></div>
-    </div>
-    <% } %>
+    <%
+      // Build per-staff summary
+      var staffMap = {};
+      logs.forEach(function(log){
+        var key = log.staffName || log.scannedBy || 'Unknown';
+        if(!staffMap[key]) staffMap[key] = { name:key, scans:0, group:0, single:0, lastScan:null };
+        staffMap[key].scans++;
+        if(log.isGroup) staffMap[key].group++; else staffMap[key].single++;
+        if(!staffMap[key].lastScan || new Date(log.scannedAt) > new Date(staffMap[key].lastScan))
+          staffMap[key].lastScan = log.scannedAt;
+      });
+      var staffList = Object.values(staffMap).sort(function(a,b){ return b.scans-a.scans; });
+    %>
 
+    <!-- Staff summary cards -->
+    <div class="section-title">Staff Scan Summary</div>
+    <div class="staff-grid">
+      <% staffList.forEach(function(s){ %>
+      <div class="staff-card">
+        <div class="sc-head">
+          <div class="sc-avatar"><%= s.name.charAt(0).toUpperCase() %></div>
+          <div>
+            <div class="sc-name"><%= s.name %></div>
+            <div class="sc-role">Gate Staff</div>
+          </div>
+        </div>
+        <div class="sc-stats">
+          <div class="sc-stat"><div class="sc-stat-val"><%= s.scans %></div><div class="sc-stat-lbl">Total</div></div>
+          <div class="sc-stat"><div class="sc-stat-val" style="color:#00FF88;"><%= s.single %></div><div class="sc-stat-lbl">Single</div></div>
+          <div class="sc-stat"><div class="sc-stat-val" style="color:#f5c842;"><%= s.group %></div><div class="sc-stat-lbl">Group</div></div>
+        </div>
+        <div class="sc-last">Last scan: <%= s.lastScan ? new Date(s.lastScan).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}) : '—' %></div>
+      </div>
+      <% }); %>
+    </div>
+
+    <!-- Full scan log table -->
+    <div class="section-title" style="margin-top:1rem;">Full Scan Log</div>
     <div class="table-card">
       <div class="table-scroll">
-        <% if(logs.length === 0){ %>
-        <div class="empty">
-          <i class="bi bi-qr-code-scan" style="font-size:2.5rem;display:block;margin-bottom:0.8rem;color:#333;"></i>
-          <div style="font-size:0.88rem;">No scan records for this event yet.</div>
-          <div style="font-size:0.72rem;margin-top:0.3rem;color:#444;">Records appear here after QR codes are scanned at the venue.</div>
-        </div>
-        <% } else { %>
-        <table id="partTable">
-          <thead><tr>
-            <th>#</th>
-            <th>Name</th>
-            <th>Age</th>
-            <th>Gender</th>
-            <th>Ticket Type</th>
-            <th>Booking Ref</th>
-            <th>Scanned By</th>
-            <th>Scanned At</th>
-            <th>Entry</th>
-          </tr></thead>
-          <tbody>
-            <% logs.forEach(function(log, idx){ %>
-            <tr>
-              <td style="color:#555;font-size:0.72rem;"><%= idx+1 %></td>
-              <td style="font-weight:600;color:#fff;"><%= log.attendeeName||'—' %></td>
-              <td style="color:var(--muted);"><%= log.attendeeAge||'—' %></td>
-              <td>
-                <% if(log.attendeeGender==='male'){ %><span class="badge-m">♂ Male</span>
-                <% }else if(log.attendeeGender==='female'){ %><span class="badge-f">♀ Female</span>
-                <% }else if(log.attendeeGender){ %><span class="badge-o"><%= log.attendeeGender %></span>
-                <% }else{ %><span style="color:#444;">—</span><% } %>
-              </td>
-              <td style="font-size:0.78rem;color:var(--muted);"><%= log.ticketType||'—' %></td>
-              <td><span class="ref"><%= log.bookingRef||'—' %></span></td>
-              <td style="font-size:0.78rem;"><%= log.scannedBy||'—' %></td>
-              <td style="font-size:0.72rem;color:var(--muted);white-space:nowrap;"><%= new Date(log.scannedAt).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}) %></td>
-              <td>
-                <% if(log.isGroup){ %><span class="badge-g">Group × <%= log.groupSize %></span>
-                <% }else{ %><span style="font-size:0.68rem;color:#555;">Single</span><% } %>
-              </td>
-            </tr>
-            <% }); %>
-          </tbody>
-        </table>
-        <% } %>
+      <table id="partTable">
+        <thead><tr>
+          <th>#</th>
+          <th>Attendee</th>
+          <th>Age</th>
+          <th>Gender</th>
+          <th>Ticket Type</th>
+          <th>Entry</th>
+          <th>Booking Ref</th>
+          <th>Scanned By</th>
+          <th>Scanned At</th>
+        </tr></thead>
+        <tbody>
+          <% logs.forEach(function(log, idx){ %>
+          <tr>
+            <td style="color:#555;font-size:0.7rem;"><%= idx+1 %></td>
+            <td style="font-weight:600;"><%= log.attendeeName||'—' %></td>
+            <td style="color:var(--muted);text-align:center;"><%= log.attendeeAge>0?log.attendeeAge:'—' %></td>
+            <td>
+              <% if(log.attendeeGender==='male'){ %><span style="color:#64b5f6;font-size:0.78rem;">♂ M</span>
+              <% }else if(log.attendeeGender==='female'){ %><span style="color:#f48fb1;font-size:0.78rem;">♀ F</span>
+              <% }else{ %><span style="color:#444;">—</span><% } %>
+            </td>
+            <td style="font-size:0.75rem;color:var(--muted);"><%= log.ticketType||'—' %></td>
+            <td>
+              <% if(log.isGroup){ %><span class="b b-grp">Group × <%= log.groupSize %></span>
+              <% }else{ %><span class="b b-single">Single</span><% } %>
+            </td>
+            <td style="font-family:'Space Mono',monospace;font-size:0.67rem;color:var(--accent);"><%= log.bookingRef||'—' %></td>
+            <td>
+              <span class="b b-staff"><%= log.staffName||log.scannedBy||'—' %></span>
+            </td>
+            <td style="font-family:'Space Mono',monospace;font-size:0.68rem;color:var(--muted);white-space:nowrap;"><%= new Date(log.scannedAt).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}) %></td>
+          </tr>
+          <% }); %>
+        </tbody>
+      </table>
       </div>
     </div>
+    <% }else{ %>
+    <div class="empty">
+      <i class="bi bi-qr-code-scan" style="font-size:2.5rem;display:block;margin-bottom:0.8rem;color:#333;"></i>
+      <div style="font-size:0.88rem;">No scan records for this event yet.</div>
+      <div style="font-size:0.72rem;margin-top:0.3rem;color:#444;">Staff scan activity will appear here after QR codes are scanned at the gate.</div>
+    </div>
+    <% } %>
   </main>
 </div>
 <script>
 function filterTable(){
-  const q=document.getElementById('searchInp').value.toLowerCase();
-  document.querySelectorAll('#partTable tbody tr').forEach(r=>{
+  var q=document.getElementById('searchInp').value.toLowerCase();
+  document.querySelectorAll('#partTable tbody tr').forEach(function(r){
     r.style.display=r.textContent.toLowerCase().includes(q)?'':'none';
   });
 }

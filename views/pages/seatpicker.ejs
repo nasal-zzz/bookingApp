@@ -241,7 +241,20 @@ const EVENT_ID = '<%= event._id %>';
 const CONV_FEE = <%= event.convenienceFee||0 %>;
 const SEAT_MAP = <%- JSON.stringify(seatMap) %>;
 const TT       = <%- JSON.stringify(event.ticketTypes) %>;
-const CAT_C    = {platinum:'#9D4EDD',gold:'#f5c842',silver:'#c0c8d8',fanfit:'#00FF88',family:'#FF6B6B'};
+// Build color map from ticket types first (admin may have set custom prices/names)
+// Then fallback to standard palette
+const CAT_C_BASE = {
+  platinum:'#9D4EDD', gold:'#f5c842', silver:'#c0c8d8',
+  fanfit:'#00FF88',   family:'#FF6B6B', vip:'#FF4088',
+  standard:'#a0a0a0', general:'#a0a0a0', diamond:'#00C8F8',
+  premium:'#FF8C00',  bronze:'#cd7f32',  solo:'#9D4EDD'
+};
+// Build dynamic color map from zone colorOverride or category fallback
+const CAT_C = Object.fromEntries(
+  (SEAT_MAP.sections||[]).map(s=>[s.category, s.colorOverride||CAT_C_BASE[s.category]||'#6A0DAD'])
+);
+// also merge base so any category not in sections still works
+Object.keys(CAT_C_BASE).forEach(k=>{ if(!CAT_C[k]) CAT_C[k]=CAT_C_BASE[k]; });
 const PM       = Object.fromEntries(TT.map(t=>[t.category,t.price]));
 
 const canvas = document.getElementById('vc');
@@ -256,6 +269,7 @@ const zones = (SEAT_MAP.sections||[]).map(s=>({
   w:s.zoneW>0?s.zoneW:200, h:s.zoneH>0?s.zoneH:100,
   rot:s.zoneRot!=null?Number(s.zoneRot):0,
   totalSeats:s.totalSeats||0, bookedSeats:s.bookedSeats||0,
+  colorOverride:s.colorOverride||'',
 }));
 
 let selIdx=null, litCat=null, qty=1;
@@ -324,7 +338,7 @@ function drawStage(s){
   if(!s)return;
   const x=s.x||80, y=s.y||30, w=s.width||500, h=s.height||100;
   ctx.save();
-  ctx.fillStyle='rgba(106,13,173,0.15)'; ctx.strokeStyle='#6A0DAD'; ctx.lineWidth=2;
+  const sc=s.color||'#6A0DAD'; ctx.fillStyle=sc+'26'; ctx.strokeStyle=sc; ctx.lineWidth=2;
   const shp=s.shape||'rectangle';
   if(shp==='rectangle'){
     ctx.beginPath();ctx.roundRect(x,y,w,h,10);ctx.fill();ctx.stroke();
@@ -340,7 +354,7 @@ function drawStage(s){
   }else{
     ctx.beginPath();ctx.roundRect(x,y,w,h,10);ctx.fill();ctx.stroke();
   }
-  ctx.fillStyle='#bf80ff';
+  ctx.fillStyle=sc||'#bf80ff';
   ctx.font='bold 14px "Space Mono",monospace';
   ctx.textAlign='center'; ctx.textBaseline='middle';
   ctx.fillText(s.label||'STAGE', x+w/2, y+h/2);
@@ -349,7 +363,7 @@ function drawStage(s){
 
 function drawZone(z,isSel,isLit){
   const {x,y,w,h,name,category,shape,totalSeats,bookedSeats}=z;
-  const rot=d2r(z.rot||0), color=CAT_C[category]||'#6A0DAD', price=PM[category]||0;
+  const rot=d2r(z.rot||0), color=z.colorOverride||CAT_C[category]||'#6A0DAD', price=PM[category]||0;
   const cx=x+w/2, cy=y+h/2;
   const a=avail(z), SO=isSO(z);
 
@@ -371,7 +385,7 @@ function drawZone(z,isSel,isLit){
 
   // Name
   const fs=Math.max(9,Math.min(14,w/(name.length*0.78)));
-  const lY=shape==='triangle'?h*0.06:-10;
+  const lY=shape==='triangle'?(h*0.12):-10;  // triangle: text in center of mass (lower area)
   ctx.fillStyle=SO?'#444':'#fff';
   ctx.font=`bold ${fs}px "Montserrat",sans-serif`;
   ctx.textAlign='center'; ctx.textBaseline='middle';
@@ -447,7 +461,7 @@ canvas.addEventListener('mousemove',e=>{
     canvas.style.cursor=SO?'not-allowed':'pointer';
 
     // Build tooltip content
-    const a=avail(z), p=PM[z.category]||0, col=CAT_C[z.category]||'#6A0DAD';
+    const a=avail(z), p=PM[z.category]||0, col=z.colorOverride||CAT_C[z.category]||'#6A0DAD';
     const cls = SO?'sold': a<=3?'crit': a<=10?'warn':'ok';
     const availTxt = SO ? 'SOLD OUT'
       : a<=3  ? '⚠ Only '+a+' left!'
@@ -494,7 +508,7 @@ function syncLegend(){
 function renderCards(){
   const wrap=document.getElementById('zoneList');
   wrap.innerHTML=zones.map((z,i)=>{
-    const c=CAT_C[z.category]||'#6A0DAD', p=PM[z.category]||0;
+    const c=z.colorOverride||CAT_C[z.category]||'#6A0DAD', p=PM[z.category]||0;
     const isSel=i===selIdx, isLit=z.category===litCat&&!isSel;
     const SO=isSO(z), a=avail(z);
     const pct=barPct(z), bcol=barColor(z);
