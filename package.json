@@ -1,5 +1,5 @@
 {
-  "name": "nightpass",
+  "name": "MEE",
   "version": "1.0.0",
   "description": "Party ticket booking system with QR entry",
   "main": "server.js",

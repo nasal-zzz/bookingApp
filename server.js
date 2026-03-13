@@ -135,8 +135,8 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`\n🚀 Melattur Entertainment Events running at http://localhost:${PORT}`);
-  console.log(`📦 Environment: ${process.env.NODE_ENV || 'development'}\n`);
+  console.log(`\n Melattur Entertainment Events running at http://localhost:${PORT}`);
+  console.log(` Environment: ${process.env.NODE_ENV || 'development'}\n`);
 });
 
 module.exports = app;

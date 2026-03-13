@@ -17,7 +17,7 @@ exports.getProfile = async (req, res) => {
       .reduce((sum, b) => sum + b.quantity, 0);
 
     res.render('pages/profile', {
-      title: 'My Profile — NightPass',
+      title: 'My Profile — MEE',
       user: req.user,
       bookings,
       stats: {

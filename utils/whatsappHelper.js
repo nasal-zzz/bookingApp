@@ -72,9 +72,8 @@ Hi ${name}! Your tickets are ready. 🎉
 
 *${event.name.toUpperCase()}*
 📅 ${eventDate}
-⏰ ${event.doorsOpen || '8:00 PM'} – ${event.endTime || '4:00 AM'}
+⏰ ${event.doorsOpen || '4:00 PM'} – ${event.endTime || '10:00 PM'}
 📍 ${event.venue}
-👗 ${event.dressCode || 'Smart Casual'}
 
 *Booking Ref:* ${booking.bookingRef}
 *Tickets:* ${booking.quantity} × ${booking.ticketType}

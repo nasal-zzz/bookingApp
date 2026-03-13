@@ -4,7 +4,7 @@ const { v4: uuidv4 } = require('uuid');
 // Generate a unique ticket ID
 const generateTicketId = (idx = 0) => {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let id = 'NP-';
+  let id = 'MEE-';
   for (let i = 0; i < 4; i++) id += chars[Math.floor(Math.random() * chars.length)];
   id += '-';
   for (let i = 0; i < 4; i++) id += chars[Math.floor(Math.random() * chars.length)];

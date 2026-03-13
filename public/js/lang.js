@@ -1,4 +1,4 @@
-// ── NightPass Full-Page Language System ──
+// ── MEE Full-Page Language System ──
 // Translates entire page content between English and Malayalam
 
 const NP_TRANSLATIONS = {
@@ -36,7 +36,7 @@ const NP_TRANSLATIONS = {
   'Book Now': 'ഇപ്പോൾ ബുക്ക് ചെയ്യുക',
   'NO EVENTS YET': 'ഇനിയും ഇവന്റുകൾ ഇല്ല',
   'Check back soon — something big is coming.': 'ഉടൻ വരുന്നു — ഭീകരൻ!',
-  '© 2026 NightPass · Kochi · All rights reserved.': '© 2026 NightPass · കൊച്ചി · എല്ലാ അവകാശങ്ങളും നിക്ഷിപ്തം.',
+  '© 2026 MEE · Kochi · All rights reserved.': '© 2026 MEE · കൊച്ചി · എല്ലാ അവകാശങ്ങളും നിക്ഷിപ്തം.',
 
   // ── LOGIN PAGE ──
   'Log in to book your entry pass. New here?': 'ബുക്ക് ചെയ്യാൻ ലോഗിൻ ചെയ്യൂ. പുതിയ ആളാണോ?',
@@ -131,7 +131,7 @@ const NP_TRANSLATIONS = {
   'Email Address': 'ഇമെയിൽ വിലാസം',
   'MY PROFILE': 'എന്റെ പ്രൊഫൈൽ',
   'RECENT ACTIVITY': 'സമീപകാല പ്രവർത്തനം',
-  'Joined NightPass · Phone verified': 'NightPass-ൽ ചേർന്നു · ഫോൺ സ്ഥിരീകരിച്ചു',
+  'Joined MEE · Phone verified': 'MEE-ൽ ചേർന്നു · ഫോൺ സ്ഥിരീകരിച്ചു',
 
   // ── ADMIN ──
   'Dashboard': 'ഡാഷ്ബോർഡ്',
@@ -139,7 +139,7 @@ const NP_TRANSLATIONS = {
   'Bookings': 'ബുക്കിംഗുകൾ',
 
   // ── FOOTER / COMMON ──
-  'NightPass · This is an automated email. Do not reply.': 'NightPass · ഇത് ഒരു യാന്ത്രിക ഇമെയിൽ ആണ്. മറുപടി അയക്കരുത്.',
+  'MEE · This is an automated email. Do not reply.': 'MEE · ഇത് ഒരു യാന്ത്രിക ഇമെയിൽ ആണ്. മറുപടി അയക്കരുത്.',
 };
 
 // ── Reverse map for ML→EN ──

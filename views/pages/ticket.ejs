@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>Booking Confirmed — MEE</title>
-  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Outfit:wght@400;500;600;700&family=Space+Mono&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins&family=Outfit:wght@400;500;600;700&family=Space+Mono&display=swap" rel="stylesheet"/>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet"/>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <link rel="stylesheet" href="/css/index.css"/>
@@ -14,7 +14,7 @@
     body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-height:100vh;}
     body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(255,255,255,0.011) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.011) 1px,transparent 1px);background-size:50px 50px;pointer-events:none;}
     nav{padding:0.9rem 2rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);background:rgba(8,8,14,0.92);backdrop-filter:blur(20px);position:sticky;top:0;z-index:100;}
-    .logo{font-family:'Anton',sans-serif;font-size:1.4rem;letter-spacing:4px;color:#fff;text-decoration:none;}
+    .logo{font-family:'Poppins',sans-serif;font-size:1.4rem;letter-spacing:4px;color:#fff;text-decoration:none;}
     .logo span{color:var(--accent);}
     .nav-actions{display:flex;align-items:center;gap:0.7rem;}
     .nav-btn{display:flex;align-items:center;gap:0.4rem;padding:0.5rem 1rem;border-radius:6px;text-decoration:none;font-size:0.8rem;font-weight:600;transition:all 0.18s;cursor:pointer;border:none;}
@@ -28,7 +28,7 @@
     .success-badge{display:inline-flex;align-items:center;gap:0.55rem;background:rgba(0,255,136,0.08);border:1px solid rgba(0,255,136,0.25);border-radius:20px;padding:0.45rem 1.2rem;font-family:'Space Mono',monospace;font-size:0.65rem;letter-spacing:2px;color:var(--success);margin-bottom:1.4rem;}
     .success-ring{width:88px;height:88px;border-radius:50%;background:rgba(106,13,173,0.14);border:2px solid rgba(157,78,221,0.4);display:flex;align-items:center;justify-content:center;font-size:2.2rem;margin:0 auto 1.4rem;box-shadow:0 0 40px rgba(157,78,221,0.18);animation:popIn 0.5s ease both;}
     @keyframes popIn{0%{transform:scale(0.5);opacity:0}70%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
-    .success-title{font-family:'Anton',sans-serif;font-size:clamp(2.5rem,7vw,4.5rem);letter-spacing:3px;color:#fff;line-height:1;margin-bottom:0.7rem;}
+    .success-title{font-family:'Poppins',sans-serif;font-size:clamp(2.5rem,7vw,4.5rem);letter-spacing:3px;color:#fff;line-height:1;margin-bottom:0.7rem;}
     .success-title .grn{color:var(--success);}
     .success-sub{font-size:0.92rem;color:var(--muted);max-width:440px;margin:0 auto 0.8rem;line-height:1.7;}
     .ref-chip{display:inline-flex;align-items:center;gap:0.45rem;background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:0.38rem 0.9rem;font-family:'Space Mono',monospace;font-size:0.68rem;letter-spacing:2px;color:var(--muted);}
@@ -53,7 +53,7 @@
     .ticket-header{background:linear-gradient(135deg,#0B0B0F,#1a0a2e,#2d0a5c);padding:1.4rem;position:relative;overflow:hidden;}
     .ticket-header::after{content:'';position:absolute;bottom:-18px;left:0;right:0;height:56px;background:radial-gradient(ellipse 60% 100% at 50% 100%,rgba(106,13,173,0.3) 0%,transparent 70%);}
     .t-brand{font-family:'Space Mono',monospace;font-size:0.66rem;letter-spacing:4px;color:rgba(255,255,255,0.4);margin-bottom:0.35rem;position:relative;z-index:1;}
-    .t-name{font-family:'Anton',sans-serif;font-size:1.7rem;letter-spacing:3px;color:#fff;line-height:1;position:relative;z-index:1;}
+    .t-name{font-family:'Poppins',sans-serif;font-size:1.7rem;letter-spacing:3px;color:#fff;line-height:1;position:relative;z-index:1;}
     .t-type-badge{position:absolute;top:1rem;right:1rem;background:rgba(106,13,173,0.15);border:1px solid rgba(106,13,173,0.5);color:#9D4EDD;font-family:'Space Mono',monospace;font-size:0.56rem;letter-spacing:2px;padding:0.2rem 0.55rem;border-radius:2px;}
     .tear-line{position:relative;height:1px;background:#e8e8e8;margin:0 12px;}
     .tear-line::before,.tear-line::after{content:'';position:absolute;width:22px;height:22px;border-radius:50%;background:var(--bg);top:50%;transform:translateY(-50%);}
@@ -72,17 +72,17 @@
     .qr-valid{display:inline-flex;align-items:center;gap:0.28rem;background:rgba(76,200,128,0.1);border:1px solid rgba(76,200,128,0.4);color:#2a9d5c;font-family:'Space Mono',monospace;font-size:0.54rem;letter-spacing:1px;padding:0.18rem 0.55rem;border-radius:2px;margin-top:0.45rem;}
     .ticket-footer{background:#f5f5f5;padding:0.75rem 1.4rem;display:flex;align-items:center;justify-content:space-between;}
     .t-footer-note{font-family:'Space Mono',monospace;font-size:0.56rem;letter-spacing:1px;color:#aaa;}
-    .t-footer-price{font-family:'Anton',sans-serif;font-size:1.15rem;color:#111;letter-spacing:1px;}
+    .t-footer-price{font-family:'Poppins',sans-serif;font-size:1.15rem;color:#111;letter-spacing:1px;}
     .btn-dl-single{display:flex;align-items:center;justify-content:center;gap:0.45rem;width:100%;padding:0.72rem;background:#111;color:#fff;border:none;cursor:pointer;font-family:'Outfit',sans-serif;font-weight:600;font-size:0.8rem;transition:background 0.18s;}
     .btn-dl-single:hover{background:#1a0a2e;color:var(--accent);}
     .btn-dl-single:disabled{opacity:0.5;cursor:not-allowed;}
 
     /* WHAT'S NEXT */
     .whats-next{max-width:900px;margin:0 auto 2rem;padding:0 1.5rem;position:relative;z-index:1;}
-    .next-title{font-family:'Anton',sans-serif;font-size:1.4rem;letter-spacing:2px;color:#fff;margin-bottom:1rem;}
+    .next-title{font-family:'Poppins',sans-serif;font-size:1.4rem;letter-spacing:2px;color:#fff;margin-bottom:1rem;}
     .next-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0.9rem;}
     .next-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:1.2rem;}
-    .next-num{font-family:'Anton',sans-serif;font-size:2.2rem;color:rgba(255,255,255,0.03);line-height:1;margin-bottom:-0.25rem;}
+    .next-num{font-family:'Poppins',sans-serif;font-size:2.2rem;color:rgba(255,255,255,0.03);line-height:1;margin-bottom:-0.25rem;}
     .next-icon{font-size:1.4rem;margin-bottom:0.5rem;}
     .next-card-title{font-weight:700;font-size:0.88rem;color:#fff;margin-bottom:0.28rem;}
     .next-card-desc{font-size:0.78rem;color:var(--muted);line-height:1.6;}
@@ -143,7 +143,7 @@
       <div class="ticket-card" id="tc-0">
         <div class="ticket-header">
           <div class="t-type-badge"><%= booking.ticketType.toUpperCase() %></div>
-          <div class="t-brand">NIGHTPASS · KOCHI</div>
+          <div class="t-brand">MEE · MELATTUR</div>
           <div class="t-name"><%= event.name.toUpperCase() %></div>
         </div>
         <div class="tear-line"><hr class="tear-dots"/></div>
@@ -173,7 +173,7 @@
           </div>
         </div>
         <div class="ticket-footer">
-          <div class="t-footer-note">SCAN ONCE FOR ALL · 18+ · VALID ID</div>
+          <div class="t-footer-note">SCAN ONCE FOR ALL ·VALID ID</div>
           <div class="t-footer-price">₹<%= booking.totalAmount.toLocaleString('en-IN') %></div>
         </div>
         <button class="btn-dl-single" id="dl-0" onclick="downloadSingle(0)">
@@ -185,7 +185,7 @@
       <div class="ticket-card" id="tc-<%= idx %>">
         <div class="ticket-header">
           <div class="t-type-badge"><%= booking.ticketType.toUpperCase() %></div>
-          <div class="t-brand">NIGHTPASS · KOCHI</div>
+          <div class="t-brand">MEE · MELATTUR</div>
           <div class="t-name"><%= event.name.toUpperCase() %></div>
         </div>
         <div class="tear-line"><hr class="tear-dots"/></div>
@@ -194,7 +194,6 @@
             <div class="info-field"><label>Date</label><span><%= new Date(event.date).toDateString().toUpperCase() %></span></div>
             <div class="info-field"><label>Time</label><span><%= event.doorsOpen %> – <%= event.endTime %></span></div>
             <div class="info-field"><label>Venue</label><span><%= event.venue %></span></div>
-            <div class="info-field"><label>Dress Code</label><span><%= event.dressCode %></span></div>
           </div>
           <div class="qr-section">
             <div class="qr-box">
@@ -213,7 +212,7 @@
           </div>
         </div>
         <div class="ticket-footer">
-          <div class="t-footer-note">SCAN AT ENTRY · 18+ · VALID ID</div>
+          <div class="t-footer-note">SCAN AT ENTRY · VALID ID</div>
           <div class="t-footer-price">₹<%= booking.pricePerTicket.toLocaleString('en-IN') %></div>
         </div>
         <button class="btn-dl-single" id="dl-<%= idx %>" onclick="downloadSingle(<%= idx %>)">
@@ -237,13 +236,13 @@
 
   <div class="notice"><div class="notice-inner">
     <i class="bi bi-exclamation-triangle-fill"></i>
-    <div class="notice-text"><strong>Important:</strong> Each QR code is unique and valid for single entry only. Do not share publicly. Carry valid government photo ID. Dress code: <strong><%= event.dressCode %></strong>, strictly enforced.</div>
+    <div class="notice-text"><strong>Important:</strong> Each QR code is unique and valid for single entry only. Do not share publicly, strictly enforced.</div>
   </div></div>
 
   <script>
   const TICKETS = <%- JSON.stringify(booking.tickets.map(t=>({ticketId:t.ticketId,attendeeName:t.attendee.name,attendeeAge:t.attendee.age,qrCode:t.qrCode||''}))) %>;
   const BOOKING = {ref:'<%= booking.bookingRef %>',type:'<%= booking.ticketType %>',qty:<%= booking.tickets.length %>,price:'<%= booking.pricePerTicket.toLocaleString("en-IN") %>',paymentId:'<%= booking.paymentId||"" %>'};
-  const EVENT   = {name:'<%= event.name.toUpperCase() %>',date:'<%= new Date(event.date).toDateString().toUpperCase() %>',doorsOpen:'<%= event.doorsOpen %>',endTime:'<%= event.endTime %>',venue:'<%= event.venue %>',dressCode:'<%= event.dressCode %>'};
+  const EVENT   = {name:'<%= event.name.toUpperCase() %>',date:'<%= new Date(event.date).toDateString().toUpperCase() %>',doorsOpen:'<%= event.doorsOpen %>',endTime:'<%= event.endTime %>',venue:'<%= event.venue %>'};
   const USER_PHONE = '<%= user&&user.phone?user.phone:"" %>';
 
   async function buildTicketPDF(idx){
@@ -253,11 +252,11 @@
     doc.setFillColor(8,8,14);doc.rect(0,0,W,H,'F');
     doc.setFillColor(15,22,0);doc.rect(0,0,W*0.55,H,'F');
     doc.setFillColor(200,255,0);doc.rect(0,0,W*0.55,2,'F');
-    doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(120,140,80);doc.text('NIGHTPASS · KOCHI',12,14);
+    doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(120,140,80);doc.text('MEE · MELATTUR',12,14);
     doc.setFont('helvetica','bold');doc.setFontSize(22);doc.setTextColor(255,255,255);
     doc.text(doc.splitTextToSize(EVENT.name,90),12,26);
     doc.setDrawColor(200,255,0);doc.setLineWidth(0.5);doc.line(12,50,W*0.55-10,50);
-    const fields=[{label:'DATE',value:EVENT.date},{label:'DOORS OPEN',value:EVENT.doorsOpen},{label:'UNTIL',value:EVENT.endTime},{label:'VENUE',value:EVENT.venue},{label:'DRESS CODE',value:EVENT.dressCode},{label:'TICKET TYPE',value:BOOKING.type.toUpperCase()}];
+    const fields=[{label:'DATE',value:EVENT.date},{label:'DOORS OPEN',value:EVENT.doorsOpen},{label:'UNTIL',value:EVENT.endTime},{label:'VENUE',value:EVENT.venue},{label:'TICKET TYPE',value:BOOKING.type.toUpperCase()}];
     let y=60;fields.forEach((f,i)=>{const col=i<3?12:60,row=i<3?y+(i*22):y+((i-3)*22);doc.setFont('helvetica','normal');doc.setFontSize(6);doc.setTextColor(120,140,80);doc.text(f.label,col,row);doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(230,230,230);doc.text(f.value,col,row+5);});
     doc.setFont('helvetica','bold');doc.setFontSize(18);doc.setTextColor(200,255,0);doc.text('₹'+BOOKING.price,12,H-10);
     doc.setDrawColor(50,50,50);doc.setLineWidth(0.3);for(let dy=5;dy<H-5;dy+=4){doc.line(W*0.55,dy,W*0.55,dy+2);}
@@ -270,13 +269,13 @@
     doc.setFillColor(20,60,30);doc.roundedRect(rx,91,55,8,2,2,'F');doc.setFont('helvetica','bold');doc.setFontSize(7);doc.setTextColor(76,220,128);doc.text('✓ VALID · ONE TIME ENTRY',rx+4,96.5);
     doc.setFont('courier','bold');doc.setFontSize(7);doc.setTextColor(120,130,100);doc.text(t.ticketId,rx,107);
     doc.setFont('helvetica','normal');doc.setFontSize(6);doc.setTextColor(80,90,70);doc.text('REF: '+BOOKING.ref,rx,113);
-    doc.setFont('helvetica','normal');doc.setFontSize(6);doc.setTextColor(60,70,50);doc.text('SCAN AT ENTRY · 18+ · VALID PHOTO ID REQUIRED',rx,H-6);
+    doc.setFont('helvetica','normal');doc.setFontSize(6);doc.setTextColor(60,70,50);doc.text('SCAN AT ENTRY',rx,H-6);
     return doc;
   }
 
   async function downloadSingle(idx){
     const btn=document.getElementById('dl-'+idx);btn.disabled=true;btn.innerHTML='<i class="bi bi-hourglass-split"></i> Generating...';
-    try{const doc=await buildTicketPDF(idx);doc.save('NightPass_Ticket_'+(idx+1)+'_'+TICKETS[idx].attendeeName.replace(/\s+/g,'_')+'.pdf');}
+    try{const doc=await buildTicketPDF(idx);doc.save('MEE_Ticket_'+(idx+1)+'_'+TICKETS[idx].attendeeName.replace(/\s+/g,'_')+'.pdf');}
     catch(e){alert('PDF error: '+e.message);}
     btn.disabled=false;btn.innerHTML='<i class="bi bi-file-earmark-pdf-fill"></i> Download Ticket '+(idx+1)+' as PDF';
   }
@@ -290,7 +289,7 @@
         merged.addPage([210,148],'landscape');
         await drawOnDoc(merged,i);
       }
-      merged.save('NightPass_'+BOOKING.ref+'_AllTickets.pdf');
+      merged.save('MEE_'+BOOKING.ref+'_AllTickets.pdf');
     }catch(e){alert('PDF error: '+e.message);}
     btn.disabled=false;btn.innerHTML='<i class="bi bi-download"></i> Download All Tickets (PDF)';
   }
@@ -299,7 +298,7 @@
     const t=TICKETS[idx],W=doc.internal.pageSize.getWidth(),H=doc.internal.pageSize.getHeight();
     doc.setFillColor(8,8,14);doc.rect(0,0,W,H,'F');doc.setFillColor(15,22,0);doc.rect(0,0,W*0.55,H,'F');
     doc.setFillColor(200,255,0);doc.rect(0,0,W*0.55,2,'F');
-    doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(120,140,80);doc.text('NIGHTPASS · KOCHI',12,14);
+    doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(120,140,80);doc.text('MEE · MELATTUR',12,14);
     doc.setFont('helvetica','bold');doc.setFontSize(22);doc.setTextColor(255,255,255);doc.text(doc.splitTextToSize(EVENT.name,90),12,26);
     doc.setDrawColor(200,255,0);doc.setLineWidth(0.5);doc.line(12,50,W*0.55-10,50);
     const fields=[{label:'DATE',value:EVENT.date},{label:'DOORS OPEN',value:EVENT.doorsOpen},{label:'UNTIL',value:EVENT.endTime},{label:'VENUE',value:EVENT.venue},{label:'DRESS CODE',value:EVENT.dressCode},{label:'TICKET TYPE',value:BOOKING.type.toUpperCase()}];
@@ -314,11 +313,11 @@
     doc.setFillColor(20,60,30);doc.roundedRect(rx,91,55,8,2,2,'F');doc.setFont('helvetica','bold');doc.setFontSize(7);doc.setTextColor(76,220,128);doc.text('VALID · ONE TIME ENTRY',rx+4,96.5);
     doc.setFont('courier','bold');doc.setFontSize(7);doc.setTextColor(120,130,100);doc.text(t.ticketId,rx,107);
     doc.setFont('helvetica','normal');doc.setFontSize(6);doc.setTextColor(80,90,70);doc.text('REF: '+BOOKING.ref,rx,113);
-    doc.setFont('helvetica','normal');doc.setFontSize(6);doc.setTextColor(60,70,50);doc.text('SCAN AT ENTRY · 18+ · VALID PHOTO ID REQUIRED',rx,H-6);
+    doc.setFont('helvetica','normal');doc.setFontSize(6);doc.setTextColor(60,70,50);doc.text('SCAN AT ENTRY · VALID PHOTO ID REQUIRED',rx,H-6);
   }
 
   function sendWhatsApp(){
-    const msg=`🎉 Booking confirmed!\n\nEvent: ${EVENT.name}\nRef: ${BOOKING.ref}\nTickets: ${BOOKING.qty} × ${BOOKING.type}\nDate: ${EVENT.date}\nVenue: ${EVENT.venue}\n\nDoors open at ${EVENT.doorsOpen}. Dress code: ${EVENT.dressCode}.`;
+    const msg=`🎉 Booking confirmed!\n\nEvent: ${EVENT.name}\nRef: ${BOOKING.ref}\nTickets: ${BOOKING.qty} × ${BOOKING.type}\nDate: ${EVENT.date}\nVenue: ${EVENT.venue}\n\nDoors open at ${EVENT.doorsOpen}.`;
     window.open('https://api.whatsapp.com/send?phone='+encodeURIComponent(USER_PHONE)+'&text='+encodeURIComponent(msg),'_blank');
   }
 

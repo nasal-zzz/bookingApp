@@ -14,7 +14,7 @@
   --border: rgba(255,255,255,0.08); --accent: #6A0DAD;
   --accent-dim: rgba(106,13,173,0.15); --text: #FFFFFF;
   --muted: #B3B3B3; --error: #FF4444; --success: #00FF88;
-  --font-display: 'Mirava Sans', 'Anton', sans-serif;
+  --font-display: 'Poppins', sans-serif;
   --font-body: 'Outfit', sans-serif;
   --font-mono: 'Space Mono', monospace;
 }

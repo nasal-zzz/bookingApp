@@ -8,19 +8,15 @@
   <style>
     *{box-sizing:border-box;margin:0;padding:0;}
     body{background:#0B0B0F;color:#FFFFFF;font-family:'Outfit',sans-serif;min-height:100vh;}
-    /* Admin layout */
-    :root{--bg:#0B0B0F;--surface:#14141C;--card:#14141C;--border:rgba(255,255,255,0.08);--accent:#6A0DAD;--accent-dim:rgba(106,13,173,0.15);--text:#FFFFFF;--muted:#B3B3B3;--error:#FF4444;--success:#00FF88;}
-    .admin-layout{display:grid;grid-template-columns:220px 1fr;min-height:100vh;}
-    .sidebar{background:var(--surface);border-right:1px solid var(--border);padding:1.5rem 1rem;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:0.3rem;z-index:10;overflow-y:auto;}
-    .s-logo{display:block;padding:0 0.5rem 1rem;border-bottom:1px solid var(--border);margin-bottom:0.5rem;}
-    .s-section{font-family:'Space Mono',monospace;font-size:0.48rem;letter-spacing:2px;color:rgba(255,255,255,0.3);text-transform:uppercase;padding:0.6rem 0.8rem 0.2rem;}
-    .s-link{display:flex;align-items:center;gap:0.7rem;padding:0.65rem 0.8rem;color:var(--muted);text-decoration:none;border-radius:6px;font-size:0.85rem;transition:all 0.15s;border:1px solid transparent;}
-    .s-link:hover,.s-link.active{background:rgba(106,13,173,0.07);border-color:rgba(106,13,173,0.15);color:#fff;}
-    .s-link i{color:var(--accent);width:18px;}
-    .s-logout{margin-top:auto;display:flex;align-items:center;gap:0.7rem;padding:0.65rem 0.8rem;color:var(--error);text-decoration:none;border-radius:6px;font-size:0.85rem;border:1px solid transparent;transition:all 0.15s;}
-    .s-logout:hover{background:rgba(255,92,92,0.08);border-color:rgba(255,92,92,0.2);}
-    .main{padding:2rem;overflow-x:hidden;position:relative;z-index:1;}
-    .container{max-width:900px;}
+    nav{padding:1rem 2rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.08);background:#14141C;position:sticky;top:0;z-index:100;}
+    .logo{font-family:'Anton',sans-serif;font-size:1.3rem;letter-spacing:3px;color:#fff;text-decoration:none;}
+    .logo span{color:#6A0DAD;}
+    .nav-links{display:flex;gap:1rem;align-items:center;}
+    .nav-links a{color:#B3B3B3;text-decoration:none;font-size:0.82rem;padding:0.4rem 0.8rem;border-radius:4px;transition:all 0.2s;}
+    .nav-links a:hover{color:#fff;background:rgba(255,255,255,0.05);}
+    .btn-danger{background:rgba(255,68,68,0.1);color:#FF4444;border:1px solid rgba(255,68,68,0.2);padding:0.4rem 1rem;border-radius:4px;text-decoration:none;font-size:0.82rem;}
+
+    .container{max-width:960px;margin:0 auto;padding:2.5rem 1.5rem;}
     .page-title{font-family:'Anton',sans-serif;font-size:2rem;letter-spacing:2px;color:#fff;margin-bottom:0.4rem;}
     .page-sub{color:#B3B3B3;font-size:0.88rem;margin-bottom:2.5rem;}
 
@@ -41,10 +37,6 @@
     .field-input:focus{border-color:#6A0DAD;}
     textarea.field-input{resize:vertical;min-height:90px;}
     select.field-input{cursor:pointer;}
-    .field-input.is-invalid{border-color:#FF4444 !important;background:rgba(255,68,68,0.04);}
-    .field-input.is-valid{border-color:#00FF88 !important;}
-    .field-error{font-size:0.72rem;color:#FF4444;margin-top:0.3rem;display:none;font-family:'Space Mono',monospace;}
-    .field-error.show{display:block;}
 
     /* Banner upload areas */
     .banner-upload{border:2px dashed rgba(255,255,255,0.12);border-radius:10px;padding:1.5rem;text-align:center;cursor:pointer;transition:border-color 0.2s;position:relative;background:#0B0B0F;}
@@ -54,41 +46,6 @@
     .banner-upload .up-label{font-size:0.85rem;color:#B3B3B3;}
     .banner-upload .up-sub{font-size:0.72rem;color:rgba(255,255,255,0.3);margin-top:0.2rem;}
     .banner-preview{width:100%;max-height:160px;object-fit:cover;border-radius:8px;display:none;margin-top:0.8rem;}
-    .banner-change-btn{margin-top:0.5rem;display:none;padding:0.3rem 0.8rem;background:rgba(106,13,173,0.15);border:1px solid rgba(106,13,173,0.35);border-radius:5px;color:#9D4EDD;font-size:0.72rem;cursor:pointer;font-family:inherit;}
-    /* Crop Modal */
-    #cropModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:2000;align-items:center;justify-content:center;padding:1rem;backdrop-filter:blur(8px);}
-    #cropModal.open{display:flex;}
-    .crop-modal-box{background:#14141C;border:1px solid rgba(255,255,255,0.09);border-radius:14px;width:100%;max-width:560px;overflow:hidden;}
-    .crop-modal-top{height:3px;background:linear-gradient(90deg,#6A0DAD,#9D4EDD,#6A0DAD);}
-    .crop-modal-head{padding:1rem 1.2rem 0.6rem;display:flex;align-items:center;justify-content:space-between;}
-    .crop-modal-head h3{font-family:'Anton',sans-serif;font-size:1rem;letter-spacing:2px;color:#fff;}
-    .crop-modal-head button{background:none;border:none;color:#555;font-size:1.3rem;cursor:pointer;line-height:1;}
-    .crop-area-wrap{position:relative;margin:0 1.2rem;background:#08080e;border-radius:8px;overflow:hidden;touch-action:none;border:1px solid rgba(255,255,255,0.07);cursor:grab;}
-    .crop-area-wrap.landscape{aspect-ratio:16/6;max-height:280px;}
-    .crop-area-wrap.portrait{aspect-ratio:3/4;max-height:420px;}
-    #cropPreviewImg{position:absolute;top:50%;left:50%;transform-origin:center center;transform:translate(-50%,-50%) scale(1);cursor:grab;user-select:none;max-width:none;pointer-events:none;}
-    #cropCanvas{display:block;width:100%;height:100%;}
-    .crop-dashed{position:absolute;inset:0;border:2px dashed rgba(106,13,173,0.5);border-radius:8px;pointer-events:none;}
-    .crop-ctrls{padding:0.9rem 1.2rem;display:flex;align-items:center;gap:0.8rem;flex-wrap:wrap;}
-    .crop-ctrls label{font-family:'Space Mono',monospace;font-size:0.55rem;letter-spacing:1px;color:#555;text-transform:uppercase;}
-    .crop-ctrls input[type=range]{flex:1;min-width:80px;accent-color:#6A0DAD;}
-    .crop-footer{padding:0.8rem 1.2rem 1.2rem;display:flex;gap:0.7rem;}
-    .crop-cancel-btn{flex:1;padding:0.7rem;background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:7px;color:#888;font-family:inherit;font-size:0.85rem;cursor:pointer;}
-    .crop-save-btn{flex:2;padding:0.7rem;background:#6A0DAD;border:none;border-radius:7px;color:#fff;font-family:inherit;font-weight:700;font-size:0.85rem;cursor:pointer;letter-spacing:1px;}
-    .size-warn{font-size:0.7rem;color:#FF4444;display:none;padding:0 1.2rem 0.5rem;}
-    /* Artist crop modal — circular */
-    #artistCropModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:2000;align-items:center;justify-content:center;padding:1rem;backdrop-filter:blur(8px);}
-    #artistCropModal.open{display:flex;}
-    .ac-box{background:#14141C;border:1px solid rgba(255,255,255,0.09);border-radius:14px;width:100%;max-width:400px;overflow:hidden;}
-    .ac-top{height:3px;background:linear-gradient(90deg,#6A0DAD,#9D4EDD,#6A0DAD);}
-    .ac-head{padding:1rem 1.2rem 0.6rem;display:flex;align-items:center;justify-content:space-between;}
-    .ac-head h3{font-family:'Anton',sans-serif;font-size:1rem;letter-spacing:2px;color:#fff;}
-    .ac-area{margin:0 1.2rem;position:relative;width:220px;height:220px;border-radius:50%;overflow:hidden;border:2px solid rgba(106,13,173,0.5);background:#08080e;touch-action:none;margin-left:auto;margin-right:auto;}
-    #acCanvas{display:block;width:100%;height:100%;}
-    .ac-ctrls{padding:0.9rem 1.2rem;display:flex;align-items:center;gap:0.8rem;}
-    .ac-ctrls label{font-family:'Space Mono',monospace;font-size:0.55rem;letter-spacing:1px;color:#555;}
-    .ac-ctrls input[type=range]{flex:1;accent-color:#6A0DAD;}
-    .ac-footer{padding:0.8rem 1.2rem 1.2rem;display:flex;gap:0.7rem;}
 
     /* Artists */
     .artist-list{display:flex;flex-direction:column;gap:0.8rem;}
@@ -132,32 +89,26 @@
     .btn-save{padding:0.9rem 2.5rem;background:#6A0DAD;color:#fff;border:none;border-radius:8px;font-family:'Outfit',sans-serif;font-weight:700;font-size:0.95rem;cursor:pointer;letter-spacing:1px;transition:box-shadow 0.2s,transform 0.15s;}
     .btn-save:hover{box-shadow:0 0 30px rgba(106,13,173,0.5);transform:translateY(-1px);}
     .btn-cancel{padding:0.9rem 1.5rem;background:transparent;color:#B3B3B3;border:1px solid rgba(255,255,255,0.12);border-radius:8px;text-decoration:none;font-size:0.9rem;font-family:'Outfit',sans-serif;}
-    /* Toast notifications */
-    #toast-container{position:fixed;top:1.2rem;right:1.2rem;z-index:9999;display:flex;flex-direction:column;gap:0.6rem;pointer-events:none;max-width:340px;}
-    .ef-toast{pointer-events:all;background:rgba(20,20,28,0.97);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:0.85rem 1rem;display:flex;align-items:center;gap:0.7rem;box-shadow:0 20px 60px rgba(0,0,0,0.5);animation:efToastIn 0.3s ease both;font-size:0.88rem;}
-    .ef-toast.ok {border-left:3px solid #00FF88;color:#00FF88;}
-    .ef-toast.err{border-left:3px solid #FF4444;color:#FF4444;}
-    .ef-toast.warn{border-left:3px solid #f5c842;color:#f5c842;}
-    @keyframes efToastIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
-    @keyframes efToastOut{from{opacity:1;transform:translateX(0)}to{opacity:0;transform:translateX(20px)}}
+    .toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:#14141C;border:1px solid rgba(106,13,173,0.4);border-radius:8px;padding:0.8rem 1.5rem;font-size:0.88rem;z-index:999;display:none;box-shadow:0 10px 40px rgba(0,0,0,0.5);}
+    .toast.ok{border-color:rgba(0,255,136,0.4);color:#00FF88;}
+    .toast.err{border-color:rgba(255,68,68,0.4);color:#FF4444;}
 
-    .btn-back-dash{display:inline-flex;align-items:center;gap:0.3rem;color:var(--muted);text-decoration:none;font-size:0.78rem;font-family:'Space Mono',monospace;letter-spacing:1px;padding:0.35rem 0.75rem;border:1px solid var(--border);border-radius:5px;background:rgba(255,255,255,0.03);margin-bottom:1.5rem;transition:all 0.15s;}
-    .btn-back-dash:hover{color:#fff;border-color:rgba(255,255,255,0.2);}
-    @media(max-width:900px){.admin-layout{grid-template-columns:1fr;}.sidebar{display:none;}}
     @media(max-width:640px){.field-row.cols-2,.field-row.cols-3{grid-template-columns:1fr;}.artist-row{grid-template-columns:60px 1fr;grid-template-rows:auto auto;}}
   </style>
 </head>
 <body>
-<div id="toast-container"></div>
-<div class="admin-layout">
-  <%- include('../partials/admin-sidebar', { activePage: 'new-event', isSuperAdmin: locals.isSuperAdmin }) %>
-  <%- include('../partials/admin-confirm') %>
-  
-  <main class="main">
-  <div class="container">
-    <a href="/admin" class="btn-back-dash"><i class="bi bi-arrow-left-short"></i> Dashboard</a>
-    <div class="page-title"><%= event ? 'EDIT EVENT' : 'NEW EVENT' %></div>
-    <div class="page-sub"><%= event ? 'Update event details below' : 'Fill in the details to create a new event' %></div>
+<nav>
+  <a href="/admin" class="logo">NIGHT<span>PASS</span> <span style="font-size:0.7rem;letter-spacing:2px;color:#B3B3B3;">ADMIN</span></a>
+  <div class="nav-links">
+    <a href="/admin"><i class="bi bi-speedometer2"></i> Dashboard</a>
+    <a href="/admin/bookings"><i class="bi bi-collection"></i> Bookings</a>
+    <a href="/admin/logout" class="btn-danger"><i class="bi bi-box-arrow-right"></i> Logout</a>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="page-title"><%= event ? 'EDIT EVENT' : 'NEW EVENT' %></div>
+  <div class="page-sub"><%= event ? 'Update event details below' : 'Fill in the details to create a new event' %></div>
 
   <form id="eventForm" method="POST" action="<%= event ? '/admin/events/' + event._id : '/admin/events' %>" onsubmit="return prepareSubmit()">
 
@@ -183,10 +134,20 @@
             <textarea class="field-input" name="about" placeholder="Full event description..."><%= event ? event.about : '' %></textarea>
           </div>
         </div>
+        <div class="field-row">
+          <div class="field-group">
+            <label class="field-label">Event Instructions <span style="font-size:0.55rem;color:#555;letter-spacing:1px;">(shown on event detail page)</span></label>
+            <textarea class="field-input" name="instructions" placeholder="e.g. No refunds after purchase. Valid ID required at entry. No outside food or drinks." style="min-height:80px;"><%= event ? event.instructions : '' %></textarea>
+          </div>
+        </div>
         <div class="field-row cols-2">
           <div class="field-group">
+            <label class="field-label">Dress Code</label>
+            <input class="field-input" name="dressCode" placeholder="All Black" value="<%= event ? event.dressCode : 'All Black' %>"/>
+          </div>
+          <div class="field-group">
             <label class="field-label">Convenience Fee (₹)</label>
-            <input class="field-input" type="number" name="convenienceFee" value="<%= event ? event.convenienceFee : 0 %>"/>
+            <input class="field-input" type="number" name="convenienceFee" value="<%= event ? event.convenienceFee : 20 %>"/>
           </div>
         </div>
       </div>
@@ -200,10 +161,10 @@
           <div class="field-group">
             <label class="field-label">Landing Page Banner (Desktop)</label>
             <div class="banner-upload" id="wrap-bannerDesktop">
-              <input type="file" accept="image/*" id="file-bannerDesktop" onchange="previewBanner(this,'bannerDesktop')" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;"/>
+              <input type="file" accept="image/*" onchange="previewBanner(this,'bannerDesktop')"/>
               <i class="bi bi-image"></i>
-              <div class="up-label">Click to upload · max 10 MB</div>
-              <div class="up-sub">1920×600 recommended · auto-cropped</div>
+              <div class="up-label">Click to upload</div>
+              <div class="up-sub">1920×600 recommended</div>
               <img id="prev-bannerDesktop" class="banner-preview" src="<%= event && event.bannerDesktop ? event.bannerDesktop : '' %>"/>
             </div>
             <input type="hidden" name="bannerDesktop" id="bannerDesktop" value="<%= event ? event.bannerDesktop : '' %>"/>
@@ -211,10 +172,10 @@
           <div class="field-group">
             <label class="field-label">Landing Page Banner (Mobile)</label>
             <div class="banner-upload" id="wrap-bannerMobile">
-              <input type="file" accept="image/*" id="file-bannerMobile" onchange="previewBanner(this,'bannerMobile')" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;"/>
+              <input type="file" accept="image/*" onchange="previewBanner(this,'bannerMobile')"/>
               <i class="bi bi-phone"></i>
-              <div class="up-label">Click to upload · max 10 MB</div>
-              <div class="up-sub">800×600 recommended · auto-cropped</div>
+              <div class="up-label">Click to upload</div>
+              <div class="up-sub">800×600 recommended</div>
               <img id="prev-bannerMobile" class="banner-preview" src="<%= event && event.bannerMobile ? event.bannerMobile : '' %>"/>
             </div>
             <input type="hidden" name="bannerMobile" id="bannerMobile" value="<%= event ? event.bannerMobile : '' %>"/>
@@ -222,13 +183,40 @@
           <div class="field-group">
             <label class="field-label">Event Detail Page Banner</label>
             <div class="banner-upload" id="wrap-bannerDetail">
-              <input type="file" accept="image/*" id="file-bannerDetail" onchange="previewBanner(this,'bannerDetail')" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;"/>
+              <input type="file" accept="image/*" onchange="previewBanner(this,'bannerDetail')"/>
               <i class="bi bi-card-image"></i>
-              <div class="up-label">Click to upload · max 10 MB</div>
-              <div class="up-sub">1200×400 recommended · auto-cropped</div>
+              <div class="up-label">Click to upload</div>
+              <div class="up-sub">1200×400 recommended</div>
               <img id="prev-bannerDetail" class="banner-preview" src="<%= event && event.bannerDetail ? event.bannerDetail : '' %>"/>
             </div>
             <input type="hidden" name="bannerDetail" id="bannerDetail" value="<%= event ? event.bannerDetail : '' %>"/>
+          </div>
+        </div>
+        <div style="margin-top:0.5rem;padding-top:1rem;border-top:1px solid rgba(255,255,255,0.05);">
+          <div style="font-family:'Space Mono',monospace;font-size:0.58rem;letter-spacing:2px;color:#555;margin-bottom:0.8rem;">HOMEPAGE SLIDING BANNER POSTERS</div>
+          <div class="field-row cols-2">
+            <div class="field-group">
+              <label class="field-label">Landscape Poster <span style="font-size:0.55rem;color:#555;">(homepage slider — wide)</span></label>
+              <div class="banner-upload" id="wrap-posterLandscape">
+                <input type="file" accept="image/*" onchange="previewBanner(this,'posterLandscape')"/>
+                <i class="bi bi-image-fill"></i>
+                <div class="up-label">Click to upload</div>
+                <div class="up-sub">1200×500 recommended</div>
+                <img id="prev-posterLandscape" class="banner-preview" src="<%= event && event.posterLandscape ? event.posterLandscape : '' %>"/>
+              </div>
+              <input type="hidden" name="posterLandscape" id="posterLandscape" value="<%= event ? event.posterLandscape : '' %>"/>
+            </div>
+            <div class="field-group">
+              <label class="field-label">Portrait Poster <span style="font-size:0.55rem;color:#555;">(homepage slider — tall)</span></label>
+              <div class="banner-upload" id="wrap-posterPortrait">
+                <input type="file" accept="image/*" onchange="previewBanner(this,'posterPortrait')"/>
+                <i class="bi bi-phone-fill"></i>
+                <div class="up-label">Click to upload</div>
+                <div class="up-sub">600×900 recommended</div>
+                <img id="prev-posterPortrait" class="banner-preview" src="<%= event && event.posterPortrait ? event.posterPortrait : '' %>"/>
+              </div>
+              <input type="hidden" name="posterPortrait" id="posterPortrait" value="<%= event ? event.posterPortrait : '' %>"/>
+            </div>
           </div>
         </div>
       </div>
@@ -294,11 +282,82 @@
     <div class="section">
       <div class="section-head"><div class="section-num">6</div><div class="section-title">Ticket Categories</div></div>
       <div class="section-body">
-        <div style="margin-bottom:1rem;font-size:0.82rem;color:#777;">Add as many ticket categories as you need. Each can have a custom name and color.</div>
-        <div id="ticketCatList" style="display:flex;flex-direction:column;gap:1rem;margin-bottom:1rem;"></div>
-        <button type="button" class="btn-add" onclick="addTicketCat()">
-          <i class="bi bi-plus-circle-fill"></i> Add Ticket Category
-        </button>
+        <div class="ticket-categories">
+
+          <% const cats = [
+            { key: 'platinum', label: 'PLATINUM', icon: '💎' },
+            { key: 'gold',     label: 'GOLD',     icon: '🥇' },
+            { key: 'silver',   label: 'SILVER',   icon: '🥈' },
+            { key: 'fanfit',   label: 'FANFIT',   icon: '🎤' },
+            { key: 'family',   label: 'FAMILY (COMBO × 4)', icon: '👨‍👩‍👧‍👦' },
+          ]; %>
+
+          <% cats.forEach(function(cat) {
+            const existing = event && event.ticketTypes ? event.ticketTypes.find(t => t.category === cat.key) : null;
+          %>
+          <div class="ticket-cat cat-<%= cat.key %>" id="cat-<%= cat.key %>">
+            <div class="ticket-cat-head" onclick="toggleCat('<%= cat.key %>')">
+              <div style="display:flex;align-items:center;gap:0.8rem;">
+                <span style="font-size:1.3rem;"><%= cat.icon %></span>
+                <span style="font-weight:700;font-size:0.95rem;"><%= cat.label %></span>
+                <span class="cat-badge"><%= cat.key.toUpperCase() %></span>
+              </div>
+              <div style="display:flex;align-items:center;gap:1rem;">
+                <label class="cat-enabled-toggle" onclick="event.stopPropagation()">
+                  <div class="toggle-sw <%= existing && existing.isActive ? 'on' : '' %>" id="toggle-<%= cat.key %>" onclick="flipToggle('<%= cat.key %>')"></div>
+                  <span style="font-size:0.8rem;color:#B3B3B3;" id="toggle-lbl-<%= cat.key %>"><%= existing && existing.isActive ? 'Enabled' : 'Disabled' %></span>
+                </label>
+                <i class="bi bi-chevron-down" id="chevron-<%= cat.key %>" style="color:#B3B3B3;transition:transform 0.2s;"></i>
+              </div>
+            </div>
+            <div class="ticket-cat-body" id="body-<%= cat.key %>">
+              <% if (cat.key === 'family') { %>
+              <div class="combo-note">
+                <i class="bi bi-info-circle-fill"></i> <strong>Combo Ticket:</strong> When a user books Family ticket, they get 4 tickets and must fill details for all 4 attendees.
+              </div>
+              <% } %>
+              <div class="field-row cols-3">
+                <div class="field-group">
+                  <label class="field-label">Price (₹) *</label>
+                  <input class="field-input" type="number" id="<%= cat.key %>_price" placeholder="0" value="<%= existing ? existing.price : '' %>"/>
+                </div>
+                <div class="field-group">
+                  <label class="field-label">Age Limit</label>
+                  <input class="field-input" type="number" id="<%= cat.key %>_ageLimit" placeholder="18" value="<%= existing ? existing.ageLimit : 18 %>"/>
+                </div>
+                <div class="field-group">
+                  <label class="field-label">Total Seats *</label>
+                  <input class="field-input" type="number" id="<%= cat.key %>_totalSeats" placeholder="100" value="<%= existing ? existing.totalSeats : '' %>"/>
+                </div>
+              </div>
+              <div class="field-row cols-3">
+                <div class="field-group">
+                  <label class="field-label">Max Per Order <span style="font-size:0.55rem;color:#555;">(per booking)</span></label>
+                  <input class="field-input" type="number" id="<%= cat.key %>_maxPerOrder" placeholder="10" min="1" max="50" value="<%= existing ? (existing.maxPerOrder || 10) : 10 %>"/>
+                </div>
+                <div class="field-group">
+                  <label class="field-label">Ticket Type</label>
+                  <select class="field-input" id="<%= cat.key %>_ticketType">
+                    <option value="single" <%= !existing || existing.ticketType === 'single' ? 'selected' : '' %>>Single Entry</option>
+                    <option value="multiple" <%= existing && existing.ticketType === 'multiple' ? 'selected' : '' %>>Multiple Entry</option>
+                  </select>
+                </div>
+                <div class="field-group">
+                  <label class="field-label">Booked Seats (current)</label>
+                  <input class="field-input" type="number" id="<%= cat.key %>_bookedSeats" value="<%= existing ? existing.bookedSeats : 0 %>" min="0"/>
+                </div>
+              </div>
+              <div class="field-row">
+                <div class="field-group">
+                  <label class="field-label">Terms & Conditions</label>
+                  <textarea class="field-input" id="<%= cat.key %>_terms" placeholder="Entry conditions, refund policy..." style="min-height:70px;"><%= existing ? existing.terms : '' %></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+          <% }); %>
+
+        </div>
         <input type="hidden" name="ticketTypesJson" id="ticketTypesJson" value="[]"/>
       </div>
     </div>
@@ -307,6 +366,28 @@
     <div class="section">
       <div class="section-head"><div class="section-num">7</div><div class="section-title">Settings</div></div>
       <div class="section-body">
+        <!-- Seating Type -->
+        <div class="field-row cols-2" style="margin-bottom:1.2rem;">
+          <div class="field-group">
+            <label class="field-label">Seating Type</label>
+            <select class="field-input" name="seatingType" id="seatingTypeSelect" onchange="toggleSeatFields()">
+              <option value="standing" <%= !event || event.seatingType === 'standing' ? 'selected' : '' %>>Standing (General Admission)</option>
+              <option value="sitting" <%= event && event.seatingType === 'sitting' ? 'selected' : '' %>>Sitting (Numbered Seats)</option>
+            </select>
+          </div>
+        </div>
+        <div id="seatNumberFields" style="display:none;">
+          <div class="field-row cols-2" style="margin-bottom:1.2rem;">
+            <div class="field-group">
+              <label class="field-label">Seat Number Start</label>
+              <input class="field-input" type="number" name="seatNumberStart" min="1" placeholder="1" value="<%= event ? event.seatNumberStart || 1 : 1 %>"/>
+            </div>
+            <div class="field-group">
+              <label class="field-label">Seat Number End</label>
+              <input class="field-input" type="number" name="seatNumberEnd" min="1" placeholder="500" value="<%= event ? event.seatNumberEnd || '' : '' %>"/>
+            </div>
+          </div>
+        </div>
         <div class="field-row cols-2">
           <label style="display:flex;align-items:center;gap:0.8rem;cursor:pointer;">
             <input type="checkbox" name="isActive" value="true" <%= event && event.isActive !== false ? 'checked' : '' %> style="width:18px;height:18px;accent-color:#6A0DAD;"/>
@@ -329,286 +410,29 @@
   </form>
 </div>
 
-<!-- ── Banner Crop Modal ── -->
-<div id="cropModal">
-  <div class="crop-modal-box">
-    <div class="crop-modal-top"></div>
-    <div class="crop-modal-head">
-      <h3 id="cropModalTitle">CROP BANNER</h3>
-      <button onclick="closeBannerCrop()">×</button>
-    </div>
-    <div class="size-warn" id="cropSizeWarn">⚠ File exceeds 10 MB limit</div>
-    <!-- Crop viewport: fixed aspect-ratio frame, image pans inside -->
-    <div id="cropViewport" class="crop-area-wrap landscape" style="overflow:hidden;position:relative;">
-      <img id="cropPreviewImg" src="" alt=""
-        style="position:absolute;top:50%;left:50%;transform-origin:center center;transform:translate(-50%,-50%) scale(1);cursor:grab;user-select:none;max-width:none;"/>
-      <div class="crop-dashed"></div>
-    </div>
-    <div class="crop-ctrls">
-      <label>Zoom</label>
-      <input type="range" id="cropZoom" min="1" max="5" step="0.02" value="1" oninput="updateCropTransform()"/>
-      <button type="button" onclick="resetCrop()" style="padding:0.3rem 0.7rem;border:1px solid rgba(245,200,66,0.3);background:rgba(245,200,66,0.07);color:#f5c842;border-radius:5px;font-size:0.72rem;cursor:pointer;font-family:inherit;white-space:nowrap;"><i class="bi bi-arrows-fullscreen"></i> Fit</button>
-    </div>
-    <div style="font-size:0.6rem;color:#555;text-align:center;font-family:'Space Mono',monospace;margin-top:-0.2rem;">Drag to pan · scroll/pinch to zoom</div>
-    <div class="crop-footer">
-      <button class="crop-cancel-btn" onclick="closeBannerCrop()">Cancel</button>
-      <button class="crop-save-btn" onclick="saveBannerCrop()"><i class="bi bi-crop"></i> Use This Crop</button>
-    </div>
-  </div>
-</div>
-
-<!-- ── Artist Photo Crop Modal ── -->
-<div id="artistCropModal">
-  <div class="ac-box">
-    <div class="ac-top"></div>
-    <div class="ac-head"><h3>CROP PHOTO</h3><button onclick="closeArtistCrop()">×</button></div>
-    <div class="size-warn" id="artistSizeWarn">⚠ File exceeds 10 MB limit</div>
-    <div class="ac-area" id="acArea">
-      <canvas id="acCanvas"></canvas>
-    </div>
-    <div class="ac-ctrls">
-      <label>Zoom</label>
-      <input type="range" id="acZoom" min="0.1" max="5" step="0.01" value="1" oninput="drawArtistCrop()"/>
-      <button type="button" onclick="fitArtistCrop()" style="padding:0.3rem 0.7rem;border:1px solid rgba(106,13,173,0.4);background:rgba(106,13,173,0.1);color:#9D4EDD;border-radius:5px;font-size:0.72rem;cursor:pointer;white-space:nowrap;font-family:inherit;">⊡ Fit</button>
-    </div>
-    <div style="font-size:0.62rem;color:#555;text-align:center;margin-top:0.2rem;font-family:'Space Mono',monospace;">Drag to pan · Pinch or scroll to zoom</div>
-    <div class="ac-footer">
-      <button class="crop-cancel-btn" onclick="closeArtistCrop()">Cancel</button>
-      <button class="crop-save-btn" onclick="saveArtistCrop()"><i class="bi bi-person-circle"></i> Use Photo</button>
-    </div>
-  </div>
-</div>
-
+<div class="toast" id="toast"></div>
 
 <script>
 // ── Existing event data for pre-population ──
 const EXISTING_ARTISTS = <%- JSON.stringify(event && event.artists ? event.artists : []) %>;
 
-// ── Banner Crop System (CSS-transform, pixel-perfect) ──
-const MAX_SIZE_BYTES = 10 * 1024 * 1024;
-
-const BANNER_CONFIGS = {
-  bannerDesktop: { ar:'landscape', ow:1920, oh:600,  label:'DESKTOP BANNER' },
-  bannerMobile:  { ar:'portrait',  ow:800,  oh:1067, label:'MOBILE BANNER'  },
-  bannerDetail:  { ar:'landscape', ow:1200, oh:400,  label:'DETAIL BANNER'  },
-};
-
-let cropFieldId = null, cropCfg = null;
-let cropScale = 1, cropX = 0, cropY = 0;
-
+// ── Banner preview ──
 function previewBanner(input, fieldId) {
   const file = input.files[0];
   if (!file) return;
-  if (file.size > MAX_SIZE_BYTES) {
-    showToast('Image exceeds 10 MB limit. Please choose a smaller file.', 'err');
-    input.value = ''; return;
-  }
   const reader = new FileReader();
-  reader.onload = ev => {
-    const img = new Image();
-    img.onload = () => {
-      cropFieldId = fieldId;
-      // Detect orientation and choose crop config
-      const isPortrait = img.height > img.width;
-      let cfg;
-      if (fieldId === 'bannerMobile' || isPortrait) {
-        cfg = { ar:'portrait', ow:800, oh:1067, label:'MOBILE / PORTRAIT BANNER' };
-      } else if (fieldId === 'bannerDetail') {
-        cfg = { ar:'landscape', ow:1200, oh:400, label:'DETAIL BANNER (3:1 wide)' };
-      } else {
-        cfg = BANNER_CONFIGS[fieldId];
-      }
-      cropCfg = cfg;
-      // Set viewport class for aspect ratio
-      const vp = document.getElementById('cropViewport');
-      vp.className = 'crop-area-wrap ' + cfg.ar;
-      // Load image into preview img tag
-      const pi = document.getElementById('cropPreviewImg');
-      pi.src = ev.target.result;
-      pi.onload = () => {
-        resetCrop();
-        document.getElementById('cropModalTitle').textContent = cfg.label;
-        document.getElementById('cropModal').classList.add('open');
-      };
-    };
-    img.src = ev.target.result;
+  reader.onload = e => {
+    document.getElementById('prev-' + fieldId).src   = e.target.result;
+    document.getElementById('prev-' + fieldId).style.display = 'block';
+    document.getElementById(fieldId).value = e.target.result;
   };
   reader.readAsDataURL(file);
 }
-
-function resetCrop() {
-  cropScale = 1; cropX = 0; cropY = 0;
-  document.getElementById('cropZoom').value = 1;
-  updateCropTransform();
-}
-
-function updateCropTransform() {
-  cropScale = parseFloat(document.getElementById('cropZoom').value) || 1;
-  const pi = document.getElementById('cropPreviewImg');
-  pi.style.transform = `translate(calc(-50% + ${cropX}px), calc(-50% + ${cropY}px)) scale(${cropScale})`;
-}
-
-function saveBannerCrop() {
-  if (!cropFieldId || !cropCfg) return;
-  const pi = document.getElementById('cropPreviewImg');
-  const vp = document.getElementById('cropViewport');
-  const vpRect = vp.getBoundingClientRect();
-  const piRect = pi.getBoundingClientRect();
-  // Map viewport crop region to source image coords
-  const scaleX = pi.naturalWidth  / piRect.width;
-  const scaleY = pi.naturalHeight / piRect.height;
-  const sx = Math.max(0, (vpRect.left - piRect.left) * scaleX);
-  const sy = Math.max(0, (vpRect.top  - piRect.top ) * scaleY);
-  const sw = Math.min(vpRect.width  * scaleX, pi.naturalWidth  - sx);
-  const sh = Math.min(vpRect.height * scaleY, pi.naturalHeight - sy);
-  const out = document.createElement('canvas');
-  out.width  = cropCfg.ow;
-  out.height = cropCfg.oh;
-  out.getContext('2d').drawImage(pi, sx, sy, sw, sh, 0, 0, cropCfg.ow, cropCfg.oh);
-  const dataUrl = out.toDataURL('image/jpeg', 0.88);
-  document.getElementById(cropFieldId).value = dataUrl;
-  const prev = document.getElementById('prev-' + cropFieldId);
-  if (prev) { prev.src = dataUrl; prev.style.display = 'block'; }
-  closeBannerCrop();
-}
-
-function closeBannerCrop() {
-  document.getElementById('cropModal').classList.remove('open');
-  cropFieldId = null; cropCfg = null;
-  document.getElementById('cropPreviewImg').src = '';
-}
-
-// Drag-to-pan + scroll-to-zoom on banner crop
-(function(){
-  let drag=false,sx=0,sy=0,ox=0,oy=0;
-  const pi = ()=>document.getElementById('cropPreviewImg');
-  const xy = e => e.touches ? {x:e.touches[0].clientX,y:e.touches[0].clientY} : {x:e.clientX,y:e.clientY};
-  document.getElementById('cropViewport').addEventListener('mousedown',  e=>{e.preventDefault();drag=true;const p=xy(e);sx=p.x;sy=p.y;ox=cropX;oy=cropY;pi().style.cursor='grabbing';});
-  document.getElementById('cropViewport').addEventListener('touchstart', e=>{drag=true;const p=xy(e);sx=p.x;sy=p.y;ox=cropX;oy=cropY;},{passive:true});
-  window.addEventListener('mousemove', e=>{if(!drag)return;const p=xy(e);cropX=ox+(p.x-sx);cropY=oy+(p.y-sy);updateCropTransform();});
-  window.addEventListener('touchmove', e=>{if(!drag)return;const p=xy(e);cropX=ox+(p.x-sx);cropY=oy+(p.y-sy);updateCropTransform();},{passive:true});
-  window.addEventListener('mouseup',  ()=>{drag=false;const p=pi();if(p)p.style.cursor='grab';});
-  window.addEventListener('touchend', ()=>{drag=false;});
-  document.getElementById('cropViewport').addEventListener('wheel', e=>{
-    e.preventDefault();
-    cropScale = Math.min(5, Math.max(1, cropScale + (e.deltaY>0?-0.1:0.1)));
-    document.getElementById('cropZoom').value = cropScale;
-    updateCropTransform();
-  },{passive:false});
-})();
-
-function openArtistCrop(file, idx) {
-  if (!file) return;
-  if (file.size > MAX_SIZE_BYTES) { showToast('Image exceeds 10 MB limit.', 'err'); return; }
-  document.getElementById('artistSizeWarn').style.display='none';
-  acArtistIndex = idx;
-  const reader=new FileReader();
-  reader.onload=e=>{
-    const img=new Image();
-    img.onload=()=>{
-      acImg=img; acOffX=0; acOffY=0;
-      document.getElementById('acZoom').value=1;
-      document.getElementById('artistCropModal').classList.add('open');
-      requestAnimationFrame(()=>requestAnimationFrame(drawArtistCrop));
-    };
-    img.src=e.target.result;
-  };
-  reader.readAsDataURL(file);
-}
-
-function drawArtistCrop(){
-  if(!acImg)return;
-  const canvas=document.getElementById('acCanvas');
-  const area=document.getElementById('acArea');
-  const S=area.clientWidth||220;
-  canvas.width=S;canvas.height=S;
-  const ctx=canvas.getContext('2d');
-  ctx.clearRect(0,0,S,S);
-  ctx.save();ctx.beginPath();ctx.arc(S/2,S/2,S/2,0,Math.PI*2);ctx.clip();
-  const zoom=parseFloat(document.getElementById('acZoom').value)||1;
-  const scale=Math.max(S/acImg.width,S/acImg.height)*zoom;
-  const dx=(S-acImg.width*scale)/2+acOffX;
-  const dy=(S-acImg.height*scale)/2+acOffY;
-  ctx.drawImage(acImg,dx,dy,acImg.width*scale,acImg.height*scale);
-  ctx.restore();
-}
-
-function fitArtistCrop(){
-  acOffX=0;acOffY=0;
-  document.getElementById('acZoom').value=1;
-  drawArtistCrop();
-}
-
-function saveArtistCrop(){
-  if(!acImg||acArtistIndex<0)return;
-  const out=document.createElement('canvas');
-  out.width=400;out.height=400;
-  const ctx=out.getContext('2d');
-  ctx.save();ctx.beginPath();ctx.arc(200,200,200,0,Math.PI*2);ctx.clip();
-  const zoom=parseFloat(document.getElementById('acZoom').value)||1;
-  const scaleR=400/(document.getElementById('acArea').clientWidth||220);
-  const scale=Math.max(400/acImg.width,400/acImg.height)*zoom;
-  const dx=(400-acImg.width*scale)/2+acOffX*scaleR;
-  const dy=(400-acImg.height*scale)/2+acOffY*scaleR;
-  ctx.drawImage(acImg,dx,dy,acImg.width*scale,acImg.height*scale);
-  ctx.restore();
-  const dataUrl=out.toDataURL('image/jpeg',0.9);
-  artists[acArtistIndex].photo=dataUrl;
-  renderArtists();
-  closeArtistCrop();
-}
-
-function closeArtistCrop(){
-  document.getElementById('artistCropModal').classList.remove('open');
-  acImg=null;acArtistIndex=-1;
-}
-
-// drag to pan artist crop
-(function(){
-  let dr=false,sx=0,sy=0;
-  let pinchDist=0,pinchBase=1;
-  const ca=document.getElementById('acCanvas');
-  if(!ca)return;
-  function gp(e){return e.touches?{x:e.touches[0].clientX,y:e.touches[0].clientY}:{x:e.clientX,y:e.clientY};}
-  ca.style.cursor='grab';
-  ca.addEventListener('mousedown',e=>{dr=true;const p=gp(e);sx=p.x;sy=p.y;ca.style.cursor='grabbing';e.preventDefault();});
-  ca.addEventListener('touchstart',e=>{
-    if(e.touches.length===1){dr=true;const p=gp(e);sx=p.x;sy=p.y;}
-    else if(e.touches.length===2){
-      dr=false;
-      pinchDist=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
-      pinchBase=parseFloat(document.getElementById('acZoom').value)||1;
-    }
-    e.preventDefault();
-  },{passive:false});
-  window.addEventListener('mousemove',e=>{
-    if(!dr)return;
-    acOffX+=(e.clientX-sx);acOffY+=(e.clientY-sy);sx=e.clientX;sy=e.clientY;drawArtistCrop();
-  });
-  window.addEventListener('touchmove',e=>{
-    if(e.touches.length===1&&dr){acOffX+=(e.touches[0].clientX-sx);acOffY+=(e.touches[0].clientY-sy);sx=e.touches[0].clientX;sy=e.touches[0].clientY;drawArtistCrop();}
-    else if(e.touches.length===2){
-      const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
-      const nv=Math.min(5,Math.max(0.1,pinchBase*(d/pinchDist)));
-      document.getElementById('acZoom').value=nv;drawArtistCrop();
-    }
-    e.preventDefault();
-  },{passive:false});
-  window.addEventListener('mouseup',()=>{dr=false;ca.style.cursor='grab';});
-  window.addEventListener('touchend',()=>{dr=false;});
-  // Scroll to zoom
-  ca.addEventListener('wheel',e=>{
-    const cur=parseFloat(document.getElementById('acZoom').value)||1;
-    const nv=Math.min(5,Math.max(0.1,cur-(e.deltaY>0?0.1:-0.1)));
-    document.getElementById('acZoom').value=nv;drawArtistCrop();
-    e.preventDefault();
-  },{passive:false});
-})();
 
 // Show existing banner previews
-['bannerDesktop','bannerMobile','bannerDetail'].forEach(id => {
-  const val = document.getElementById(id).value;
-  if (val) {
+['bannerDesktop','bannerMobile','bannerDetail','posterLandscape','posterPortrait'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el && el.value) {
     document.getElementById('prev-' + id).style.display = 'block';
   }
 });
@@ -660,306 +484,77 @@ function removeArtist(i) {
 function setArtistPhoto(i, input) {
   const file = input.files[0];
   if (!file) return;
-  openArtistCrop(file, i);
+  const reader = new FileReader();
+  reader.onload = e => {
+    artists[i].photo = e.target.result;
+    renderArtists();
+  };
+  reader.readAsDataURL(file);
 }
 
-// ── Dynamic Ticket Categories ──
-let catCounter = 0;
-const PRESET_COLORS = ['#9D4EDD','#f5c842','#c0c8d8','#00FF88','#FF6B6B','#FF8C42','#4ECDC4','#45B7D1'];
+// ── Ticket category toggles ──
+const catKeys = ['platinum','gold','silver','fanfit','family'];
+const catEnabled = {};
+catKeys.forEach(k => {
+  const tog = document.getElementById('toggle-' + k);
+  catEnabled[k] = tog ? tog.classList.contains('on') : false;
+});
 
-// Load existing categories from server (edit mode)
-const EXISTING_CATS = <%- JSON.stringify(event && event.ticketTypes ? event.ticketTypes : []) %>;
-EXISTING_CATS.forEach(t => addTicketCat(t));
-if (EXISTING_CATS.length === 0) addTicketCat(); // start with one empty
-
-function addTicketCat(existing) {
-  const id = 'cat_' + (++catCounter);
-  const color = existing?.color || PRESET_COLORS[(catCounter - 1) % PRESET_COLORS.length];
-  const isActive = existing ? (existing.isActive !== false) : true;
-  const isMultiple = existing?.ticketType === 'multiple';
-
-  const el = document.createElement('div');
-  el.id = id;
-  el.style.cssText = `border-radius:10px;border:1.5px solid rgba(255,255,255,0.08);overflow:hidden;background:#0d0d14;`;
-
-  el.innerHTML = `
-    <div style="padding:0.9rem 1.2rem;display:flex;align-items:center;justify-content:space-between;cursor:pointer;background:rgba(255,255,255,0.02);" onclick="toggleCatBody('${id}')">
-      <div style="display:flex;align-items:center;gap:0.8rem;">
-        <input type="color" value="${color}" id="${id}_color" onclick="event.stopPropagation()"
-          onchange="updateCatColor('${id}',this.value)"
-          style="width:28px;height:28px;border-radius:6px;border:none;cursor:pointer;background:none;padding:0;"/>
-        <input type="text" id="${id}_name" value="${existing?.category||''}" placeholder="e.g. Gold, VIP, Family"
-          onclick="event.stopPropagation()"
-          style="background:transparent;border:none;outline:none;color:#fff;font-family:'Anton',sans-serif;font-size:1rem;letter-spacing:2px;width:180px;"
-          oninput="updateCatLabel('${id}')"/>
-        <span id="${id}_badge" style="font-family:'Space Mono',monospace;font-size:0.58rem;letter-spacing:1px;padding:0.15rem 0.55rem;border-radius:8px;background:${color}22;color:${color};border:1px solid ${color}44;">${existing?.category?.toUpperCase()||'NEW'}</span>
-      </div>
-      <div style="display:flex;align-items:center;gap:0.8rem;" onclick="event.stopPropagation()">
-        <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer;font-size:0.82rem;color:#B3B3B3;">
-          <div id="${id}_tog" class="toggle-sw ${isActive?'on':''}" onclick="flipCatToggle('${id}')"></div>
-          <span id="${id}_toglbl">${isActive?'Active':'Disabled'}</span>
-        </label>
-        <button type="button" onclick="removeCat('${id}')" style="background:rgba(255,68,68,0.1);border:1px solid rgba(255,68,68,0.25);color:#FF4444;border-radius:5px;padding:0.25rem 0.5rem;cursor:pointer;font-size:0.75rem;">✕</button>
-        <i class="bi bi-chevron-down" id="${id}_chev" style="color:#B3B3B3;transition:transform 0.2s;"></i>
-      </div>
-    </div>
-    <div id="${id}_body" style="padding:1.2rem;display:none;border-top:1px solid rgba(255,255,255,0.06);">
-      <div class="field-row cols-3">
-        <div class="field-group"><label class="field-label">Price (₹) *</label>
-          <input class="field-input" type="number" id="${id}_price" placeholder="0" value="${existing?.price||''}"/></div>
-        <div class="field-group"><label class="field-label">Age Limit (0=any)</label>
-          <input class="field-input" type="number" id="${id}_ageLimit" placeholder="0" value="${existing?.ageLimit||0}"/></div>
-        <div class="field-group"><label class="field-label">Total Seats *</label>
-          <input class="field-input" type="number" id="${id}_totalSeats" placeholder="100" value="${existing?.totalSeats||''}"/></div>
-      </div>
-      <div class="field-row cols-2">
-        <div class="field-group"><label class="field-label">Ticket Type</label>
-          <select class="field-input" id="${id}_ticketType" onchange="toggleCatCombo('${id}')">
-            <option value="single" ${!isMultiple?'selected':''}>Single Entry</option>
-            <option value="multiple" ${isMultiple?'selected':''}>Multiple Entry (Group / Combo)</option>
-          </select></div>
-        <div class="field-group" id="${id}_comboWrap" style="display:${isMultiple?'block':'none'};">
-          <label class="field-label">People per Ticket *</label>
-          <input class="field-input" type="number" id="${id}_comboCount" min="2" max="20" placeholder="e.g. 4" value="${existing?.comboCount>1?existing.comboCount:2}"/>
-          <small style="color:#777;font-size:0.7rem;margin-top:0.25rem;display:block;">Each purchase = this many attendees (all fill their details)</small>
-        </div>
-        <div class="field-group"><label class="field-label">Booked Seats</label>
-          <input class="field-input" type="number" id="${id}_bookedSeats" value="${existing?.bookedSeats||0}" min="0"/></div>
-      </div>
-      <!-- ── Combo Offer ── -->
-      <div style="background:rgba(245,200,66,0.05);border:1px solid rgba(245,200,66,0.18);border-radius:8px;padding:0.9rem 1rem;margin-top:0.2rem;">
-        <div style="font-family:'Space Mono',monospace;font-size:0.56rem;letter-spacing:2px;color:#f5c842;margin-bottom:0.7rem;">🎯 COMBO OFFER (OPTIONAL)</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;">
-          <div class="field-group">
-            <label class="field-label">Min Tickets to Qualify</label>
-            <input class="field-input" type="number" id="${id}_comboOfferMinQty" min="0" placeholder="0 = off" value="${existing?.comboOfferMinQty||0}" style="border-color:rgba(245,200,66,0.25);"/>
-            <small style="color:#777;font-size:0.68rem;margin-top:0.2rem;display:block;">e.g. 4 = buy 4+ to get discount</small>
-          </div>
-          <div class="field-group">
-            <label class="field-label">Discount Amount (₹)</label>
-            <input class="field-input" type="number" id="${id}_comboOfferDiscount" min="0" placeholder="0" value="${existing?.comboOfferDiscount||0}" style="border-color:rgba(245,200,66,0.25);"/>
-            <small style="color:#777;font-size:0.68rem;margin-top:0.2rem;display:block;">flat ₹ off total (shown to user)</small>
-          </div>
-        </div>
-      </div>
-      <div class="field-row" style="margin-top:0.8rem;">
-        <div class="field-group"><label class="field-label">Terms & Conditions</label>
-          <textarea class="field-input" id="${id}_terms" placeholder="Entry conditions, refund policy..." style="min-height:60px;">${existing?.terms||''}</textarea></div>
-      </div>
-    </div>`;
-
-  document.getElementById('ticketCatList').appendChild(el);
-  // Auto-open if existing
-  if (existing) toggleCatBody(id);
-  updateCatColor(id, color);
+function toggleCat(key) {
+  const body    = document.getElementById('body-' + key);
+  const chevron = document.getElementById('chevron-' + key);
+  body.classList.toggle('open');
+  chevron.style.transform = body.classList.contains('open') ? 'rotate(180deg)' : '';
 }
 
-function toggleCatBody(id) {
-  const body = document.getElementById(id+'_body');
-  const chev = document.getElementById(id+'_chev');
-  const open = body.style.display === 'none';
-  body.style.display = open ? 'block' : 'none';
-  chev.style.transform = open ? 'rotate(180deg)' : '';
+function flipToggle(key) {
+  catEnabled[key] = !catEnabled[key];
+  const tog = document.getElementById('toggle-' + key);
+  const lbl = document.getElementById('toggle-lbl-' + key);
+  tog.classList.toggle('on', catEnabled[key]);
+  lbl.textContent = catEnabled[key] ? 'Enabled' : 'Disabled';
 }
 
-function updateCatColor(id, color) {
-  const badge = document.getElementById(id+'_badge');
-  if (badge) {
-    badge.style.background = color+'22';
-    badge.style.color = color;
-    badge.style.borderColor = color+'44';
-  }
-}
-
-function updateCatLabel(id) {
-  const val = document.getElementById(id+'_name').value.toUpperCase()||'NEW';
-  const badge = document.getElementById(id+'_badge');
-  if (badge) badge.textContent = val;
-}
-
-function flipCatToggle(id) {
-  const tog = document.getElementById(id+'_tog');
-  const lbl = document.getElementById(id+'_toglbl');
-  const active = tog.classList.toggle('on');
-  lbl.textContent = active ? 'Active' : 'Disabled';
-}
-
-function removeCat(id) {
-  const el = document.getElementById(id);
-  if (el) el.remove();
-}
-
-function toggleCatCombo(id) {
-  const val = document.getElementById(id+'_ticketType').value;
-  const wrap = document.getElementById(id+'_comboWrap');
-  if (wrap) wrap.style.display = val === 'multiple' ? 'block' : 'none';
-}
+// Open cats that have data
+catKeys.forEach(k => {
+  if (catEnabled[k]) toggleCat(k);
+});
 
 // ── Submit — inject JSON fields ──
-// ── Inline validation helpers ──
-function markField(el, valid, msg) {
-  el.classList.toggle('is-invalid', !valid);
-  el.classList.toggle('is-valid', valid);
-  const errEl = el.parentElement.querySelector('.field-error');
-  if (errEl) { errEl.textContent = msg || ''; errEl.classList.toggle('show', !valid && !!msg); }
-  return valid;
-}
-
-function validateField(el) {
-  const val = el.value.trim();
-  const name = el.name || el.id || '';
-  if (el.required && !val) return markField(el, false, 'This field is required.');
-  if (el.type === 'date' && val) {
-    const d = new Date(val);
-    if (isNaN(d.getTime())) return markField(el, false, 'Enter a valid date.');
-    // For event date — block if in the past
-    if (name === 'date') {
-      const today = new Date(); today.setHours(0,0,0,0);
-      if (d < today) return markField(el, false, 'Event date cannot be in the past.');
-    }
-    return markField(el, true, '');
-  }
-  // Time fields (doorsOpen, endTime) — must be like "8:00 PM" or "20:00"
-  if ((name === 'doorsOpen' || name === 'endTime') && val) {
-    var timeRe = /^([0-9]{1,2}):([0-9]{2})\s*(AM|PM)?$/i;
-    if (!timeRe.test(val)) return markField(el, false, 'Use format like "8:00 PM" or "20:00".');
-    return markField(el, true, '');
-  }
-  if (el.type === 'url' && val) {
-    try { new URL(val); return markField(el, true, ''); }
-    catch(e) { return markField(el, false, 'Enter a valid URL (starting with https://).'); }
-  }
-  if (el.type === 'number' && val !== '') {
-    const n = Number(val);
-    if (isNaN(n)) return markField(el, false, 'Must be a number.');
-    if (el.min !== '' && n < Number(el.min)) return markField(el, false, 'Value too low (min ' + el.min + ').');
-    return markField(el, true, '');
-  }
-  if (val) return markField(el, true, '');
-  return markField(el, false, '');
-}
-
-// Attach live validation to all field-inputs on page load
-(function attachLiveValidation() {
-  document.querySelectorAll('.field-input').forEach(function(el) {
-    // Add error placeholder if not already there
-    if (!el.parentElement.querySelector('.field-error')) {
-      const e = document.createElement('div');
-      e.className = 'field-error';
-      el.parentElement.appendChild(e);
-    }
-    el.addEventListener('blur', function() { validateField(el); });
-    el.addEventListener('input', function() {
-      if (el.classList.contains('is-invalid')) validateField(el); // clear error on fix
-    });
-  });
-
-  // Date field: prevent past dates from being submitted without warning
-  const dateEl = document.querySelector('input[name="date"]');
-  if (dateEl) {
-    dateEl.addEventListener('change', function() {
-      const d = new Date(dateEl.value);
-      if (d < new Date()) {
-        markField(dateEl, false, '⚠ Date is in the past — are you sure?');
-        // Don't block — just warn
-        dateEl.classList.remove('is-invalid'); // keep orange-ish but allow save
-        dateEl.style.borderColor = '#f5c842';
-      } else {
-        markField(dateEl, true, '');
-        dateEl.style.borderColor = '';
-      }
-    });
-  }
-
-  // Time fields: validate HH:MM AM/PM format
-  ['doorsOpen','endTime'].forEach(function(fname) {
-    const el = document.querySelector('input[name="' + fname + '"]');
-    if (!el) return;
-    el.addEventListener('blur', function() {
-      const v = el.value.trim();
-      if (!v) { markField(el, false, ''); return; }
-      const ok = /^\d{1,2}:\d{2}\s*(AM|PM|am|pm)$/i.test(v);
-      markField(el, ok, ok ? '' : 'Format: 8:00 PM or 4:00 AM');
-    });
-  });
-})();
-
 function prepareSubmit() {
-  let valid = true;
-
-  // Validate required text fields
-  ['input[name="name"]', 'input[name="date"]', 'input[name="venue"]'].forEach(function(sel) {
-    const el = document.querySelector(sel);
-    if (el && !el.value.trim()) {
-      markField(el, false, 'This field is required.');
-      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      valid = false;
-    }
-  });
-
-  // Validate URL fields if filled
-  document.querySelectorAll('.field-input[type="url"]').forEach(function(el) {
-    if (el.value.trim()) {
-      try { new URL(el.value.trim()); markField(el, true, ''); }
-      catch(e) { markField(el, false, 'Enter a valid URL starting with https://'); valid = false; }
-    }
-  });
-
-  // Validate date is not empty
-  const dateEl = document.querySelector('input[name="date"]');
-  if (dateEl && dateEl.value) {
-    const d = new Date(dateEl.value);
-    if (isNaN(d.getTime())) { markField(dateEl, false, 'Enter a valid date.'); valid = false; }
-  }
-
-  if (!valid) {
-    showToast('Please fix the errors highlighted in red before saving.', 'err');
-    return false;
-  }
-
   // Artists JSON
   document.getElementById('artistsJson').value = JSON.stringify(artists);
 
-  // Ticket types JSON — collect from all dynamic cat cards
+  // Ticket types JSON
   const tickets = [];
-  let ticketErrors = [];
-  document.querySelectorAll('#ticketCatList > div').forEach(el => {
-    const id = el.id;
-    const nameEl = document.getElementById(id+'_name');
-    const priceEl = document.getElementById(id+'_price');
-    const seatsEl = document.getElementById(id+'_totalSeats');
-    const name = (nameEl?.value||'').trim();
-    const price = parseInt(priceEl?.value) || 0;
-    const totalSeats = parseInt(seatsEl?.value) || 0;
-    if (!name && !priceEl?.value && !seatsEl?.value) return; // totally empty row - skip
-    if (!name) { ticketErrors.push('Ticket category name is required.'); if(nameEl)nameEl.classList.add('is-invalid'); return; }
-    if (price <= 0) { ticketErrors.push('Price must be greater than 0 for "' + name + '".'); if(priceEl)priceEl.classList.add('is-invalid'); return; }
-    if (totalSeats <= 0) { ticketErrors.push('Total seats must be greater than 0 for "' + name + '".'); if(seatsEl)seatsEl.classList.add('is-invalid'); return; }
-    const color = document.getElementById(id+'_color')?.value || '#6A0DAD';
-    const ageLimit = parseInt(document.getElementById(id+'_ageLimit')?.value) || 0;
-    const ticketType = document.getElementById(id+'_ticketType')?.value || 'single';
-    const bookedSeats = parseInt(document.getElementById(id+'_bookedSeats')?.value) || 0;
-    const terms = document.getElementById(id+'_terms')?.value || '';
-    const rawCombo = parseInt(document.getElementById(id+'_comboCount')?.value) || 2;
-    const comboCount = ticketType === 'multiple' ? rawCombo : 1;
-    const isActive = document.getElementById(id+'_tog')?.classList.contains('on') || false;
-    tickets.push({
-      category: name.toLowerCase().replace(/\s+/g,'_'),
-      name, color, price, ageLimit, ticketType,
-      totalSeats, bookedSeats, terms,
-      isActive, isCombo: ticketType === 'multiple', comboCount,
-      comboOfferMinQty:   parseInt(document.getElementById(id+'_comboOfferMinQty')?.value)  || 0,
-      comboOfferDiscount: parseInt(document.getElementById(id+'_comboOfferDiscount')?.value) || 0,
-    });
+  catKeys.forEach(k => {
+    const price       = parseInt(document.getElementById(k + '_price')?.value) || 0;
+    const totalSeats  = parseInt(document.getElementById(k + '_totalSeats')?.value) || 0;
+    const ageLimit    = parseInt(document.getElementById(k + '_ageLimit')?.value) || 18;
+    const ticketType  = document.getElementById(k + '_ticketType')?.value || 'single';
+    const bookedSeats = parseInt(document.getElementById(k + '_bookedSeats')?.value) || 0;
+    const maxPerOrder = parseInt(document.getElementById(k + '_maxPerOrder')?.value) || 10;
+    const terms       = document.getElementById(k + '_terms')?.value || '';
+
+    if (price > 0 && totalSeats > 0) {
+      tickets.push({
+        category:    k,
+        price,
+        ageLimit,
+        ticketType,
+        totalSeats,
+        bookedSeats,
+        maxPerOrder,
+        terms,
+        isActive:    catEnabled[k],
+        isCombo:     k === 'family',
+        comboCount:  k === 'family' ? 4 : 1,
+      });
+    }
   });
 
-  if (ticketErrors.length > 0) {
-    showToast(ticketErrors[0], 'err');
-    return false;
-  }
-
   if (tickets.length === 0) {
-    showToast('Add at least one ticket category with name, price and seats.', 'err');
+    showToast('Add at least one ticket category with price and seats.', 'err');
     return false;
   }
 
@@ -967,78 +562,24 @@ function prepareSubmit() {
   return true;
 }
 
-function showToast(msg, type) {
-  type = type || 'ok';
-  var container = document.getElementById('toast-container');
-  var icons = { ok: '✅', err: '❌', warn: '⚠️' };
-  var el = document.createElement('div');
-  el.className = 'ef-toast ' + type;
-  el.innerHTML = '<span>' + (icons[type]||'ℹ️') + '</span><span>' + msg + '</span>';
-  container.appendChild(el);
-  var timer = setTimeout(function() {
-    el.style.animation = 'efToastOut 0.3s ease forwards';
-    setTimeout(function() { if(el.parentNode) el.parentNode.removeChild(el); }, 300);
-  }, 4000);
-  el.addEventListener('click', function() {
-    clearTimeout(timer);
-    el.style.animation = 'efToastOut 0.3s ease forwards';
-    setTimeout(function() { if(el.parentNode) el.parentNode.removeChild(el); }, 300);
-  });
+function showToast(msg, type = 'ok') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className   = 'toast ' + type;
+  t.style.display = 'block';
+  setTimeout(() => { t.style.display = 'none'; }, 3500);
 }
+
+// ── Seating type toggle ──
+function toggleSeatFields() {
+  const type = document.getElementById('seatingTypeSelect').value;
+  document.getElementById('seatNumberFields').style.display = type === 'sitting' ? 'block' : 'none';
+}
+// Init on load
+toggleSeatFields();
 
 // Init
 renderArtists();
-
-// ── UNSAVED CHANGES GUARD ──
-var _formDirty = false;
-var _formSubmitting = false;
-
-// Mark dirty on any input change
-document.querySelectorAll('#eventForm input, #eventForm textarea, #eventForm select').forEach(function(el) {
-  el.addEventListener('change', function() { _formDirty = true; });
-  el.addEventListener('input',  function() { _formDirty = true; });
-});
-
-// Intercept submit — clear dirty flag so we don't warn on save
-document.getElementById('eventForm').addEventListener('submit', function() {
-  _formSubmitting = true;
-  _formDirty = false;
-});
-
-// Browser back / tab close
-window.addEventListener('beforeunload', function(e) {
-  if (_formDirty && !_formSubmitting) {
-    e.preventDefault();
-    e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
-    return e.returnValue;
-  }
-});
-
-// Cancel button — show custom confirm modal instead of browser default
-document.querySelector('.btn-cancel').addEventListener('click', function(e) {
-  if (!_formDirty) return; // no changes, allow navigation
-  e.preventDefault();
-  document.getElementById('leaveConfirmModal').style.display = 'flex';
-});
-function _confirmLeave()  { _formDirty = false; window.location.href = '/admin'; }
-function _cancelLeave()   { document.getElementById('leaveConfirmModal').style.display = 'none'; }
 </script>
-
-<!-- Leave Confirm Modal -->
-<div id="leaveConfirmModal" style="display:none;position:fixed;inset:0;background:rgba(8,8,14,0.88);backdrop-filter:blur(8px);z-index:9999;align-items:center;justify-content:center;padding:1rem;">
-  <div style="background:#14141C;border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:2rem;max-width:400px;width:100%;text-align:center;animation:slideUp 0.25s ease both;">
-    <div style="font-size:2rem;margin-bottom:0.8rem;">⚠️</div>
-    <div style="font-family:'Anton',sans-serif;font-size:1.4rem;letter-spacing:2px;color:#fff;margin-bottom:0.6rem;">UNSAVED CHANGES</div>
-    <p style="font-size:0.88rem;color:#B3B3B3;line-height:1.6;margin-bottom:1.5rem;">You have unsaved changes on this form. If you leave now, all changes will be lost.</p>
-    <div style="display:flex;gap:0.8rem;justify-content:center;">
-      <button onclick="_cancelLeave()" style="padding:0.75rem 1.5rem;background:transparent;border:1px solid rgba(255,255,255,0.15);border-radius:7px;color:#B3B3B3;font-family:'Outfit',sans-serif;font-size:0.88rem;cursor:pointer;">Stay &amp; Keep Editing</button>
-      <button onclick="_confirmLeave()" style="padding:0.75rem 1.5rem;background:#FF4444;border:none;border-radius:7px;color:#fff;font-family:'Outfit',sans-serif;font-weight:700;font-size:0.88rem;cursor:pointer;">Leave Without Saving</button>
-    </div>
-  </div>
-</div>
-  </div><!-- /container -->
-  </main>
-</div><!-- /admin-layout -->
-  <%- include('../partials/admin-confirm') %>
 </body>
 </html>

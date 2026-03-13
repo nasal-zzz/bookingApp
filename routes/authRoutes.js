@@ -72,3 +72,4 @@ router.get('/google/callback',
 router.get('/logout', noCache, authController.logout);
 
 module.exports = router;
+

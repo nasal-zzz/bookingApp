@@ -113,10 +113,10 @@ exports.postSignup = async (req, res) => {
   try {
     const { firstName, lastName, email, phone, whatsapp, gender, place, district, next } = req.body;
 
-    // Validate required fields
-    if (!firstName || !lastName || !email || !phone || !gender || !place || !district)
-      return res.json({ success: false, message: 'All fields are required.' });
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+    // Validate required fields (email is optional)
+    if (!firstName || !lastName || !phone || !gender || !place || !district)
+      return res.json({ success: false, message: 'Please fill in all required fields.' });
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
       return res.json({ success: false, message: 'Enter a valid email address.' });
     if (!/^[6-9]\d{9}$/.test(phone))
       return res.json({ success: false, message: 'Enter a valid 10-digit Indian mobile number.' });
@@ -126,7 +126,7 @@ exports.postSignup = async (req, res) => {
     // Unique checks
     if (await User.findOne({ phone: fullPhone }))
       return res.json({ success: false, message: 'Phone already registered. Please log in.', redirect: '/auth/login' });
-    if (await User.findOne({ email: email.trim().toLowerCase() }))
+    if (email && await User.findOne({ email: email.trim().toLowerCase() }))
       return res.json({ success: false, message: 'Email already registered with another account.' });
 
     const fullWhatsapp = whatsapp && /^[6-9]\d{9}$/.test(whatsapp.trim())
@@ -193,7 +193,16 @@ exports.verifyOTPHandler = async (req, res) => {
       delete req.session.otpPhone;
       delete req.session.otpMode;
 
-      // Now send email OTP to verify email
+      const redirectTo = req.session.redirectAfterLogin || '/';
+      delete req.session.redirectAfterLogin;
+
+      // If no email provided, signal frontend to show email popup
+      if (!user.email) {
+        await new Promise(r => req.session.save(r));
+        return res.json({ success: true, redirect: redirectTo, showEmailPopup: true });
+      }
+
+      // Has email — send email OTP to verify
       const emailResult = await createAndSendEmailOTP(pending.email, 'email-verify');
       if (emailResult.success) {
         req.session.pendingEmailVerify = { userId: user._id.toString(), email: pending.email };
@@ -201,9 +210,6 @@ exports.verifyOTPHandler = async (req, res) => {
         return res.json({ success: true, redirect: '/auth/verify-email' });
       }
 
-      // Email OTP failed — skip email verify, go to destination
-      const redirectTo = req.session.redirectAfterLogin || '/';
-      delete req.session.redirectAfterLogin;
       await new Promise(r => req.session.save(r));
       return res.json({ success: true, redirect: redirectTo });
     }
@@ -387,5 +393,27 @@ exports.logout = (req, res) => {
     });
   } else {
     req.session.destroy(() => { res.clearCookie('np_token'); res.clearCookie('connect.sid'); res.redirect('/'); });
+  }
+};
+
+// ─────────────────────────────────────────────
+// SAVE EMAIL (from popup after signup)
+// ─────────────────────────────────────────────
+
+exports.saveEmail = async (req, res) => {
+  try {
+    const userId = req.session.userId;
+    if (!userId) return res.json({ success: false, message: 'Not logged in.' });
+    const { email } = req.body;
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+      return res.json({ success: false, message: 'Invalid email.' });
+    // Check not already taken
+    const existing = await User.findOne({ email: email.trim().toLowerCase(), _id: { $ne: userId } });
+    if (existing) return res.json({ success: false, message: 'Email already in use.' });
+    await User.findByIdAndUpdate(userId, { email: email.trim().toLowerCase() });
+    return res.json({ success: true });
+  } catch (err) {
+    console.error('saveEmail error:', err);
+    return res.json({ success: false, message: 'Server error.' });
   }
 };

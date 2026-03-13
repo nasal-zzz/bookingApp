@@ -5,6 +5,7 @@
 
 /* ── FONT IMPORTS ── */
 @import url('https://fonts.googleapis.com/css2?family=Anton&family=Outfit:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
 
 /* ── LOCAL FONT FACES ── */
 @font-face {
@@ -18,7 +19,7 @@
 /* ── FONT STACK VARIABLES ── */
 :root {
   /* Change these to swap fonts across the whole site */
-  --font-display: 'Anton', 'MiravaSans', sans-serif;  /* headings, titles */
+  --font-display: 'Poppins', 'MiravaSans', sans-serif;  /* headings, titles */
   --font-body:    'Outfit', sans-serif;                /* body text */
   --font-mono:    'Space Mono', monospace;             /* labels, refs, codes */
 
